@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="en">
-
 <head>
 
 <meta charset="utf-8">
@@ -40,10 +39,7 @@ rel="apple-touch-icon"
 href="icon-180.png"
 >
 
-<title>
-Gani's Strength
-</title>
-
+<title>Gani's Strength</title>
 
 <style>
 
@@ -51,29 +47,20 @@ Gani's Strength
 box-sizing:border-box;
 }
 
-
 :root{
 
 --blue:#3f8fe8;
-
 --blue-dark:#276bb8;
-
 --blue-light:#e7f3ff;
-
 --blue-lighter:#f4f9ff;
-
 --blue-border:#cfe5fb;
-
 --navy:#17324d;
-
 --text:#17212b;
-
 --muted:#66717d;
-
---white:#ffffff;
+--danger:#b33a3a;
+--danger-bg:#fff0f0;
 
 }
-
 
 body{
 
@@ -86,18 +73,14 @@ BlinkMacSystemFont,
 sans-serif;
 
 background:#f3f8fd;
-
 color:var(--text);
 
 }
 
-
 header{
 
 position:sticky;
-
 top:0;
-
 z-index:5;
 
 background:
@@ -116,36 +99,26 @@ padding:
 
 }
 
-
 h1{
 
 font-size:25px;
-
-margin:
-0
-0
-3px;
+margin:0 0 3px;
 
 }
-
 
 .sub{
 
 font-size:13px;
-
 opacity:.8;
 
 }
-
 
 nav{
 
 display:flex;
 
 position:sticky;
-
 top:72px;
-
 z-index:4;
 
 background:#fff;
@@ -156,13 +129,11 @@ var(--blue-border);
 
 }
 
-
 nav button{
 
 flex:1;
 
 border:0;
-
 background:none;
 
 padding:
@@ -170,11 +141,9 @@ padding:
 4px;
 
 font-weight:700;
-
 color:#7a838c;
 
 }
-
 
 nav button.active{
 
@@ -185,7 +154,6 @@ border-bottom:
 var(--blue);
 
 }
-
 
 main{
 
@@ -200,20 +168,13 @@ padding:
 
 }
 
-
 .screen{
-
 display:none;
-
 }
-
 
 .screen.active{
-
 display:block;
-
 }
-
 
 .card,
 .workout-part{
@@ -238,32 +199,22 @@ box-shadow:
 
 }
 
-
 .row{
 
 display:flex;
-
 gap:8px;
-
 align-items:center;
 
 }
 
-
 .between{
-
-justify-content:
-space-between;
-
+justify-content:space-between;
 }
-
 
 label{
 
 font-size:12px;
-
 color:var(--muted);
-
 font-weight:700;
 
 display:block;
@@ -271,7 +222,6 @@ display:block;
 margin-bottom:5px;
 
 }
-
 
 select,
 input{
@@ -289,11 +239,9 @@ border-radius:11px;
 font-size:16px;
 
 background:#fff;
-
 color:var(--text);
 
 }
-
 
 select:focus,
 input:focus{
@@ -309,19 +257,14 @@ box-shadow:
 
 }
 
-
 button{
-
 font-family:inherit;
-
 }
-
 
 button.primary,
 button.dark{
 
-background:
-var(--blue);
+background:var(--blue);
 
 color:#fff;
 
@@ -336,16 +279,6 @@ padding:
 font-weight:800;
 
 }
-
-
-button.primary:active,
-button.dark:active{
-
-background:
-var(--blue-dark);
-
-}
-
 
 button.secondary{
 
@@ -369,6 +302,27 @@ font-weight:700;
 
 }
 
+button.danger{
+
+background:
+var(--danger-bg);
+
+color:
+var(--danger);
+
+border:
+1px solid
+#f1cccc;
+
+border-radius:11px;
+
+padding:
+10px
+12px;
+
+font-weight:700;
+
+}
 
 button.small{
 
@@ -379,7 +333,6 @@ padding:
 font-size:13px;
 
 }
-
 
 .grid{
 
@@ -393,7 +346,6 @@ gap:10px;
 
 }
 
-
 .muted{
 
 color:
@@ -402,7 +354,6 @@ var(--muted);
 font-size:13px;
 
 }
-
 
 .tag{
 
@@ -424,10 +375,7 @@ font-size:11px;
 
 font-weight:800;
 
-margin-top:4px;
-
 }
-
 
 .note{
 
@@ -451,7 +399,6 @@ color:#34516b;
 
 }
 
-
 h2{
 
 font-size:20px;
@@ -463,27 +410,33 @@ margin:
 
 }
 
-
 h3{
-
 margin:0;
-
 }
-
 
 .workout-part h3{
-
 font-size:20px;
-
 }
-
 
 .workout-part select{
-
 margin-top:10px;
+}
+
+.exercise-actions{
+
+display:flex;
+
+gap:8px;
+
+margin-top:8px;
 
 }
 
+.exercise-actions button{
+
+flex:1;
+
+}
 
 .exercise-logger{
 
@@ -497,13 +450,9 @@ border-top:
 
 }
 
-
 .sets{
-
 margin-top:10px;
-
 }
-
 
 .set{
 
@@ -525,7 +474,6 @@ margin:
 
 }
 
-
 .setnum{
 
 font-weight:800;
@@ -539,27 +487,39 @@ var(--blue-dark);
 
 }
 
-
 .set button{
-
 height:44px;
-
 }
-
 
 .check{
-
 font-size:22px;
+}
+
+.stat{
+
+font-size:24px;
+
+font-weight:900;
+
+color:
+var(--blue-dark);
 
 }
 
+.statlabel{
 
-.menu-item{
+font-size:12px;
+
+color:
+var(--muted);
+
+}
+
+.history-item{
 
 display:flex;
 
-justify-content:
-space-between;
+justify-content:space-between;
 
 align-items:center;
 
@@ -573,49 +533,13 @@ border-bottom:
 
 }
 
-
-.menu-item:last-child{
-
+.history-item:last-child{
 border-bottom:0;
-
 }
-
-
-.add-custom{
-
-width:100%;
-
-margin-top:12px;
-
-}
-
-
-.stat{
-
-font-size:24px;
-
-font-weight:900;
-
-color:
-var(--blue-dark);
-
-}
-
-
-.statlabel{
-
-font-size:12px;
-
-color:
-var(--muted);
-
-}
-
 
 .chart{
 
 width:100%;
-
 height:250px;
 
 background:
@@ -631,15 +555,12 @@ padding:12px;
 
 }
 
-
 .chart svg{
 
 width:100%;
-
 height:100%;
 
 }
-
 
 .chart-label{
 
@@ -648,7 +569,6 @@ font-size:11px;
 fill:#66717d;
 
 }
-
 
 .chart-line{
 
@@ -661,14 +581,12 @@ stroke-width:3;
 
 }
 
-
 .chart-dot{
 
 fill:
 #276bb8;
 
 }
-
 
 .chart-grid{
 
@@ -679,13 +597,11 @@ stroke-width:1;
 
 }
 
-
 #toast{
 
 position:fixed;
 
 bottom:22px;
-
 left:50%;
 
 transform:
@@ -722,9 +638,7 @@ max-width:90%;
 
 </head>
 
-
 <body>
-
 
 <header>
 
@@ -738,7 +652,6 @@ Full-body strength • max 8 exercises
 
 </header>
 
-
 <nav>
 
 <button
@@ -746,12 +659,6 @@ class="active"
 onclick="show('train',this)"
 >
 Train
-</button>
-
-<button
-onclick="show('build',this)"
->
-Build
 </button>
 
 <button
@@ -768,7 +675,6 @@ Charts
 
 </nav>
 
-
 <main>
 
 
@@ -777,9 +683,7 @@ id="train"
 class="screen active"
 >
 
-
 <div class="card">
-
 
 <div class="row between">
 
@@ -791,12 +695,11 @@ Today's Workout
 
 <div class="muted">
 
-Pick an exercise for each body part and immediately track your sets below it.
+Choose an exercise for each body part and immediately log your sets underneath.
 
 </div>
 
 </div>
-
 
 <button
 class="secondary small"
@@ -807,7 +710,6 @@ New
 
 </div>
 
-
 <div class="note">
 
 Main lifts: 6–8 reps.
@@ -817,15 +719,11 @@ Deadlifts: keep 1–2 reps in reserve.
 
 </div>
 
-
 <div class="muted">
 
-Want something that isn't listed?
-Choose <b>Add Custom Exercise…</b>
-inside any body-part menu and it will stay there going forward.
+You can add or delete exercises directly from each body-part card.
 
 </div>
-
 
 </div>
 
@@ -836,66 +734,26 @@ inside any body-part menu and it will stay there going forward.
 
 <div class="card">
 
-
 <div class="row">
-
 
 <button
 class="primary"
 style="flex:1"
 onclick="saveWorkout()"
 >
-
 Save Workout
-
 </button>
-
 
 <button
 class="secondary"
 onclick="startTimer(90)"
 >
-
 90s Rest
-
 </button>
 
-
-</div>
-
-
-</div>
-
-
-</section>
-
-
-
-<section
-id="build"
-class="screen"
->
-
-
-<div class="card">
-
-<h2>
-Build Workout
-</h2>
-
-<div class="muted">
-
-Choose up to 8 exercises.
-You can also add your own exercises under any body part.
-
 </div>
 
 </div>
-
-
-<div id="picker">
-</div>
-
 
 </section>
 
@@ -906,17 +764,13 @@ id="history"
 class="screen"
 >
 
-
 <div class="card">
-
 
 <h2>
 Progress
 </h2>
 
-
 <div class="grid">
-
 
 <div>
 
@@ -933,7 +787,6 @@ Workouts
 
 </div>
 
-
 <div>
 
 <div
@@ -949,43 +802,33 @@ Exercises logged
 
 </div>
 
-
 </div>
-
 
 </div>
 
 
 <div class="card">
-
 
 <h2>
 Exercise History
 </h2>
 
-
 <div id="historyList">
 </div>
-
 
 </div>
 
 
 <div class="card">
 
-
 <button
 class="secondary"
 onclick="clearHistory()"
 >
-
 Clear all saved data
-
 </button>
 
-
 </div>
-
 
 </section>
 
@@ -996,14 +839,11 @@ id="charts"
 class="screen"
 >
 
-
 <div class="card">
-
 
 <h2>
 Strength Charts
 </h2>
-
 
 <div class="muted">
 
@@ -1011,14 +851,11 @@ Shows your best logged weight over time for each exercise.
 
 </div>
 
-
 <div style="margin-top:12px">
-
 
 <label>
 Exercise
 </label>
-
 
 <select
 id="chartExercise"
@@ -1026,21 +863,16 @@ onchange="renderCharts()"
 >
 </select>
 
-
 </div>
 
-
 </div>
-
 
 
 <div class="card">
 
-
 <h2>
 Weight Progress
 </h2>
-
 
 <div
 id="weightChart"
@@ -1048,18 +880,14 @@ class="chart"
 >
 </div>
 
-
 </div>
-
 
 
 <div class="card">
 
-
 <h2>
 Estimated Strength
 </h2>
-
 
 <div class="muted">
 
@@ -1067,25 +895,20 @@ Estimated 1-rep max using your logged weight and reps.
 
 </div>
 
-
 <div
 id="e1rmChart"
 class="chart"
 >
 </div>
 
-
 </div>
-
 
 
 <div class="card">
 
-
 <h2>
 Workout Volume
 </h2>
-
 
 <div class="muted">
 
@@ -1093,19 +916,15 @@ Total weight × reps logged each workout.
 
 </div>
 
-
 <div
 id="volumeChart"
 class="chart"
 >
 </div>
 
-
 </div>
 
-
 </section>
-
 
 </main>
 
@@ -1114,107 +933,63 @@ class="chart"
 </div>
 
 
-
 <script>
 
 
-const MENU={
-
+const BASE_MENU={
 
 Quads:[
-
 "Leg Press",
-
 "Leg Extension"
-
 ],
-
 
 Hamstrings:[
-
 "Seated Leg Curl",
-
 "Deadlift",
-
 "Standing Leg Curl"
-
 ],
-
 
 Chest:[
-
 "DB Bench Press",
-
 "Incline Chest Press",
-
 "Pec Deck"
-
 ],
-
 
 Back:[
-
 "Lat Pulldown",
-
 "Chest-Supported Row",
-
 "Machine High Row"
-
 ],
-
 
 Shoulders:[
-
 "Lateral Raise",
-
 "DB Shoulder Press"
-
 ],
-
 
 RearDelts:[
-
 "Reverse Pec Deck"
-
 ],
-
 
 Biceps:[
-
 "DB Curl",
-
 "Hammer Curl",
-
 "Preacher Curl"
-
 ],
-
 
 Triceps:[
-
 "Triceps Pushdown",
-
 "Triceps Dip Machine"
-
 ],
-
 
 Calves:[
-
 "Calf Raise"
-
 ],
 
-
 Core:[
-
 "Cable Crunch"
-
 ]
 
-
 };
-
 
 
 const startWeights={
@@ -1240,47 +1015,98 @@ localStorage.getItem(
 
 ||
 
-'{"selected":[],"sessions":[],"history":{},"customExercises":{}}'
+'{"selected":[],"sessions":[],"history":{},"customExercises":{},"deletedExercises":{}}'
 
 );
 
 
 
 if(!db.customExercises){
-
 db.customExercises={};
-
 }
 
+
+if(!db.deletedExercises){
+db.deletedExercises={};
+}
+
+
+if(!db.selected){
+db.selected=[];
+}
+
+
+if(!db.sessions){
+db.sessions=[];
+}
+
+
+if(!db.history){
+db.history={};
+}
+
+
+
+function buildMenu(){
+
+const menu={};
 
 
 Object.entries(
-db.customExercises
+BASE_MENU
 ).forEach(
 
-([group,list])=>{
-
-if(!MENU[group]){
-return;
-}
+([group,base])=>{
 
 
-list.forEach(
-ex=>{
+const deleted=
+db.deletedExercises[group]||[];
 
-if(
-!MENU[group].includes(ex)
-){
 
-MENU[group].push(ex);
+const custom=
+db.customExercises[group]||[];
 
-}
 
-});
+menu[group]=[
+
+...base.filter(
+
+ex=>
+!deleted.includes(ex)
+
+),
+
+...custom.filter(
+
+ex=>
+!deleted.includes(ex)
+
+)
+
+];
+
+
+menu[group]=[
+
+...new Set(
+menu[group]
+)
+
+];
 
 }
 
 );
+
+
+return menu;
+
+}
+
+
+
+let MENU=
+buildMenu();
 
 
 
@@ -1308,6 +1134,18 @@ db.selected=[
 
 
 
+db.selected=
+db.selected.filter(
+
+ex=>
+Object.values(MENU)
+.flat()
+.includes(ex)
+
+);
+
+
+
 let workoutData=[];
 
 
@@ -1321,6 +1159,15 @@ localStorage.setItem(
 JSON.stringify(db)
 
 );
+
+}
+
+
+
+function refreshMenu(){
+
+MENU=
+buildMenu();
 
 }
 
@@ -1372,7 +1219,8 @@ MENU[group]||[];
 
 return db.selected.find(
 
-x=>options.includes(x)
+x=>
+options.includes(x)
 
 ) || "";
 
@@ -1439,14 +1287,63 @@ return;
 }
 
 
-const existing=
-MENU[group].find(
+
+const baseMatch=
+(BASE_MENU[group]||[])
+.find(
 
 x=>
 x.toLowerCase()===
 clean.toLowerCase()
 
 );
+
+
+
+if(baseMatch){
+
+db.deletedExercises[group]??=[];
+
+
+db.deletedExercises[group]=
+db.deletedExercises[group]
+.filter(
+
+x=>x!==baseMatch
+
+);
+
+
+saveDB();
+
+refreshMenu();
+
+chooseForGroup(
+group,
+baseMatch
+);
+
+
+toast(
+baseMatch+" restored"
+);
+
+return;
+
+}
+
+
+
+const existing=
+(MENU[group]||[])
+.find(
+
+x=>
+x.toLowerCase()===
+clean.toLowerCase()
+
+);
+
 
 
 if(existing){
@@ -1475,13 +1372,23 @@ clean
 );
 
 
-MENU[group].push(
-clean
+db.deletedExercises[group]??=[];
+
+
+db.deletedExercises[group]=
+db.deletedExercises[group]
+.filter(
+
+x=>
+x.toLowerCase()!==
+clean.toLowerCase()
+
 );
 
 
 saveDB();
 
+refreshMenu();
 
 chooseForGroup(
 group,
@@ -1497,9 +1404,105 @@ clean+" added"
 
 
 
-function addCustomFromBuild(group){
+function deleteCurrentExercise(
+group
+){
 
-addCustomExercise(group);
+const ex=
+selectedForGroup(group);
+
+
+if(!ex){
+
+toast(
+"Choose an exercise first"
+);
+
+return;
+
+}
+
+
+
+if(
+
+!confirm(
+
+`Delete "${ex}" from your ${groupLabel(group)} choices?
+
+Workout history for ${ex} will NOT be deleted.`
+
+)
+
+){
+
+return;
+
+}
+
+
+
+db.selected=
+db.selected.filter(
+
+x=>x!==ex
+
+);
+
+
+
+const isBuiltIn=
+(BASE_MENU[group]||[])
+.includes(ex);
+
+
+
+if(isBuiltIn){
+
+db.deletedExercises[group]??=[];
+
+
+if(
+!db.deletedExercises[group]
+.includes(ex)
+){
+
+db.deletedExercises[group]
+.push(ex);
+
+}
+
+}
+
+
+
+else{
+
+db.customExercises[group]??=[];
+
+
+db.customExercises[group]=
+db.customExercises[group]
+.filter(
+
+x=>x!==ex
+
+);
+
+}
+
+
+
+saveDB();
+
+refreshMenu();
+
+renderWorkout();
+
+
+toast(
+ex+" removed"
+);
 
 }
 
@@ -1523,6 +1526,7 @@ groupExercises.includes(x)
 );
 
 
+
 if(existing){
 
 db.selected=
@@ -1533,6 +1537,7 @@ x=>x!==existing
 );
 
 }
+
 
 
 if(ex){
@@ -1568,9 +1573,6 @@ db.selected.push(ex);
 
 saveDB();
 
-
-renderPicker();
-
 renderWorkout();
 
 }
@@ -1578,6 +1580,9 @@ renderWorkout();
 
 
 function renderWorkout(){
+
+refreshMenu();
+
 
 let el=
 document.getElementById(
@@ -1667,8 +1672,10 @@ sets:[
 });
 
 
+
 const prev=
 last(current);
+
 
 
 const w=
@@ -1686,6 +1693,20 @@ startWeights[current]
 
 
 logger=`
+
+<div
+class="exercise-actions"
+>
+
+<button
+class="danger small"
+onclick="deleteCurrentExercise('${group}')"
+>
+Delete ${current}
+</button>
+
+</div>
+
 
 <div
 class="exercise-logger"
@@ -1718,7 +1739,6 @@ w
 </div>
 
 
-
 <div class="sets">
 
 
@@ -1730,22 +1750,15 @@ ${[1,2,3].map(
 
 
 <div class="setnum">
-
 ${n}
-
 </div>
-
 
 
 <div>
 
-
 <label>
-
 Weight
-
 </label>
-
 
 <input
 inputmode="decimal"
@@ -1753,20 +1766,14 @@ id="w${i}_${j}"
 value="${j===0?w:""}"
 >
 
-
 </div>
-
 
 
 <div>
 
-
 <label>
-
 Reps
-
 </label>
-
 
 <input
 inputmode="numeric"
@@ -1774,18 +1781,14 @@ id="r${i}_${j}"
 placeholder="${target(current).replace("–","-")}"
 >
 
-
 </div>
-
 
 
 <button
 class="secondary check"
 onclick="markSet(${i},${j})"
 >
-
 ✓
-
 </button>
 
 
@@ -1797,7 +1800,6 @@ onclick="markSet(${i},${j})"
 
 
 </div>
-
 
 
 ${
@@ -1834,9 +1836,7 @@ card.innerHTML=`
 
 
 <h3>
-
 ${groupLabel(group)}
-
 </h3>
 
 
@@ -1856,7 +1856,6 @@ current
 
 
 </div>
-
 
 
 <select
@@ -1888,182 +1887,10 @@ el.appendChild(card);
 
 
 
-function renderPicker(){
-
-let el=
-document.getElementById(
-"picker"
-);
-
-
-el.innerHTML="";
-
-
-
-Object.entries(MENU).forEach(
-
-([group,arr])=>{
-
-
-let card=
-document.createElement(
-"div"
-);
-
-
-card.className=
-"card";
-
-
-card.innerHTML=
-
-"<h3>"+
-groupLabel(group)+
-"</h3>";
-
-
-
-arr.forEach(
-
-ex=>{
-
-
-let chosen=
-db.selected.includes(ex);
-
-
-let row=
-document.createElement(
-"div"
-);
-
-
-row.className=
-"menu-item";
-
-
-row.innerHTML=
-
-"<span>"+
-ex+
-"</span>"+
-
-"<button class='"+
-(
-
-chosen
-
-? "dark"
-
-: "secondary"
-
-)+
-" small'>"+
-
-(
-
-chosen
-
-? "Remove"
-
-: "Add"
-
-)+
-
-"</button>";
-
-
-
-row.querySelector(
-"button"
-).onclick=
-()=>{
-
-
-if(chosen){
-
-db.selected=
-db.selected.filter(
-
-x=>x!==ex
-
-);
-
-}
-
-
-else if(
-db.selected.length<8
+function markSet(
+i,
+j
 ){
-
-db.selected.push(ex);
-
-}
-
-
-else{
-
-return toast(
-"Maximum 8 exercises"
-);
-
-}
-
-
-saveDB();
-
-
-renderPicker();
-
-
-renderWorkout();
-
-};
-
-
-
-card.appendChild(row);
-
-}
-
-);
-
-
-
-let customButton=
-document.createElement(
-"button"
-);
-
-
-customButton.className=
-"secondary add-custom";
-
-
-customButton.textContent=
-"＋ Add Custom Exercise";
-
-
-customButton.onclick=
-()=>addCustomFromBuild(group);
-
-
-card.appendChild(
-customButton
-);
-
-
-el.appendChild(card);
-
-}
-
-);
-
-}
-
-
-
-function markSet(i,j){
 
 let w=
 document.getElementById(
@@ -2248,6 +2075,7 @@ toast(
 }
 
 
+
 else{
 
 toast(
@@ -2343,7 +2171,7 @@ document.createElement(
 
 
 div.className=
-"menu-item";
+"history-item";
 
 
 
@@ -2369,7 +2197,9 @@ ${x.weight} × ${x.reps}
 
 
 
-el.appendChild(div);
+el.appendChild(
+div
+);
 
 }
 
@@ -2384,7 +2214,7 @@ function clearHistory(){
 if(
 
 confirm(
-"Delete workout history, exercise selections and all custom exercises?"
+"Delete all workout history, exercise selections and custom exercises?"
 )
 
 ){
@@ -2419,13 +2249,11 @@ x.classList.remove(
 );
 
 
-
 document.getElementById(
 id
 ).classList.add(
 "active"
 );
-
 
 
 document.querySelectorAll(
@@ -2440,11 +2268,9 @@ x.classList.remove(
 );
 
 
-
 btn.classList.add(
 "active"
 );
-
 
 
 if(
@@ -2456,17 +2282,6 @@ renderWorkout();
 }
 
 
-
-if(
-id==="build"
-){
-
-renderPicker();
-
-}
-
-
-
 if(
 id==="history"
 ){
@@ -2474,7 +2289,6 @@ id==="history"
 renderHistory();
 
 }
-
 
 
 if(
@@ -2499,7 +2313,9 @@ let remaining=0;
 
 function startTimer(sec){
 
-clearInterval(timer);
+clearInterval(
+timer
+);
 
 
 remaining=sec;
@@ -2511,7 +2327,8 @@ toast(
 
 
 
-timer=setInterval(
+timer=
+setInterval(
 
 ()=>{
 
@@ -2519,12 +2336,13 @@ timer=setInterval(
 remaining--;
 
 
-
 if(
 remaining<=0
 ){
 
-clearInterval(timer);
+clearInterval(
+timer
+);
 
 
 toast(
@@ -2539,10 +2357,8 @@ remaining%30===0
 ){
 
 toast(
-
 remaining+
 " sec remaining"
-
 );
 
 }
@@ -2577,7 +2393,6 @@ x._t
 );
 
 
-
 x._t=
 setTimeout(
 
@@ -2604,7 +2419,6 @@ document.getElementById(
 );
 
 
-
 const names=
 Object.keys(
 db.history
@@ -2615,10 +2429,8 @@ k=>db.history[k]?.length
 );
 
 
-
 const current=
 sel.value;
-
 
 
 sel.innerHTML=
@@ -2642,7 +2454,6 @@ ${n}
 `<option>
 No logged exercises yet
 </option>`;
-
 
 
 if(
@@ -2670,7 +2481,6 @@ containerId
 );
 
 
-
 if(!points.length){
 
 el.innerHTML=
@@ -2696,12 +2506,10 @@ const pT=20;
 const pB=35;
 
 
-
 const vals=
 points.map(
 valueFn
 );
-
 
 
 const min=
@@ -2716,8 +2524,8 @@ Math.max(
 );
 
 
-
 const lo=
+
 min===max
 
 ? Math.max(
@@ -2728,14 +2536,13 @@ min-1
 : min;
 
 
-
 const hi=
+
 min===max
 
 ? max+1
 
 : max;
-
 
 
 const x=i=>
@@ -2755,7 +2562,6 @@ points.length===1
 );
 
 
-
 const y=v=>
 
 pT+
@@ -2765,9 +2571,7 @@ pT+
 (hi-lo||1);
 
 
-
 let grid="";
-
 
 
 for(
@@ -2782,7 +2586,6 @@ pT+
 
 i*
 (H-pT-pB)/4;
-
 
 
 grid+=
@@ -2918,18 +2721,16 @@ document.getElementById(
 )?.value;
 
 
-
 const pts=
 
 (
-name&&
+name &&
 db.history[name]
 )
 
 ? db.history[name]
 
 : [];
-
 
 
 svgLineChart(
@@ -3022,8 +2823,6 @@ p=>p.volume,
 
 
 
-renderPicker();
-
 renderWorkout();
 
 renderHistory();
@@ -3053,7 +2852,5 @@ navigator.serviceWorker.register(
 
 </script>
 
-
 </body>
-
 </html>
