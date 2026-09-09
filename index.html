@@ -34,6 +34,10 @@ button.small{padding:8px 10px;font-size:13px}
 .set button{height:44px}.check{font-size:22px}.note{background:#fff7d6;border-radius:12px;padding:10px;font-size:13px;margin:10px 0}
 .menu-item{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #eee}.menu-item:last-child{border-bottom:0}
 h2{font-size:20px;margin:8px 0 12px}h3{margin:0}
+.chart-wrap{overflow-x:auto;padding-top:8px}
+.chart{width:100%;height:250px;background:#fafafa;border:1px solid #e5e5e5;border-radius:14px;padding:12px}
+.chart svg{width:100%;height:100%}.chart-label{font-size:11px;fill:#666}.chart-title{font-size:13px;font-weight:800}
+.chart-line{fill:none;stroke:#111;stroke-width:3}.chart-dot{fill:#111}.chart-grid{stroke:#ddd;stroke-width:1}
 #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 14px;border-radius:10px;display:none;z-index:20}
 .timer{font-size:42px;font-weight:900;text-align:center;padding:8px}
 .stat{font-size:24px;font-weight:900}.statlabel{font-size:12px;color:#666}
@@ -45,6 +49,7 @@ h2{font-size:20px;margin:8px 0 12px}h3{margin:0}
 <button class="active" onclick="show('train',this)">Train</button>
 <button onclick="show('build',this)">Build</button>
 <button onclick="show('history',this)">History</button>
+<button onclick="show('charts',this)">Charts</button>
 </nav>
 <main>
 <section id="train" class="screen active">
@@ -73,6 +78,32 @@ h2{font-size:20px;margin:8px 0 12px}h3{margin:0}
 <div class="card"><h2>Exercise History</h2><div id="historyList"></div></div>
 <div class="card"><button class="secondary" onclick="clearHistory()">Clear all saved data</button></div>
 </section>
+
+<section id="charts" class="screen">
+<div class="card">
+<h2>Strength Charts</h2>
+<div class="muted">Shows your best logged weight over time for each exercise.</div>
+<div style="margin-top:12px">
+<label>Exercise</label>
+<select id="chartExercise" onchange="renderCharts()"></select>
+</div>
+</div>
+<div class="card">
+<h2>Weight Progress</h2>
+<div id="weightChart" class="chart"></div>
+</div>
+<div class="card">
+<h2>Estimated Strength</h2>
+<div class="muted">Estimated 1-rep max using your logged weight and reps.</div>
+<div id="e1rmChart" class="chart"></div>
+</div>
+<div class="card">
+<h2>Workout Volume</h2>
+<div class="muted">Total weight × reps logged each workout.</div>
+<div id="volumeChart" class="chart"></div>
+</div>
+</section>
+
 </main>
 <div id="toast"></div>
 
@@ -141,10 +172,42 @@ function renderHistory(){
  entries.forEach(([ex,a])=>{let x=a[a.length-1];let d=new Date(x.date).toLocaleDateString();let div=document.createElement("div");div.className="menu-item";div.innerHTML=`<span><b>${ex}</b><br><small>${d}</small></span><b>${x.weight} × ${x.reps}</b>`;el.appendChild(div)})
 }
 function clearHistory(){if(confirm("Delete all workout history and saved selections?")){localStorage.removeItem("ganiStrengthV2");location.reload()}}
-function show(id,btn){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));btn.classList.add("active");if(id==="build")renderPicker();if(id==="history")renderHistory()}
+function show(id,btn){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));btn.classList.add("active");if(id==="build")renderPicker();if(id==="history")renderHistory();if(id==="charts"){populateChartExercises();renderCharts()}}
 let timer=null,remaining=0;
 function startTimer(sec){clearInterval(timer);remaining=sec;toast("Rest timer started");timer=setInterval(()=>{remaining--;if(remaining<=0){clearInterval(timer);toast("Rest complete");}else if(remaining%30===0)toast(Math.ceil(remaining/60)+" min remaining")},1000)}
 function toast(t){let x=document.getElementById("toast");x.textContent=t;x.style.display="block";clearTimeout(x._t);x._t=setTimeout(()=>x.style.display="none",1800)}
+
+function populateChartExercises(){
+ const sel=document.getElementById("chartExercise");
+ const names=Object.keys(db.history).filter(k=>db.history[k]?.length);
+ const cur=sel.value;
+ sel.innerHTML=names.length?names.map(n=>`<option value="${n}">${n}</option>`).join(""):'<option>No logged exercises yet</option>';
+ if(names.includes(cur)) sel.value=cur;
+}
+function svgLineChart(containerId, points, valueFn, valueLabel){
+ const el=document.getElementById(containerId);
+ if(!points.length){el.innerHTML="<div class='muted'>Log workouts to see this chart.</div>";return}
+ const W=640,H=220,pL=48,pR=18,pT=20,pB=35;
+ const vals=points.map(valueFn), min=Math.min(...vals), max=Math.max(...vals);
+ const lo=min===max?Math.max(0,min-1):min, hi=min===max?max+1:max;
+ const x=i=>pL+(points.length===1?(W-pL-pR)/2:i*(W-pL-pR)/(points.length-1));
+ const y=v=>pT+(hi-v)*(H-pT-pB)/(hi-lo||1);
+ let grid="";
+ for(let i=0;i<5;i++){let yy=pT+i*(H-pT-pB)/4;grid+=`<line class="chart-grid" x1="${pL}" y1="${yy}" x2="${W-pR}" y2="${yy}"/>`}
+ let poly=points.map((p,i)=>`${x(i)},${y(valueFn(p))}`).join(" ");
+ let dots=points.map((p,i)=>`<circle class="chart-dot" cx="${x(i)}" cy="${y(valueFn(p))}" r="4"><title>${new Date(p.date).toLocaleDateString()}: ${valueFn(p).toFixed(1)} ${valueLabel}</title></circle>`).join("");
+ let first=new Date(points[0].date).toLocaleDateString(), lastd=new Date(points[points.length-1].date).toLocaleDateString();
+ el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}<polyline class="chart-line" points="${poly}"/>${dots}<text class="chart-label" x="${pL}" y="${H-8}">${first}</text><text class="chart-label" text-anchor="end" x="${W-pR}" y="${H-8}">${lastd}</text><text class="chart-label" x="5" y="${pT+5}">${hi.toFixed(0)}</text><text class="chart-label" x="5" y="${H-pB}">${lo.toFixed(0)}</text></svg>`;
+}
+function renderCharts(){
+ const name=document.getElementById("chartExercise")?.value;
+ const pts=(db.history[name]||[]);
+ svgLineChart("weightChart",pts,p=>+p.weight,"lb");
+ svgLineChart("e1rmChart",pts,p=>+p.weight*(1+(+p.reps/30)),"lb");
+ const sessions=db.sessions.map(s=>({date:s.date,volume:s.exercises.reduce((sum,e)=>sum+e.sets.reduce((a,z)=>a+(+z.weight*+z.reps),0),0)}));
+ svgLineChart("volumeChart",sessions,p=>p.volume,"lb-reps");
+}
+
 renderPicker();renderWorkout();renderHistory();
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
