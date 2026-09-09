@@ -1,4 +1,4 @@
-const CACHE='gani-strength-v6';
+const CACHE='gani-strength-v7';
 
 const ASSETS=[
 './',
@@ -9,34 +9,72 @@ const ASSETS=[
 './icon-512.png'
 ];
 
-self.addEventListener('install',e=>
+self.addEventListener(
+'install',
+e=>
 e.waitUntil(
-caches.open(CACHE).then(c=>c.addAll(ASSETS))
+caches.open(CACHE)
+.then(
+c=>c.addAll(ASSETS)
+)
 )
 );
 
-self.addEventListener('activate',e=>
+self.addEventListener(
+'activate',
+e=>
 e.waitUntil(
-caches.keys().then(keys=>
+caches.keys()
+.then(
+keys=>
 Promise.all(
 keys
-.filter(k=>k!==CACHE)
-.map(k=>caches.delete(k))
+.filter(
+k=>k!==CACHE
 )
-).then(()=>self.clients.claim())
+.map(
+k=>caches.delete(k)
+)
+)
+)
+.then(
+()=>self.clients.claim()
+)
 )
 );
 
-self.addEventListener('fetch',e=>
+self.addEventListener(
+'fetch',
+e=>
 e.respondWith(
+
 fetch(e.request)
-.then(response=>{
-const copy=response.clone();
-caches.open(CACHE).then(
-cache=>cache.put(e.request,copy)
+
+.then(
+response=>{
+
+const copy=
+response.clone();
+
+caches.open(CACHE)
+.then(
+cache=>
+cache.put(
+e.request,
+copy
+)
 );
+
 return response;
-})
-.catch(()=>caches.match(e.request))
+
+}
+)
+
+.catch(
+()=>caches.match(
+e.request
+)
+)
+
 )
 );
