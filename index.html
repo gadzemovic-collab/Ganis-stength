@@ -6,8 +6,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#111111">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Gani's Strength">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -56,6 +54,7 @@ h2{font-size:20px;margin:8px 0 12px}h3{margin:0}
 <button onclick="show('history',this)">History</button>
 <button onclick="show('charts',this)">Charts</button>
 </nav>
+
 <main>
 <section id="train" class="screen active">
 
@@ -66,11 +65,22 @@ h2{font-size:20px;margin:8px 0 12px}h3{margin:0}
 </div>
 
 <div class="card">
-<div class="row between"><div><h2 style="margin:0">Today's Workout</h2><div class="muted">Pick exercises yourself. No forced A/B/C order.</div></div>
-<button class="secondary small" onclick="newWorkout()">New</button></div>
+<div class="row between">
+<div>
+<h2 style="margin:0">Today's Workout</h2>
+<div class="muted">Pick exercises yourself. No forced A/B/C order.</div>
+</div>
+<button class="secondary small" onclick="newWorkout()">New</button>
+</div>
+
 <div class="note">Main lifts: 6–8 reps. Isolation: 8–10 reps. When you hit the top of the range on every working set with good form, increase the weight next time. Deadlifts: keep 1–2 reps in reserve.</div>
+
 <div id="workout"></div>
-<div class="row"><button class="primary" style="flex:1" onclick="saveWorkout()">Save Workout</button><button class="secondary" onclick="startTimer(90)">90s Rest</button></div>
+
+<div class="row">
+<button class="primary" style="flex:1" onclick="saveWorkout()">Save Workout</button>
+<button class="secondary" onclick="startTimer(90)">90s Rest</button>
+</div>
 </div>
 </section>
 
@@ -83,12 +93,22 @@ h2{font-size:20px;margin:8px 0 12px}h3{margin:0}
 </section>
 
 <section id="history" class="screen">
-<div class="card"><h2>Progress</h2><div class="grid">
+<div class="card">
+<h2>Progress</h2>
+<div class="grid">
 <div><div class="stat" id="wcount">0</div><div class="statlabel">Workouts</div></div>
 <div><div class="stat" id="ecount">0</div><div class="statlabel">Exercises logged</div></div>
-</div></div>
-<div class="card"><h2>Exercise History</h2><div id="historyList"></div></div>
-<div class="card"><button class="secondary" onclick="clearHistory()">Clear all saved data</button></div>
+</div>
+</div>
+
+<div class="card">
+<h2>Exercise History</h2>
+<div id="historyList"></div>
+</div>
+
+<div class="card">
+<button class="secondary" onclick="clearHistory()">Clear all saved data</button>
+</div>
 </section>
 
 <section id="charts" class="screen">
@@ -100,23 +120,26 @@ h2{font-size:20px;margin:8px 0 12px}h3{margin:0}
 <select id="chartExercise" onchange="renderCharts()"></select>
 </div>
 </div>
+
 <div class="card">
 <h2>Weight Progress</h2>
 <div id="weightChart" class="chart"></div>
 </div>
+
 <div class="card">
 <h2>Estimated Strength</h2>
 <div class="muted">Estimated 1-rep max using your logged weight and reps.</div>
 <div id="e1rmChart" class="chart"></div>
 </div>
+
 <div class="card">
 <h2>Workout Volume</h2>
 <div class="muted">Total weight × reps logged each workout.</div>
 <div id="volumeChart" class="chart"></div>
 </div>
 </section>
-
 </main>
+
 <div id="toast"></div>
 
 <script>
@@ -132,50 +155,92 @@ Triceps:["Triceps Pushdown","Triceps Dip Machine"],
 Calves:["Calf Raise"],
 Core:["Cable Crunch"]
 };
-const startWeights={"Leg Press":180,"DB Bench Press":45,"Lateral Raise":15,"DB Curl":35,"Triceps Pushdown":490};
+
+const startWeights={
+"Leg Press":180,
+"DB Bench Press":45,
+"Lateral Raise":15,
+"DB Curl":35,
+"Triceps Pushdown":490
+};
+
 let db=JSON.parse(localStorage.getItem("ganiStrengthV2")||'{"selected":[],"sessions":[],"history":{}}');
-if(!db.selected.length) db.selected=["Leg Press","Seated Leg Curl","DB Bench Press","Lat Pulldown","Lateral Raise","DB Curl","Triceps Pushdown"];
+
+if(!db.selected.length){
+ db.selected=["Leg Press","Seated Leg Curl","DB Bench Press","Lat Pulldown","Lateral Raise","DB Curl","Triceps Pushdown"];
+}
+
 let workoutData=[];
 
-function saveDB(){localStorage.setItem("ganiStrengthV2",JSON.stringify(db))}
-function groupLabel(g){return g==="RearDelts"?"Rear Delts":g}
-function target(ex){return /curl|raise|pushdown|dip|pec deck|core|crunch/i.test(ex)?"8–10":"6–8"}
-function last(ex){let h=db.history[ex]; return h&&h.length?h[h.length-1]:null}
+function saveDB(){
+ localStorage.setItem("ganiStrengthV2",JSON.stringify(db));
+}
+
+function groupLabel(g){
+ return g==="RearDelts" ? "Rear Delts" : g;
+}
+
+function target(ex){
+ return /curl|raise|pushdown|dip|pec deck|core|crunch/i.test(ex) ? "8–10" : "6–8";
+}
+
+function last(ex){
+ let h=db.history[ex];
+ return h&&h.length ? h[h.length-1] : null;
+}
 
 function selectedForGroup(group){
  const options=MENU[group]||[];
  return db.selected.find(x=>options.includes(x)) || "";
 }
+
 function renderTrainDropdowns(){
  const el=document.getElementById("trainDropdowns");
  if(!el) return;
+
  el.innerHTML="";
+
  Object.entries(MENU).forEach(([group,arr])=>{
    const current=selectedForGroup(group);
    const box=document.createElement("div");
    box.className="bodypart-picker";
+
    box.innerHTML=`
-     <div class="picker-head"><b>${groupLabel(group)}</b><span class="tag">${current?"Selected":"Optional"}</span></div>
+     <div class="picker-head">
+       <b>${groupLabel(group)}</b>
+       <span class="tag">${current?"Selected":"Optional"}</span>
+     </div>
+
      <select onchange="chooseForGroup('${group}',this.value)">
        <option value="">— None —</option>
        ${arr.map(ex=>`<option value="${ex}" ${ex===current?"selected":""}>${ex}</option>`).join("")}
      </select>
-     <div class="picked">${current?`Current: ${current}`:"No exercise selected"}</div>`;
+
+     <div class="picked">${current?`Current: ${current}`:"No exercise selected"}</div>
+   `;
+
    el.appendChild(box);
  });
 }
+
 function chooseForGroup(group,ex){
  const groupExercises=MENU[group]||[];
  const existing=db.selected.find(x=>groupExercises.includes(x));
- if(existing) db.selected=db.selected.filter(x=>x!==existing);
+
+ if(existing){
+   db.selected=db.selected.filter(x=>x!==existing);
+ }
+
  if(ex){
    if(db.selected.length>=8){
      if(existing) db.selected.push(existing);
      renderTrainDropdowns();
      return toast("Maximum 8 exercises");
    }
+
    db.selected.push(ex);
  }
+
  saveDB();
  renderTrainDropdowns();
  renderPicker();
@@ -183,89 +248,414 @@ function chooseForGroup(group,ex){
 }
 
 function renderPicker(){
- let el=document.getElementById("picker"); el.innerHTML="";
+ let el=document.getElementById("picker");
+ el.innerHTML="";
+
  Object.entries(MENU).forEach(([group,arr])=>{
-  let card=document.createElement("div");card.className="card";card.innerHTML="<h3>"+groupLabel(group)+"</h3>";
-  arr.forEach(ex=>{
-   let chosen=db.selected.includes(ex), row=document.createElement("div");row.className="menu-item";
-   row.innerHTML="<span>"+ex+"</span><button class='"+(chosen?"dark":"secondary")+" small'>"+(chosen?"Remove":"Add")+"</button>";
-   row.querySelector("button").onclick=()=>{if(chosen)db.selected=db.selected.filter(x=>x!==ex);else if(db.selected.length<8)db.selected.push(ex);else return toast("Maximum 8 exercises");saveDB();renderPicker();renderWorkout()};card.appendChild(row)
-  });el.appendChild(card)
+   let card=document.createElement("div");
+   card.className="card";
+   card.innerHTML="<h3>"+groupLabel(group)+"</h3>";
+
+   arr.forEach(ex=>{
+     let chosen=db.selected.includes(ex);
+     let row=document.createElement("div");
+     row.className="menu-item";
+
+     row.innerHTML=
+       "<span>"+ex+"</span>"+
+       "<button class='"+(chosen?"dark":"secondary")+" small'>"+
+       (chosen?"Remove":"Add")+
+       "</button>";
+
+     row.querySelector("button").onclick=()=>{
+       if(chosen){
+         db.selected=db.selected.filter(x=>x!==ex);
+       }else if(db.selected.length<8){
+         db.selected.push(ex);
+       }else{
+         return toast("Maximum 8 exercises");
+       }
+
+       saveDB();
+       renderPicker();
+       renderTrainDropdowns();
+       renderWorkout();
+     };
+
+     card.appendChild(row);
+   });
+
+   el.appendChild(card);
  });
 }
+
 function renderWorkout(){
- let el=document.getElementById("workout");el.innerHTML="";
- workoutData=db.selected.map(ex=>({ex,sets:[{}, {}, {}]}));
+ let el=document.getElementById("workout");
+ el.innerHTML="";
+
+ workoutData=db.selected.map(ex=>({
+   ex,
+   sets:[{}, {}, {}]
+ }));
+
  workoutData.forEach((item,i)=>{
-  let prev=last(item.ex), w=prev?.weight??startWeights[item.ex]??"";
-  let card=document.createElement("div");card.className="exercise";card.id="ex"+i;
-  card.innerHTML="<div class='row between'><div><h3>"+item.ex+"</h3><span class='tag'>Target "+target(item.ex)+"</span></div><button class='secondary small' onclick='removeEx("+i+")'>Remove</button></div>"+
-  "<div class='muted' style='margin-top:6px'>"+(prev?`Last: ${prev.weight} × ${prev.reps}`:(w?`Starting weight: ${w}`:"Enter your weight"))+"</div>"+
-  "<div class='sets'>"+[1,2,3].map((n,j)=>`<div class='set'><div class='setnum'>${n}</div><div><label>Weight</label><input inputmode='decimal' id='w${i}_${j}' value='${j===0?w:""}'></div><div><label>Reps</label><input inputmode='numeric' id='r${i}_${j}' placeholder='${target(item.ex).replace("–","-")}'></div><button class='secondary check' onclick='markSet(${i},${j})'>✓</button></div>`).join("")+"</div>"+
-  (item.ex==="Deadlift"?"<div class='muted'>Keep 1–2 reps in reserve. Do not take deadlifts to failure.</div>":"");
-  el.appendChild(card)
+   let prev=last(item.ex);
+   let w=prev?.weight??startWeights[item.ex]??"";
+
+   let card=document.createElement("div");
+   card.className="exercise";
+   card.id="ex"+i;
+
+   card.innerHTML=
+   "<div class='row between'>"+
+     "<div>"+
+       "<h3>"+item.ex+"</h3>"+
+       "<span class='tag'>Target "+target(item.ex)+"</span>"+
+     "</div>"+
+     "<button class='secondary small' onclick='removeEx("+i+")'>Remove</button>"+
+   "</div>"+
+
+   "<div class='muted' style='margin-top:6px'>"+
+     (prev
+       ? `Last: ${prev.weight} × ${prev.reps}`
+       : (w ? `Starting weight: ${w}` : "Enter your weight")
+     )+
+   "</div>"+
+
+   "<div class='sets'>"+
+     [1,2,3].map((n,j)=>`
+       <div class='set'>
+         <div class='setnum'>${n}</div>
+
+         <div>
+           <label>Weight</label>
+           <input inputmode='decimal' id='w${i}_${j}' value='${j===0?w:""}'>
+         </div>
+
+         <div>
+           <label>Reps</label>
+           <input inputmode='numeric' id='r${i}_${j}' placeholder='${target(item.ex).replace("–","-")}'>
+         </div>
+
+         <button class='secondary check' onclick='markSet(${i},${j})'>✓</button>
+       </div>
+     `).join("")+
+   "</div>"+
+
+   (item.ex==="Deadlift"
+     ? "<div class='muted'>Keep 1–2 reps in reserve. Do not take deadlifts to failure.</div>"
+     : "");
+
+   el.appendChild(card);
  });
 }
-function markSet(i,j){let w=document.getElementById(`w${i}_${j}`).value,r=document.getElementById(`r${i}_${j}`).value;if(w&&r){document.querySelector(`#ex${i}`).classList.add("done");startTimer(90)}}
-function removeEx(i){db.selected.splice(i,1);saveDB();renderPicker();renderWorkout()}
-function newWorkout(){if(confirm("Start a fresh workout using your saved exercise selections?"))renderWorkout()}
+
+function markSet(i,j){
+ let w=document.getElementById(`w${i}_${j}`).value;
+ let r=document.getElementById(`r${i}_${j}`).value;
+
+ if(w&&r){
+   document.querySelector(`#ex${i}`).classList.add("done");
+   startTimer(90);
+ }
+}
+
+function removeEx(i){
+ db.selected.splice(i,1);
+ saveDB();
+ renderPicker();
+ renderTrainDropdowns();
+ renderWorkout();
+}
+
+function newWorkout(){
+ if(confirm("Start a fresh workout using your saved exercise selections?")){
+   renderWorkout();
+ }
+}
+
 function saveWorkout(){
- let session={date:new Date().toISOString(), exercises:[]};
+ let session={
+   date:new Date().toISOString(),
+   exercises:[]
+ };
+
  workoutData.forEach((item,i)=>{
-  let sets=[];for(let j=0;j<3;j++){let w=document.getElementById(`w${i}_${j}`)?.value,r=document.getElementById(`r${i}_${j}`)?.value;if(w&&r)sets.push({weight:+w,reps:+r})}
-  if(sets.length){let best=sets[sets.length-1];session.exercises.push({name:item.ex,sets});db.history[item.ex]??=[];db.history[item.ex].push({weight:best.weight,reps:best.reps,date:session.date})}
+   let sets=[];
+
+   for(let j=0;j<3;j++){
+     let w=document.getElementById(`w${i}_${j}`)?.value;
+     let r=document.getElementById(`r${i}_${j}`)?.value;
+
+     if(w&&r){
+       sets.push({
+         weight:+w,
+         reps:+r
+       });
+     }
+   }
+
+   if(sets.length){
+     let best=sets[sets.length-1];
+
+     session.exercises.push({
+       name:item.ex,
+       sets
+     });
+
+     db.history[item.ex]??=[];
+
+     db.history[item.ex].push({
+       weight:best.weight,
+       reps:best.reps,
+       date:session.date
+     });
+   }
  });
- if(session.exercises.length){db.sessions.push(session);saveDB();renderHistory();toast("Workout saved")}
- else toast("Log at least one set first")
+
+ if(session.exercises.length){
+   db.sessions.push(session);
+   saveDB();
+   renderHistory();
+   populateChartExercises();
+   toast("Workout saved");
+ }else{
+   toast("Log at least one set first");
+ }
 }
+
 function renderHistory(){
  document.getElementById("wcount").textContent=db.sessions.length;
- document.getElementById("ecount").textContent=db.sessions.reduce((a,s)=>a+s.exercises.length,0);
- let el=document.getElementById("historyList");el.innerHTML="";
- let entries=Object.entries(db.history).filter(([_,a])=>a.length).reverse();
- if(!entries.length){el.innerHTML="<div class='muted'>No exercise history yet.</div>";return}
- entries.forEach(([ex,a])=>{let x=a[a.length-1];let d=new Date(x.date).toLocaleDateString();let div=document.createElement("div");div.className="menu-item";div.innerHTML=`<span><b>${ex}</b><br><small>${d}</small></span><b>${x.weight} × ${x.reps}</b>`;el.appendChild(div)})
+
+ document.getElementById("ecount").textContent=
+   db.sessions.reduce((a,s)=>a+s.exercises.length,0);
+
+ let el=document.getElementById("historyList");
+ el.innerHTML="";
+
+ let entries=Object.entries(db.history)
+   .filter(([_,a])=>a.length)
+   .reverse();
+
+ if(!entries.length){
+   el.innerHTML="<div class='muted'>No exercise history yet.</div>";
+   return;
+ }
+
+ entries.forEach(([ex,a])=>{
+   let x=a[a.length-1];
+   let d=new Date(x.date).toLocaleDateString();
+
+   let div=document.createElement("div");
+   div.className="menu-item";
+
+   div.innerHTML=
+     `<span><b>${ex}</b><br><small>${d}</small></span>`+
+     `<b>${x.weight} × ${x.reps}</b>`;
+
+   el.appendChild(div);
+ });
 }
-function clearHistory(){if(confirm("Delete all workout history and saved selections?")){localStorage.removeItem("ganiStrengthV2");location.reload()}}
-function show(id,btn){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));btn.classList.add("active");if(id==="train")renderTrainDropdowns();if(id==="build")renderPicker();if(id==="history")renderHistory();if(id==="charts"){populateChartExercises();renderCharts()}}
-let timer=null,remaining=0;
-function startTimer(sec){clearInterval(timer);remaining=sec;toast("Rest timer started");timer=setInterval(()=>{remaining--;if(remaining<=0){clearInterval(timer);toast("Rest complete");}else if(remaining%30===0)toast(Math.ceil(remaining/60)+" min remaining")},1000)}
-function toast(t){let x=document.getElementById("toast");x.textContent=t;x.style.display="block";clearTimeout(x._t);x._t=setTimeout(()=>x.style.display="none",1800)}
+
+function clearHistory(){
+ if(confirm("Delete all workout history and saved selections?")){
+   localStorage.removeItem("ganiStrengthV2");
+   location.reload();
+ }
+}
+
+function show(id,btn){
+ document.querySelectorAll(".screen")
+   .forEach(x=>x.classList.remove("active"));
+
+ document.getElementById(id)
+   .classList.add("active");
+
+ document.querySelectorAll("nav button")
+   .forEach(x=>x.classList.remove("active"));
+
+ btn.classList.add("active");
+
+ if(id==="train") renderTrainDropdowns();
+ if(id==="build") renderPicker();
+ if(id==="history") renderHistory();
+
+ if(id==="charts"){
+   populateChartExercises();
+   renderCharts();
+ }
+}
+
+let timer=null;
+let remaining=0;
+
+function startTimer(sec){
+ clearInterval(timer);
+ remaining=sec;
+ toast("Rest timer started");
+
+ timer=setInterval(()=>{
+   remaining--;
+
+   if(remaining<=0){
+     clearInterval(timer);
+     toast("Rest complete");
+   }else if(remaining%30===0){
+     toast(Math.ceil(remaining/60)+" min remaining");
+   }
+ },1000);
+}
+
+function toast(t){
+ let x=document.getElementById("toast");
+ x.textContent=t;
+ x.style.display="block";
+
+ clearTimeout(x._t);
+
+ x._t=setTimeout(()=>{
+   x.style.display="none";
+ },1800);
+}
 
 function populateChartExercises(){
  const sel=document.getElementById("chartExercise");
- const names=Object.keys(db.history).filter(k=>db.history[k]?.length);
+ const names=Object.keys(db.history)
+   .filter(k=>db.history[k]?.length);
+
  const cur=sel.value;
- sel.innerHTML=names.length?names.map(n=>`<option value="${n}">${n}</option>`).join(""):'<option>No logged exercises yet</option>';
- if(names.includes(cur)) sel.value=cur;
-}
-function svgLineChart(containerId, points, valueFn, valueLabel){
- const el=document.getElementById(containerId);
- if(!points.length){el.innerHTML="<div class='muted'>Log workouts to see this chart.</div>";return}
- const W=640,H=220,pL=48,pR=18,pT=20,pB=35;
- const vals=points.map(valueFn), min=Math.min(...vals), max=Math.max(...vals);
- const lo=min===max?Math.max(0,min-1):min, hi=min===max?max+1:max;
- const x=i=>pL+(points.length===1?(W-pL-pR)/2:i*(W-pL-pR)/(points.length-1));
- const y=v=>pT+(hi-v)*(H-pT-pB)/(hi-lo||1);
- let grid="";
- for(let i=0;i<5;i++){let yy=pT+i*(H-pT-pB)/4;grid+=`<line class="chart-grid" x1="${pL}" y1="${yy}" x2="${W-pR}" y2="${yy}"/>`}
- let poly=points.map((p,i)=>`${x(i)},${y(valueFn(p))}`).join(" ");
- let dots=points.map((p,i)=>`<circle class="chart-dot" cx="${x(i)}" cy="${y(valueFn(p))}" r="4"><title>${new Date(p.date).toLocaleDateString()}: ${valueFn(p).toFixed(1)} ${valueLabel}</title></circle>`).join("");
- let first=new Date(points[0].date).toLocaleDateString(), lastd=new Date(points[points.length-1].date).toLocaleDateString();
- el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}<polyline class="chart-line" points="${poly}"/>${dots}<text class="chart-label" x="${pL}" y="${H-8}">${first}</text><text class="chart-label" text-anchor="end" x="${W-pR}" y="${H-8}">${lastd}</text><text class="chart-label" x="5" y="${pT+5}">${hi.toFixed(0)}</text><text class="chart-label" x="5" y="${H-pB}">${lo.toFixed(0)}</text></svg>`;
-}
-function renderCharts(){
- const name=document.getElementById("chartExercise")?.value;
- const pts=(db.history[name]||[]);
- svgLineChart("weightChart",pts,p=>+p.weight,"lb");
- svgLineChart("e1rmChart",pts,p=>+p.weight*(1+(+p.reps/30)),"lb");
- const sessions=db.sessions.map(s=>({date:s.date,volume:s.exercises.reduce((sum,e)=>sum+e.sets.reduce((a,z)=>a+(+z.weight*+z.reps),0),0)}));
- svgLineChart("volumeChart",sessions,p=>p.volume,"lb-reps");
+
+ sel.innerHTML=
+   names.length
+   ? names.map(n=>`<option value="${n}">${n}</option>`).join("")
+   : '<option>No logged exercises yet</option>';
+
+ if(names.includes(cur)){
+   sel.value=cur;
+ }
 }
 
-renderPicker();renderTrainDropdowns();renderWorkout();renderHistory();
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
+function svgLineChart(containerId,points,valueFn,valueLabel){
+ const el=document.getElementById(containerId);
+
+ if(!points.length){
+   el.innerHTML="<div class='muted'>Log workouts to see this chart.</div>";
+   return;
+ }
+
+ const W=640;
+ const H=220;
+ const pL=48;
+ const pR=18;
+ const pT=20;
+ const pB=35;
+
+ const vals=points.map(valueFn);
+ const min=Math.min(...vals);
+ const max=Math.max(...vals);
+
+ const lo=min===max ? Math.max(0,min-1) : min;
+ const hi=min===max ? max+1 : max;
+
+ const x=i=>
+   pL+
+   (
+     points.length===1
+     ? (W-pL-pR)/2
+     : i*(W-pL-pR)/(points.length-1)
+   );
+
+ const y=v=>
+   pT+
+   (hi-v)*(H-pT-pB)/(hi-lo||1);
+
+ let grid="";
+
+ for(let i=0;i<5;i++){
+   let yy=pT+i*(H-pT-pB)/4;
+
+   grid+=
+     `<line class="chart-grid" x1="${pL}" y1="${yy}" x2="${W-pR}" y2="${yy}"/>`;
+ }
+
+ let poly=
+   points.map((p,i)=>`${x(i)},${y(valueFn(p))}`).join(" ");
+
+ let dots=
+   points.map((p,i)=>
+     `<circle class="chart-dot" cx="${x(i)}" cy="${y(valueFn(p))}" r="4">
+       <title>${new Date(p.date).toLocaleDateString()}: ${valueFn(p).toFixed(1)} ${valueLabel}</title>
+      </circle>`
+   ).join("");
+
+ let first=new Date(points[0].date).toLocaleDateString();
+ let lastd=new Date(points[points.length-1].date).toLocaleDateString();
+
+ el.innerHTML=
+   `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+      ${grid}
+      <polyline class="chart-line" points="${poly}"/>
+      ${dots}
+      <text class="chart-label" x="${pL}" y="${H-8}">${first}</text>
+      <text class="chart-label" text-anchor="end" x="${W-pR}" y="${H-8}">${lastd}</text>
+      <text class="chart-label" x="5" y="${pT+5}">${hi.toFixed(0)}</text>
+      <text class="chart-label" x="5" y="${H-pB}">${lo.toFixed(0)}</text>
+    </svg>`;
+}
+
+function renderCharts(){
+ const name=document.getElementById("chartExercise")?.value;
+
+ const pts=
+   (name && db.history[name])
+   ? db.history[name]
+   : [];
+
+ svgLineChart(
+   "weightChart",
+   pts,
+   p=>+p.weight,
+   "lb"
+ );
+
+ svgLineChart(
+   "e1rmChart",
+   pts,
+   p=>+p.weight*(1+(+p.reps/30)),
+   "lb"
+ );
+
+ const sessions=db.sessions.map(s=>({
+   date:s.date,
+   volume:s.exercises.reduce(
+     (sum,e)=>
+       sum+
+       e.sets.reduce(
+         (a,z)=>a+(+z.weight*+z.reps),
+         0
+       ),
+     0
+   )
+ }));
+
+ svgLineChart(
+   "volumeChart",
+   sessions,
+   p=>p.volume,
+   "lb-reps"
+ );
+}
+
+renderPicker();
+renderTrainDropdowns();
+renderWorkout();
+renderHistory();
+
+if("serviceWorker" in navigator){
+ window.addEventListener("load",()=>{
+   navigator.serviceWorker.register("./sw.js");
+ });
 }
 </script>
-</body></html>
+</body>
+</html>
