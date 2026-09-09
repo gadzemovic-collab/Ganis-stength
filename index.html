@@ -38,6 +38,11 @@ h2{font-size:20px;margin:8px 0 12px}h3{margin:0}
 .chart{width:100%;height:250px;background:#fafafa;border:1px solid #e5e5e5;border-radius:14px;padding:12px}
 .chart svg{width:100%;height:100%}.chart-label{font-size:11px;fill:#666}.chart-title{font-size:13px;font-weight:800}
 .chart-line{fill:none;stroke:#111;stroke-width:3}.chart-dot{fill:#111}.chart-grid{stroke:#ddd;stroke-width:1}
+.bodypart-picker{background:#fff;border:1px solid #e4e4e4;border-radius:14px;padding:12px;margin:9px 0}
+.bodypart-picker .picker-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.bodypart-picker .picker-head b{font-size:16px}
+.bodypart-picker select{margin-top:2px}
+.bodypart-picker .picked{font-size:12px;color:#666;margin-top:7px}
 #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 14px;border-radius:10px;display:none;z-index:20}
 .timer{font-size:42px;font-weight:900;text-align:center;padding:8px}
 .stat{font-size:24px;font-weight:900}.statlabel{font-size:12px;color:#666}
@@ -53,6 +58,13 @@ h2{font-size:20px;margin:8px 0 12px}h3{margin:0}
 </nav>
 <main>
 <section id="train" class="screen active">
+
+<div class="card">
+<h2 style="margin-top:0">Choose Exercises</h2>
+<div class="muted">Pick one movement for each body part. You can keep up to 8 exercises in today's workout.</div>
+<div id="trainDropdowns" style="margin-top:12px"></div>
+</div>
+
 <div class="card">
 <div class="row between"><div><h2 style="margin:0">Today's Workout</h2><div class="muted">Pick exercises yourself. No forced A/B/C order.</div></div>
 <button class="secondary small" onclick="newWorkout()">New</button></div>
@@ -113,7 +125,8 @@ Quads:["Leg Press","Leg Extension"],
 Hamstrings:["Seated Leg Curl","Deadlift","Standing Leg Curl"],
 Chest:["DB Bench Press","Incline Chest Press","Pec Deck"],
 Back:["Lat Pulldown","Chest-Supported Row","Machine High Row"],
-Shoulders:["Lateral Raise","DB Shoulder Press","Reverse Pec Deck"],
+Shoulders:["Lateral Raise","DB Shoulder Press"],
+RearDelts:["Reverse Pec Deck"],
 Biceps:["DB Curl","Hammer Curl","Preacher Curl"],
 Triceps:["Triceps Pushdown","Triceps Dip Machine"],
 Calves:["Calf Raise"],
@@ -125,12 +138,54 @@ if(!db.selected.length) db.selected=["Leg Press","Seated Leg Curl","DB Bench Pre
 let workoutData=[];
 
 function saveDB(){localStorage.setItem("ganiStrengthV2",JSON.stringify(db))}
+function groupLabel(g){return g==="RearDelts"?"Rear Delts":g}
 function target(ex){return /curl|raise|pushdown|dip|pec deck|core|crunch/i.test(ex)?"8–10":"6–8"}
 function last(ex){let h=db.history[ex]; return h&&h.length?h[h.length-1]:null}
+
+function selectedForGroup(group){
+ const options=MENU[group]||[];
+ return db.selected.find(x=>options.includes(x)) || "";
+}
+function renderTrainDropdowns(){
+ const el=document.getElementById("trainDropdowns");
+ if(!el) return;
+ el.innerHTML="";
+ Object.entries(MENU).forEach(([group,arr])=>{
+   const current=selectedForGroup(group);
+   const box=document.createElement("div");
+   box.className="bodypart-picker";
+   box.innerHTML=`
+     <div class="picker-head"><b>${groupLabel(group)}</b><span class="tag">${current?"Selected":"Optional"}</span></div>
+     <select onchange="chooseForGroup('${group}',this.value)">
+       <option value="">— None —</option>
+       ${arr.map(ex=>`<option value="${ex}" ${ex===current?"selected":""}>${ex}</option>`).join("")}
+     </select>
+     <div class="picked">${current?`Current: ${current}`:"No exercise selected"}</div>`;
+   el.appendChild(box);
+ });
+}
+function chooseForGroup(group,ex){
+ const groupExercises=MENU[group]||[];
+ const existing=db.selected.find(x=>groupExercises.includes(x));
+ if(existing) db.selected=db.selected.filter(x=>x!==existing);
+ if(ex){
+   if(db.selected.length>=8){
+     if(existing) db.selected.push(existing);
+     renderTrainDropdowns();
+     return toast("Maximum 8 exercises");
+   }
+   db.selected.push(ex);
+ }
+ saveDB();
+ renderTrainDropdowns();
+ renderPicker();
+ renderWorkout();
+}
+
 function renderPicker(){
  let el=document.getElementById("picker"); el.innerHTML="";
  Object.entries(MENU).forEach(([group,arr])=>{
-  let card=document.createElement("div");card.className="card";card.innerHTML="<h3>"+group+"</h3>";
+  let card=document.createElement("div");card.className="card";card.innerHTML="<h3>"+groupLabel(group)+"</h3>";
   arr.forEach(ex=>{
    let chosen=db.selected.includes(ex), row=document.createElement("div");row.className="menu-item";
    row.innerHTML="<span>"+ex+"</span><button class='"+(chosen?"dark":"secondary")+" small'>"+(chosen?"Remove":"Add")+"</button>";
@@ -172,7 +227,7 @@ function renderHistory(){
  entries.forEach(([ex,a])=>{let x=a[a.length-1];let d=new Date(x.date).toLocaleDateString();let div=document.createElement("div");div.className="menu-item";div.innerHTML=`<span><b>${ex}</b><br><small>${d}</small></span><b>${x.weight} × ${x.reps}</b>`;el.appendChild(div)})
 }
 function clearHistory(){if(confirm("Delete all workout history and saved selections?")){localStorage.removeItem("ganiStrengthV2");location.reload()}}
-function show(id,btn){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));btn.classList.add("active");if(id==="build")renderPicker();if(id==="history")renderHistory();if(id==="charts"){populateChartExercises();renderCharts()}}
+function show(id,btn){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));btn.classList.add("active");if(id==="train")renderTrainDropdowns();if(id==="build")renderPicker();if(id==="history")renderHistory();if(id==="charts"){populateChartExercises();renderCharts()}}
 let timer=null,remaining=0;
 function startTimer(sec){clearInterval(timer);remaining=sec;toast("Rest timer started");timer=setInterval(()=>{remaining--;if(remaining<=0){clearInterval(timer);toast("Rest complete");}else if(remaining%30===0)toast(Math.ceil(remaining/60)+" min remaining")},1000)}
 function toast(t){let x=document.getElementById("toast");x.textContent=t;x.style.display="block";clearTimeout(x._t);x._t=setTimeout(()=>x.style.display="none",1800)}
@@ -208,7 +263,7 @@ function renderCharts(){
  svgLineChart("volumeChart",sessions,p=>p.volume,"lb-reps");
 }
 
-renderPicker();renderWorkout();renderHistory();
+renderPicker();renderTrainDropdowns();renderWorkout();renderHistory();
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
 }
