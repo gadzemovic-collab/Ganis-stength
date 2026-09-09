@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#111111">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gani's Strength">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Gani's Strength</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f4f4f5;color:#111}
+header{position:sticky;top:0;z-index:5;background:#111;color:#fff;padding:18px 16px 14px}
+h1{font-size:25px;margin:0 0 3px}.sub{font-size:13px;opacity:.7}
+nav{display:flex;position:sticky;top:72px;z-index:4;background:#fff;border-bottom:1px solid #ddd}
+nav button{flex:1;border:0;background:none;padding:13px 4px;font-weight:700;color:#666}nav button.active{color:#111;border-bottom:3px solid #111}
+main{max-width:700px;margin:auto;padding:16px 14px 100px}.screen{display:none}.screen.active{display:block}
+.card{background:#fff;border-radius:16px;padding:15px;margin-bottom:12px;box-shadow:0 1px 4px #00000010}
+.row{display:flex;gap:8px;align-items:center}.between{justify-content:space-between}
+label{font-size:12px;color:#666;font-weight:700;display:block;margin-bottom:5px}
+select,input{width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;font-size:16px;background:#fff}
+button.primary,button.dark{background:#111;color:#fff;border:0;border-radius:11px;padding:12px 15px;font-weight:800}
+button.secondary{background:#eee;border:0;border-radius:11px;padding:11px 14px;font-weight:700}
+button.small{padding:8px 10px;font-size:13px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.full{grid-column:1/-1}
+.exercise{border:1px solid #ddd;border-radius:14px;padding:13px;margin:10px 0;background:#fafafa}
+.exercise.done{border-color:#222;background:#f0f0f0}.exercise h3{margin:0 0 3px;font-size:18px}
+.muted{color:#666;font-size:13px}.tag{display:inline-block;background:#e9e9e9;padding:4px 8px;border-radius:20px;font-size:11px;font-weight:800;margin-top:4px}
+.sets{margin-top:10px}.set{display:grid;grid-template-columns:30px 1fr 1fr 42px;gap:7px;align-items:end;margin:7px 0}.setnum{font-weight:800;text-align:center;padding-bottom:12px}
+.set button{height:44px}.check{font-size:22px}.note{background:#fff7d6;border-radius:12px;padding:10px;font-size:13px;margin:10px 0}
+.menu-item{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #eee}.menu-item:last-child{border-bottom:0}
+h2{font-size:20px;margin:8px 0 12px}h3{margin:0}
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 14px;border-radius:10px;display:none;z-index:20}
+.timer{font-size:42px;font-weight:900;text-align:center;padding:8px}
+.stat{font-size:24px;font-weight:900}.statlabel{font-size:12px;color:#666}
+</style>
+</head>
+<body>
+<header><h1>Gani's Strength</h1><div class="sub">Full-body strength • max 8 exercises</div></header>
+<nav>
+<button class="active" onclick="show('train',this)">Train</button>
+<button onclick="show('build',this)">Build</button>
+<button onclick="show('history',this)">History</button>
+</nav>
+<main>
+<section id="train" class="screen active">
+<div class="card">
+<div class="row between"><div><h2 style="margin:0">Today's Workout</h2><div class="muted">Pick exercises yourself. No forced A/B/C order.</div></div>
+<button class="secondary small" onclick="newWorkout()">New</button></div>
+<div class="note">Main lifts: 6–8 reps. Isolation: 8–10 reps. When you hit the top of the range on every working set with good form, increase the weight next time. Deadlifts: keep 1–2 reps in reserve.</div>
+<div id="workout"></div>
+<div class="row"><button class="primary" style="flex:1" onclick="saveWorkout()">Save Workout</button><button class="secondary" onclick="startTimer(90)">90s Rest</button></div>
+</div>
+</section>
+
+<section id="build" class="screen">
+<div class="card">
+<h2>Build Workout</h2>
+<div class="muted">Choose up to 8 movements. Your selections stay saved.</div>
+<div id="picker"></div>
+</div>
+</section>
+
+<section id="history" class="screen">
+<div class="card"><h2>Progress</h2><div class="grid">
+<div><div class="stat" id="wcount">0</div><div class="statlabel">Workouts</div></div>
+<div><div class="stat" id="ecount">0</div><div class="statlabel">Exercises logged</div></div>
+</div></div>
+<div class="card"><h2>Exercise History</h2><div id="historyList"></div></div>
+<div class="card"><button class="secondary" onclick="clearHistory()">Clear all saved data</button></div>
+</section>
+</main>
+<div id="toast"></div>
+
+<script>
+const MENU={
+Quads:["Leg Press","Leg Extension"],
+Hamstrings:["Seated Leg Curl","Deadlift","Standing Leg Curl"],
+Chest:["DB Bench Press","Incline Chest Press","Pec Deck"],
+Back:["Lat Pulldown","Chest-Supported Row","Machine High Row"],
+Shoulders:["Lateral Raise","DB Shoulder Press","Reverse Pec Deck"],
+Biceps:["DB Curl","Hammer Curl","Preacher Curl"],
+Triceps:["Triceps Pushdown","Triceps Dip Machine"],
+Calves:["Calf Raise"],
+Core:["Cable Crunch"]
+};
+const startWeights={"Leg Press":180,"DB Bench Press":45,"Lateral Raise":15,"DB Curl":35,"Triceps Pushdown":490};
+let db=JSON.parse(localStorage.getItem("ganiStrengthV2")||'{"selected":[],"sessions":[],"history":{}}');
+if(!db.selected.length) db.selected=["Leg Press","Seated Leg Curl","DB Bench Press","Lat Pulldown","Lateral Raise","DB Curl","Triceps Pushdown"];
+let workoutData=[];
+
+function saveDB(){localStorage.setItem("ganiStrengthV2",JSON.stringify(db))}
+function target(ex){return /curl|raise|pushdown|dip|pec deck|core|crunch/i.test(ex)?"8–10":"6–8"}
+function last(ex){let h=db.history[ex]; return h&&h.length?h[h.length-1]:null}
+function renderPicker(){
+ let el=document.getElementById("picker"); el.innerHTML="";
+ Object.entries(MENU).forEach(([group,arr])=>{
+  let card=document.createElement("div");card.className="card";card.innerHTML="<h3>"+group+"</h3>";
+  arr.forEach(ex=>{
+   let chosen=db.selected.includes(ex), row=document.createElement("div");row.className="menu-item";
+   row.innerHTML="<span>"+ex+"</span><button class='"+(chosen?"dark":"secondary")+" small'>"+(chosen?"Remove":"Add")+"</button>";
+   row.querySelector("button").onclick=()=>{if(chosen)db.selected=db.selected.filter(x=>x!==ex);else if(db.selected.length<8)db.selected.push(ex);else return toast("Maximum 8 exercises");saveDB();renderPicker();renderWorkout()};card.appendChild(row)
+  });el.appendChild(card)
+ });
+}
+function renderWorkout(){
+ let el=document.getElementById("workout");el.innerHTML="";
+ workoutData=db.selected.map(ex=>({ex,sets:[{}, {}, {}]}));
+ workoutData.forEach((item,i)=>{
+  let prev=last(item.ex), w=prev?.weight??startWeights[item.ex]??"";
+  let card=document.createElement("div");card.className="exercise";card.id="ex"+i;
+  card.innerHTML="<div class='row between'><div><h3>"+item.ex+"</h3><span class='tag'>Target "+target(item.ex)+"</span></div><button class='secondary small' onclick='removeEx("+i+")'>Remove</button></div>"+
+  "<div class='muted' style='margin-top:6px'>"+(prev?`Last: ${prev.weight} × ${prev.reps}`:(w?`Starting weight: ${w}`:"Enter your weight"))+"</div>"+
+  "<div class='sets'>"+[1,2,3].map((n,j)=>`<div class='set'><div class='setnum'>${n}</div><div><label>Weight</label><input inputmode='decimal' id='w${i}_${j}' value='${j===0?w:""}'></div><div><label>Reps</label><input inputmode='numeric' id='r${i}_${j}' placeholder='${target(item.ex).replace("–","-")}'></div><button class='secondary check' onclick='markSet(${i},${j})'>✓</button></div>`).join("")+"</div>"+
+  (item.ex==="Deadlift"?"<div class='muted'>Keep 1–2 reps in reserve. Do not take deadlifts to failure.</div>":"");
+  el.appendChild(card)
+ });
+}
+function markSet(i,j){let w=document.getElementById(`w${i}_${j}`).value,r=document.getElementById(`r${i}_${j}`).value;if(w&&r){document.querySelector(`#ex${i}`).classList.add("done");startTimer(90)}}
+function removeEx(i){db.selected.splice(i,1);saveDB();renderPicker();renderWorkout()}
+function newWorkout(){if(confirm("Start a fresh workout using your saved exercise selections?"))renderWorkout()}
+function saveWorkout(){
+ let session={date:new Date().toISOString(), exercises:[]};
+ workoutData.forEach((item,i)=>{
+  let sets=[];for(let j=0;j<3;j++){let w=document.getElementById(`w${i}_${j}`)?.value,r=document.getElementById(`r${i}_${j}`)?.value;if(w&&r)sets.push({weight:+w,reps:+r})}
+  if(sets.length){let best=sets[sets.length-1];session.exercises.push({name:item.ex,sets});db.history[item.ex]??=[];db.history[item.ex].push({weight:best.weight,reps:best.reps,date:session.date})}
+ });
+ if(session.exercises.length){db.sessions.push(session);saveDB();renderHistory();toast("Workout saved")}
+ else toast("Log at least one set first")
+}
+function renderHistory(){
+ document.getElementById("wcount").textContent=db.sessions.length;
+ document.getElementById("ecount").textContent=db.sessions.reduce((a,s)=>a+s.exercises.length,0);
+ let el=document.getElementById("historyList");el.innerHTML="";
+ let entries=Object.entries(db.history).filter(([_,a])=>a.length).reverse();
+ if(!entries.length){el.innerHTML="<div class='muted'>No exercise history yet.</div>";return}
+ entries.forEach(([ex,a])=>{let x=a[a.length-1];let d=new Date(x.date).toLocaleDateString();let div=document.createElement("div");div.className="menu-item";div.innerHTML=`<span><b>${ex}</b><br><small>${d}</small></span><b>${x.weight} × ${x.reps}</b>`;el.appendChild(div)})
+}
+function clearHistory(){if(confirm("Delete all workout history and saved selections?")){localStorage.removeItem("ganiStrengthV2");location.reload()}}
+function show(id,btn){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));btn.classList.add("active");if(id==="build")renderPicker();if(id==="history")renderHistory()}
+let timer=null,remaining=0;
+function startTimer(sec){clearInterval(timer);remaining=sec;toast("Rest timer started");timer=setInterval(()=>{remaining--;if(remaining<=0){clearInterval(timer);toast("Rest complete");}else if(remaining%30===0)toast(Math.ceil(remaining/60)+" min remaining")},1000)}
+function toast(t){let x=document.getElementById("toast");x.textContent=t;x.style.display="block";clearTimeout(x._t);x._t=setTimeout(()=>x.style.display="none",1800)}
+renderPicker();renderWorkout();renderHistory();
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
+}
+</script>
+</body></html>
