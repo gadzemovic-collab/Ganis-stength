@@ -56,7 +56,6 @@ box-sizing:border-box;
 
 --green-bg:#e9f8ed;
 --green-border:#b8dfc1;
---green-text:#24733a;
 
 --danger:#b33a3a;
 --danger-bg:#fff0f0;
@@ -64,11 +63,13 @@ box-sizing:border-box;
 
 body{
 margin:0;
+
 font-family:
 -apple-system,
 BlinkMacSystemFont,
 "Segoe UI",
 sans-serif;
+
 background:#f3f8fd;
 color:var(--text);
 }
@@ -77,13 +78,16 @@ header{
 position:sticky;
 top:0;
 z-index:5;
+
 background:
 linear-gradient(
 135deg,
 #17324d,
 #245b88
 );
+
 color:#fff;
+
 padding:
 18px
 16px
@@ -102,10 +106,13 @@ opacity:.8;
 
 nav{
 display:flex;
+
 position:sticky;
 top:72px;
 z-index:4;
+
 background:#fff;
+
 border-bottom:
 1px solid
 var(--blue-border);
@@ -113,16 +120,20 @@ var(--blue-border);
 
 nav button{
 flex:1;
+
 border:0;
 background:none;
+
 padding:
 13px 4px;
+
 font-weight:700;
 color:#7a838c;
 }
 
 nav button.active{
 color:var(--blue-dark);
+
 border-bottom:
 3px solid
 var(--blue);
@@ -130,7 +141,9 @@ var(--blue);
 
 main{
 max-width:700px;
+
 margin:auto;
+
 padding:
 16px
 14px
@@ -148,12 +161,17 @@ display:block;
 .card,
 .workout-part{
 background:#fff;
+
 border:
 1px solid
 #e3eef8;
+
 border-radius:18px;
+
 padding:15px;
+
 margin-bottom:12px;
+
 box-shadow:
 0
 2px
@@ -175,19 +193,26 @@ label{
 font-size:12px;
 color:var(--muted);
 font-weight:700;
+
 display:block;
+
 margin-bottom:5px;
 }
 
 select,
 input{
 width:100%;
+
 padding:12px;
+
 border:
 1px solid
 #bed4e8;
+
 border-radius:11px;
+
 font-size:16px;
+
 background:#fff;
 color:var(--text);
 }
@@ -195,7 +220,10 @@ color:var(--text);
 select:focus,
 input:focus{
 outline:none;
-border-color:var(--blue);
+
+border-color:
+var(--blue);
+
 box-shadow:
 0 0 0 3px
 #3f8fe820;
@@ -207,38 +235,57 @@ font-family:inherit;
 
 button.primary{
 background:var(--blue);
+
 color:#fff;
+
 border:0;
+
 border-radius:11px;
+
 padding:
 12px
 15px;
+
 font-weight:800;
 }
 
 button.secondary{
-background:var(--blue-light);
-color:var(--blue-dark);
+background:
+var(--blue-light);
+
+color:
+var(--blue-dark);
+
 border:
 1px solid
 var(--blue-border);
+
 border-radius:11px;
+
 padding:
 11px
 14px;
+
 font-weight:700;
 }
 
 button.danger{
-background:var(--danger-bg);
-color:var(--danger);
+background:
+var(--danger-bg);
+
+color:
+var(--danger);
+
 border:
 1px solid
 #f1cccc;
+
 border-radius:11px;
+
 padding:
 10px
 12px;
+
 font-weight:700;
 }
 
@@ -246,62 +293,88 @@ button.small{
 padding:
 8px
 10px;
+
 font-size:13px;
 }
 
 .grid{
 display:grid;
+
 grid-template-columns:
 1fr
 1fr;
+
 gap:10px;
 }
 
 .muted{
-color:var(--muted);
+color:
+var(--muted);
+
 font-size:13px;
 }
 
 .tag{
 display:inline-block;
-background:var(--blue-light);
-color:var(--blue-dark);
+
+background:
+var(--blue-light);
+
+color:
+var(--blue-dark);
+
 padding:
 5px
 9px;
+
 border-radius:20px;
+
 font-size:11px;
+
 font-weight:800;
 }
 
 .note{
 background:#edf7ff;
+
 border:
 1px solid
 #d2eafd;
+
 border-radius:12px;
+
 padding:11px;
+
 font-size:13px;
+
 margin:
 10px
 0;
+
 color:#34516b;
 }
 
 .draft-banner{
 background:#fff8df;
+
 border:
 1px solid
 #eedb94;
+
 border-radius:12px;
+
 padding:10px;
+
 font-size:13px;
+
 margin-top:10px;
+
 color:#66531d;
 }
 
 h2{
 font-size:20px;
+
 margin:
 8px
 0
@@ -322,7 +395,9 @@ margin-top:10px;
 
 .exercise-actions{
 display:flex;
+
 gap:8px;
+
 margin-top:8px;
 }
 
@@ -330,24 +405,35 @@ margin-top:8px;
 flex:1;
 }
 
-/* Compact previous-workout indicator */
 .prefill-note{
 margin-top:12px;
+
 padding:
-10px 12px;
+10px
+12px;
+
 border-radius:11px;
-background:var(--red-bg);
-color:var(--red-text);
+
+background:
+var(--red-bg);
+
+color:
+var(--red-text);
+
 border:
 1px solid
 var(--red-border);
+
 font-size:12px;
+
 font-weight:700;
 }
 
 .exercise-logger{
 margin-top:12px;
+
 padding-top:12px;
+
 border-top:
 1px solid
 #e3edf5;
@@ -359,22 +445,31 @@ margin-top:10px;
 
 .set{
 display:grid;
+
 grid-template-columns:
 30px
 1fr
 1fr
 42px;
+
 gap:7px;
+
 align-items:end;
+
 margin:
 7px 0;
+
 padding:7px;
+
 border-radius:12px;
+
 transition:.15s;
 }
 
 .set.prefilled{
-background:var(--red-bg);
+background:
+var(--red-bg);
+
 border:
 1px solid
 var(--red-border);
@@ -386,7 +481,9 @@ border-color:#eda9a9;
 }
 
 .set.edited{
-background:var(--blue-lighter);
+background:
+var(--blue-lighter);
+
 border:
 1px solid
 var(--blue-border);
@@ -394,11 +491,15 @@ var(--blue-border);
 
 .set.edited input{
 background:#fff;
-border-color:var(--blue);
+
+border-color:
+var(--blue);
 }
 
 .set.completed{
-background:var(--green-bg);
+background:
+var(--green-bg);
+
 border:
 1px solid
 var(--green-border);
@@ -406,20 +507,28 @@ var(--green-border);
 
 .set.completed input{
 background:#fff;
-border-color:var(--green-border);
+
+border-color:
+var(--green-border);
 }
 
 .set.completed .check{
 background:#25a049;
+
 color:#fff;
+
 border-color:#25a049;
 }
 
 .setnum{
 font-weight:800;
+
 text-align:center;
+
 padding-bottom:12px;
-color:var(--blue-dark);
+
+color:
+var(--blue-dark);
 }
 
 .set button{
@@ -432,21 +541,30 @@ font-size:22px;
 
 .stat{
 font-size:24px;
+
 font-weight:900;
-color:var(--blue-dark);
+
+color:
+var(--blue-dark);
 }
 
 .statlabel{
 font-size:12px;
-color:var(--muted);
+
+color:
+var(--muted);
 }
 
 .history-item{
 display:flex;
+
 justify-content:space-between;
+
 align-items:center;
+
 padding:
 11px 0;
+
 border-bottom:
 1px solid
 #e7eef5;
@@ -458,12 +576,18 @@ border-bottom:0;
 
 .chart{
 width:100%;
+
 height:250px;
-background:var(--blue-lighter);
+
+background:
+var(--blue-lighter);
+
 border:
 1px solid
 var(--blue-border);
+
 border-radius:14px;
+
 padding:12px;
 }
 
@@ -479,7 +603,9 @@ fill:#66717d;
 
 .chart-line{
 fill:none;
+
 stroke:#3f8fe8;
+
 stroke-width:3;
 }
 
@@ -489,29 +615,42 @@ fill:#276bb8;
 
 .chart-grid{
 stroke:#d8e8f5;
+
 stroke-width:1;
 }
 
 #toast{
 position:fixed;
+
 bottom:22px;
 left:50%;
+
 transform:
 translateX(-50%);
-background:#17324d;
+
+background:
+#17324d;
+
 color:#fff;
+
 padding:
 11px
 16px;
+
 border-radius:12px;
+
 display:none;
+
 z-index:20;
+
 box-shadow:
 0
 4px
 14px
 #0003;
+
 white-space:nowrap;
+
 max-width:90%;
 }
 
@@ -632,6 +771,7 @@ onclick="startTimer(90)"
 
 </section>
 
+
 <section
 id="history"
 class="screen"
@@ -702,6 +842,7 @@ Clear all saved data
 </div>
 
 </section>
+
 
 <section
 id="charts"
@@ -2825,15 +2966,10 @@ return;
 
 
 const W=640;
-
 const H=220;
-
 const pL=48;
-
 const pR=18;
-
 const pT=20;
-
 const pB=35;
 
 
@@ -3158,27 +3294,76 @@ renderHistory();
 populateChartExercises();
 
 
+/*
+AUTOMATIC APP UPDATE
+
+When a new service worker takes control,
+reload once so the installed Home Screen
+app immediately uses the newest version.
+*/
+
 if(
 "serviceWorker"
 in navigator
 ){
 
+let refreshing=false;
+
+
+navigator.serviceWorker.addEventListener(
+
+"controllerchange",
+
+()=>{
+
+if(refreshing){
+
+return;
+
+}
+
+
+refreshing=true;
+
+
+window.location.reload();
+
+}
+
+);
+
+
 window.addEventListener(
 
 "load",
 
-()=>{
+async ()=>{
 
-navigator.serviceWorker.register(
+try{
+
+const registration=
+await navigator.serviceWorker.register(
 "./sw.js"
-)
-.catch(
-err=>
+);
+
+
+/*
+Ask the browser to check GitHub for
+a newer service worker whenever
+the app opens.
+*/
+
+registration.update();
+
+}
+catch(err){
+
 console.log(
 "Service worker error",
 err
-)
 );
+
+}
 
 }
 
