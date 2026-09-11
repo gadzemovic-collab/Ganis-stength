@@ -1,3 +1,839 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1,viewport-fit=cover"
+>
+
+<meta
+name="apple-mobile-web-app-capable"
+content="yes"
+>
+
+<meta
+name="apple-mobile-web-app-status-bar-style"
+content="black-translucent"
+>
+
+<meta
+name="theme-color"
+content="#17324d"
+>
+
+<meta
+name="apple-mobile-web-app-title"
+content="Gani's Strength"
+>
+
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+
+<title>Gani's Strength</title>
+
+<style>
+
+*{
+box-sizing:border-box;
+}
+
+:root{
+--blue:#3f8fe8;
+--blue-dark:#276bb8;
+--blue-light:#e7f3ff;
+--blue-lighter:#f4f9ff;
+--blue-border:#cfe5fb;
+
+--navy:#17324d;
+--text:#17212b;
+--muted:#66717d;
+
+--red-bg:#fff0f0;
+--red-border:#f2bcbc;
+--red-text:#a52d2d;
+
+--green-bg:#e9f8ed;
+--green-border:#b8dfc1;
+--green-text:#24733a;
+
+--danger:#b33a3a;
+--danger-bg:#fff0f0;
+}
+
+body{
+margin:0;
+font-family:
+-apple-system,
+BlinkMacSystemFont,
+"Segoe UI",
+sans-serif;
+background:#f3f8fd;
+color:var(--text);
+}
+
+header{
+position:sticky;
+top:0;
+z-index:5;
+background:
+linear-gradient(
+135deg,
+#17324d,
+#245b88
+);
+color:#fff;
+padding:
+18px
+16px
+14px;
+}
+
+h1{
+font-size:25px;
+margin:0 0 3px;
+}
+
+.sub{
+font-size:13px;
+opacity:.8;
+}
+
+nav{
+display:flex;
+position:sticky;
+top:72px;
+z-index:4;
+background:#fff;
+border-bottom:
+1px solid
+var(--blue-border);
+}
+
+nav button{
+flex:1;
+border:0;
+background:none;
+padding:
+13px 4px;
+font-weight:700;
+color:#7a838c;
+}
+
+nav button.active{
+color:var(--blue-dark);
+border-bottom:
+3px solid
+var(--blue);
+}
+
+main{
+max-width:700px;
+margin:auto;
+padding:
+16px
+14px
+100px;
+}
+
+.screen{
+display:none;
+}
+
+.screen.active{
+display:block;
+}
+
+.card,
+.workout-part{
+background:#fff;
+border:
+1px solid
+#e3eef8;
+border-radius:18px;
+padding:15px;
+margin-bottom:12px;
+box-shadow:
+0
+2px
+8px
+#397bb010;
+}
+
+.row{
+display:flex;
+gap:8px;
+align-items:center;
+}
+
+.between{
+justify-content:space-between;
+}
+
+label{
+font-size:12px;
+color:var(--muted);
+font-weight:700;
+display:block;
+margin-bottom:5px;
+}
+
+select,
+input{
+width:100%;
+padding:12px;
+border:
+1px solid
+#bed4e8;
+border-radius:11px;
+font-size:16px;
+background:#fff;
+color:var(--text);
+}
+
+select:focus,
+input:focus{
+outline:none;
+border-color:
+var(--blue);
+box-shadow:
+0 0 0 3px
+#3f8fe820;
+}
+
+button{
+font-family:inherit;
+}
+
+button.primary{
+background:var(--blue);
+color:#fff;
+border:0;
+border-radius:11px;
+padding:
+12px
+15px;
+font-weight:800;
+}
+
+button.secondary{
+background:
+var(--blue-light);
+color:
+var(--blue-dark);
+border:
+1px solid
+var(--blue-border);
+border-radius:11px;
+padding:
+11px
+14px;
+font-weight:700;
+}
+
+button.danger{
+background:
+var(--danger-bg);
+color:
+var(--danger);
+border:
+1px solid
+#f1cccc;
+border-radius:11px;
+padding:
+10px
+12px;
+font-weight:700;
+}
+
+button.small{
+padding:
+8px
+10px;
+font-size:13px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:
+1fr
+1fr;
+gap:10px;
+}
+
+.muted{
+color:
+var(--muted);
+font-size:13px;
+}
+
+.tag{
+display:inline-block;
+background:
+var(--blue-light);
+color:
+var(--blue-dark);
+padding:
+5px
+9px;
+border-radius:20px;
+font-size:11px;
+font-weight:800;
+}
+
+.note{
+background:#edf7ff;
+border:
+1px solid
+#d2eafd;
+border-radius:12px;
+padding:11px;
+font-size:13px;
+margin:
+10px
+0;
+color:#34516b;
+}
+
+.draft-banner{
+background:#fff8df;
+border:
+1px solid
+#eedb94;
+border-radius:12px;
+padding:10px;
+font-size:13px;
+margin-top:10px;
+color:#66531d;
+}
+
+h2{
+font-size:20px;
+margin:
+8px
+0
+12px;
+}
+
+h3{
+margin:0;
+}
+
+.workout-part h3{
+font-size:20px;
+}
+
+.workout-part select{
+margin-top:10px;
+}
+
+.exercise-actions{
+display:flex;
+gap:8px;
+margin-top:8px;
+}
+
+.exercise-actions button{
+flex:1;
+}
+
+.last-workout{
+margin-top:12px;
+padding:12px;
+background:#f5f8fb;
+border:
+1px solid
+#e0e8ef;
+border-radius:12px;
+}
+
+.last-title{
+font-weight:800;
+font-size:13px;
+margin-bottom:6px;
+}
+
+.last-set{
+font-size:13px;
+color:#4d5965;
+margin:
+3px 0;
+}
+
+.prefill-note{
+margin-top:10px;
+padding:
+8px
+10px;
+border-radius:10px;
+background:
+var(--red-bg);
+color:
+var(--red-text);
+border:
+1px solid
+var(--red-border);
+font-size:12px;
+font-weight:700;
+}
+
+.exercise-logger{
+margin-top:12px;
+padding-top:12px;
+border-top:
+1px solid
+#e3edf5;
+}
+
+.sets{
+margin-top:10px;
+}
+
+.set{
+display:grid;
+grid-template-columns:
+30px
+1fr
+1fr
+42px;
+gap:7px;
+align-items:end;
+margin:
+7px 0;
+padding:7px;
+border-radius:12px;
+transition:.15s;
+}
+
+.set.prefilled{
+background:
+var(--red-bg);
+border:
+1px solid
+var(--red-border);
+}
+
+.set.prefilled input{
+background:#fff7f7;
+border-color:#eda9a9;
+}
+
+.set.edited{
+background:
+var(--blue-lighter);
+border:
+1px solid
+var(--blue-border);
+}
+
+.set.edited input{
+background:#fff;
+border-color:
+var(--blue);
+}
+
+.set.completed{
+background:
+var(--green-bg);
+border:
+1px solid
+var(--green-border);
+}
+
+.set.completed input{
+background:#fff;
+border-color:
+var(--green-border);
+}
+
+.set.completed .check{
+background:#25a049;
+color:#fff;
+border-color:#25a049;
+}
+
+.setnum{
+font-weight:800;
+text-align:center;
+padding-bottom:12px;
+color:
+var(--blue-dark);
+}
+
+.set button{
+height:44px;
+}
+
+.check{
+font-size:22px;
+}
+
+.stat{
+font-size:24px;
+font-weight:900;
+color:
+var(--blue-dark);
+}
+
+.statlabel{
+font-size:12px;
+color:
+var(--muted);
+}
+
+.history-item{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:
+11px 0;
+border-bottom:
+1px solid
+#e7eef5;
+}
+
+.history-item:last-child{
+border-bottom:0;
+}
+
+.chart{
+width:100%;
+height:250px;
+background:
+var(--blue-lighter);
+border:
+1px solid
+var(--blue-border);
+border-radius:14px;
+padding:12px;
+}
+
+.chart svg{
+width:100%;
+height:100%;
+}
+
+.chart-label{
+font-size:11px;
+fill:#66717d;
+}
+
+.chart-line{
+fill:none;
+stroke:#3f8fe8;
+stroke-width:3;
+}
+
+.chart-dot{
+fill:#276bb8;
+}
+
+.chart-grid{
+stroke:#d8e8f5;
+stroke-width:1;
+}
+
+#toast{
+position:fixed;
+bottom:22px;
+left:50%;
+transform:
+translateX(-50%);
+background:
+#17324d;
+color:#fff;
+padding:
+11px
+16px;
+border-radius:12px;
+display:none;
+z-index:20;
+box-shadow:
+0
+4px
+14px
+#0003;
+white-space:nowrap;
+max-width:90%;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+<h1>
+Gani's Strength
+</h1>
+
+<div class="sub">
+Full-body strength • max 8 exercises
+</div>
+
+</header>
+
+<nav>
+
+<button
+class="active"
+onclick="showScreen('train',this)"
+>
+Train
+</button>
+
+<button
+onclick="showScreen('history',this)"
+>
+History
+</button>
+
+<button
+onclick="showScreen('charts',this)"
+>
+Charts
+</button>
+
+</nav>
+
+<main>
+
+<section
+id="train"
+class="screen active"
+>
+
+<div class="card">
+
+<div class="row between">
+
+<div>
+
+<h2 style="margin:0">
+Today's Workout
+</h2>
+
+<div class="muted">
+Your workout is automatically saved while you enter it.
+</div>
+
+</div>
+
+<button
+class="secondary small"
+onclick="newWorkout()"
+>
+New
+</button>
+
+</div>
+
+<div
+id="draftBanner"
+class="draft-banner"
+>
+Workout autosave is on.
+</div>
+
+<div class="note">
+
+<strong>Red</strong> = last workout's numbers<br>
+<strong>Blue</strong> = updated for today<br>
+<strong>Green</strong> = completed and ready to save
+
+</div>
+
+</div>
+
+<div id="workout">
+</div>
+
+<div class="card">
+
+<div class="row">
+
+<button
+class="primary"
+style="flex:1"
+onclick="saveWorkout()"
+>
+Finish & Save Workout
+</button>
+
+<button
+class="secondary"
+onclick="startTimer(90)"
+>
+90s Rest
+</button>
+
+</div>
+
+</div>
+
+</section>
+
+<section
+id="history"
+class="screen"
+>
+
+<div class="card">
+
+<h2>
+Progress
+</h2>
+
+<div class="grid">
+
+<div>
+
+<div
+class="stat"
+id="wcount"
+>
+0
+</div>
+
+<div class="statlabel">
+Workouts
+</div>
+
+</div>
+
+<div>
+
+<div
+class="stat"
+id="ecount"
+>
+0
+</div>
+
+<div class="statlabel">
+Exercises logged
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>
+Exercise History
+</h2>
+
+<div id="historyList">
+</div>
+
+</div>
+
+<div class="card">
+
+<button
+class="secondary"
+onclick="clearHistory()"
+>
+Clear all saved data
+</button>
+
+</div>
+
+</section>
+
+<section
+id="charts"
+class="screen"
+>
+
+<div class="card">
+
+<h2>
+Strength Charts
+</h2>
+
+<div class="muted">
+Shows your best logged weight over time for each exercise.
+</div>
+
+<div style="margin-top:12px">
+
+<label>
+Exercise
+</label>
+
+<select
+id="chartExercise"
+onchange="renderCharts()"
+>
+</select>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>
+Weight Progress
+</h2>
+
+<div
+id="weightChart"
+class="chart"
+>
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>
+Estimated Strength
+</h2>
+
+<div class="muted">
+Estimated 1-rep max using your logged weight and reps.
+</div>
+
+<div
+id="e1rmChart"
+class="chart"
+>
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>
+Workout Volume
+</h2>
+
+<div class="muted">
+Total weight × reps logged each workout.
+</div>
+
+<div
+id="volumeChart"
+class="chart"
+>
+</div>
+
+</div>
+
+</section>
+
+</main>
+
+<div id="toast">
+</div>
+
 <script>
 
 const BASE_MENU={
@@ -55,6 +891,7 @@ Core:[
 
 };
 
+
 const startWeights={
 "Leg Press":180,
 "DB Bench Press":45,
@@ -62,32 +899,90 @@ const startWeights={
 "DB Curl":35
 };
 
-let db=
+
+const STORAGE_KEY=
+"ganiStrengthV2";
+
+
+let db;
+
+
+try{
+
+db=
 JSON.parse(
-localStorage.getItem("ganiStrengthV2")
-||
-'{"selected":[],"sessions":[],"history":{},"customExercises":{},"deletedExercises":{},"draftWorkout":null}'
+localStorage.getItem(
+STORAGE_KEY
+)
 );
 
-if(!db.customExercises) db.customExercises={};
-if(!db.deletedExercises) db.deletedExercises={};
-if(!db.selected) db.selected=[];
-if(!db.sessions) db.sessions=[];
-if(!db.history) db.history={};
-if(!("draftWorkout" in db)) db.draftWorkout=null;
+}
+catch(e){
+
+db=null;
+
+}
+
+
+if(!db){
+
+db={
+selected:[],
+sessions:[],
+history:{},
+customExercises:{},
+deletedExercises:{},
+draftWorkout:null
+};
+
+}
+
+
+if(!db.customExercises){
+db.customExercises={};
+}
+
+if(!db.deletedExercises){
+db.deletedExercises={};
+}
+
+if(!db.selected){
+db.selected=[];
+}
+
+if(!db.sessions){
+db.sessions=[];
+}
+
+if(!db.history){
+db.history={};
+}
+
+if(!("draftWorkout" in db)){
+db.draftWorkout=null;
+}
+
 
 function saveDB(){
+
 localStorage.setItem(
-"ganiStrengthV2",
+STORAGE_KEY,
 JSON.stringify(db)
 );
+
 }
+
 
 function buildMenu(){
 
 const menu={};
 
-Object.entries(BASE_MENU).forEach(([group,base])=>{
+
+Object.entries(
+BASE_MENU
+).forEach(
+
+([group,base])=>{
 
 const deleted=
 db.deletedExercises[group]||[];
@@ -95,62 +990,153 @@ db.deletedExercises[group]||[];
 const custom=
 db.customExercises[group]||[];
 
-menu[group]=[
-...base.filter(ex=>!deleted.includes(ex)),
-...custom.filter(ex=>!deleted.includes(ex))
-];
 
 menu[group]=[
-...new Set(menu[group])
+
+...base.filter(
+ex=>
+!deleted.includes(ex)
+),
+
+...custom.filter(
+ex=>
+!deleted.includes(ex)
+)
+
 ];
 
-});
+
+menu[group]=[
+...new Set(
+menu[group]
+)
+];
+
+}
+
+);
+
 
 return menu;
 
 }
 
-let MENU=buildMenu();
+
+let MENU=
+buildMenu();
+
 
 if(!db.selected.length){
 
 db.selected=[
+
 "Leg Press",
+
 "Seated Leg Curl",
+
 "DB Bench Press",
+
 "Lat Pulldown",
+
 "Lateral Raise",
+
 "DB Curl",
+
 "Triceps Pushdown"
+
 ];
 
 }
 
+
 db.selected=
 db.selected.filter(
+
 ex=>
 Object.values(MENU)
 .flat()
 .includes(ex)
+
 );
 
+
+saveDB();
+
+
 function refreshMenu(){
-MENU=buildMenu();
+
+MENU=
+buildMenu();
+
 }
 
+
 function groupLabel(g){
+
 return g==="RearDelts"
 ? "Rear Delts"
 : g;
+
 }
+
 
 function target(ex){
 
 return /curl|raise|pushdown|dip|pec deck|crunch|extension/i.test(ex)
+
 ? "8–10"
 : "6–8";
 
 }
+
+
+function safeId(text){
+
+return text
+.toLowerCase()
+.replace(
+/[^a-z0-9]+/g,
+"-"
+)
+.replace(
+/^-|-$/g,
+""
+);
+
+}
+
+
+function escapeHTML(value){
+
+return String(value)
+.replaceAll("&","&amp;")
+.replaceAll("<","&lt;")
+.replaceAll(">","&gt;")
+.replaceAll('"',"&quot;")
+.replaceAll("'","&#039;");
+
+}
+
+
+function ensureDraft(){
+
+if(!db.draftWorkout){
+
+db.draftWorkout={
+
+startedAt:
+new Date().toISOString(),
+
+exercises:{}
+
+};
+
+saveDB();
+
+}
+
+}
+
 
 function lastSessionForExercise(ex){
 
@@ -163,89 +1149,120 @@ i--
 const session=
 db.sessions[i];
 
+
 const found=
 session.exercises?.find(
-item=>item.name===ex
+
+item=>
+item.name===ex
+
 );
+
 
 if(found){
 
 return{
-date:session.date,
-sets:found.sets||[]
+
+date:
+session.date,
+
+sets:
+found.sets||[]
+
 };
 
 }
 
 }
 
+
 return null;
 
 }
+
+
+function getDraftExercise(ex){
+
+ensureDraft();
+
+
+if(
+!db.draftWorkout.exercises[ex]
+){
+
+const previous=
+lastSessionForExercise(ex);
+
+
+const sets=
+[0,1,2].map(
+
+j=>{
+
+const prior=
+previous?.sets?.[j];
+
+
+return{
+
+weight:
+prior?.weight ??
+(
+j===0
+?
+(startWeights[ex]||"")
+:
+""
+),
+
+reps:
+prior?.reps ?? "",
+
+prefilled:
+!!prior,
+
+confirmed:
+false
+
+};
+
+}
+
+);
+
+
+db.draftWorkout.exercises[ex]={
+
+sets
+
+};
+
+
+saveDB();
+
+}
+
+
+return db.draftWorkout.exercises[ex];
+
+}
+
 
 function selectedForGroup(group){
 
 const options=
 MENU[group]||[];
 
+
 return db.selected.find(
-x=>options.includes(x)
+
+x=>
+options.includes(x)
+
 ) || "";
 
 }
 
-function ensureDraft(){
-
-if(!db.draftWorkout){
-
-db.draftWorkout={
-startedAt:new Date().toISOString(),
-exercises:{}
-};
-
-saveDB();
-
-}
-
-}
-
-function getDraftExercise(ex){
-
-ensureDraft();
-
-if(!db.draftWorkout.exercises[ex]){
-
-const previous=
-lastSessionForExercise(ex);
-
-const sets=[0,1,2].map(j=>{
-
-const prior=
-previous?.sets?.[j];
-
-return{
-weight:
-prior?.weight ??
-(j===0 ? (startWeights[ex]||"") : ""),
-reps:
-prior?.reps ?? "",
-prefilled:!!prior,
-confirmed:false
-};
-
-});
-
-db.draftWorkout.exercises[ex]={
-sets
-};
-
-saveDB();
-
-}
-
-return db.draftWorkout.exercises[ex];
-
-}
 
 function saveDraftField(
 ex,
@@ -257,20 +1274,27 @@ value
 const draft=
 getDraftExercise(ex);
 
+
 draft.sets[setIndex][field]=value;
 
 draft.sets[setIndex].prefilled=false;
 
 draft.sets[setIndex].confirmed=false;
 
+
 saveDB();
+
 
 updateSetVisual(
 ex,
 setIndex
 );
 
+
+updateDraftBanner();
+
 }
+
 
 function confirmDraftSet(
 ex,
@@ -280,10 +1304,15 @@ setIndex
 const draft=
 getDraftExercise(ex);
 
+
 const s=
 draft.sets[setIndex];
 
-if(!s.weight || !s.reps){
+
+if(
+s.weight==="" ||
+s.reps===""
+){
 
 toast(
 "Enter weight and reps first"
@@ -293,41 +1322,61 @@ return;
 
 }
 
+
 s.prefilled=false;
+
 s.confirmed=true;
 
+
 saveDB();
+
 
 updateSetVisual(
 ex,
 setIndex
 );
 
+
+updateDraftBanner();
+
+
 toast(
 "Set completed"
 );
 
+
 startTimer(90);
 
 }
+
 
 function updateSetVisual(
 ex,
 setIndex
 ){
 
-const row=
-document.querySelector(
-`[data-set-row="${CSS.escape(ex)}-${setIndex}"]`
-);
+const id=
+`set-${safeId(ex)}-${setIndex}`;
 
-if(!row) return;
+
+const row=
+document.getElementById(id);
+
+
+if(!row){
+
+return;
+
+}
+
 
 const draft=
 getDraftExercise(ex);
 
+
 const s=
 draft.sets[setIndex];
+
 
 row.classList.remove(
 "prefilled",
@@ -335,14 +1384,19 @@ row.classList.remove(
 "completed"
 );
 
-if(s.confirmed){
+
+if(
+s.confirmed
+){
 
 row.classList.add(
 "completed"
 );
 
 }
-else if(s.prefilled){
+else if(
+s.prefilled
+){
 
 row.classList.add(
 "prefilled"
@@ -359,17 +1413,99 @@ row.classList.add(
 
 }
 
+
+function updateDraftBanner(){
+
+const banner=
+document.getElementById(
+"draftBanner"
+);
+
+
+if(!banner){
+
+return;
+
+}
+
+
+if(
+!db.draftWorkout
+){
+
+banner.textContent=
+"Workout autosave is on.";
+
+return;
+
+}
+
+
+let entered=0;
+
+let completed=0;
+
+
+Object.values(
+db.draftWorkout.exercises||{}
+).forEach(
+
+exercise=>{
+
+(exercise.sets||[])
+.forEach(
+
+s=>{
+
+if(
+s.weight!=="" ||
+s.reps!==""
+){
+
+entered++;
+
+}
+
+
+if(
+s.confirmed
+){
+
+completed++;
+
+}
+
+}
+
+);
+
+}
+
+);
+
+
+banner.textContent=
+
+`Autosaved • ${entered} set${entered===1?"":"s"} entered • ${completed} completed`;
+
+}
+
+
 function chooseOrAdd(
 group,
 value
 ){
 
-if(value==="__add__"){
+if(
+value==="__add__"
+){
 
 addCustomExercise(group);
+
 return;
 
 }
+
 
 chooseForGroup(
 group,
@@ -378,74 +1514,97 @@ value
 
 }
 
+
 function addCustomExercise(group){
 
 const name=
 prompt(
+
 "Enter new " +
 groupLabel(group) +
 " exercise name:"
+
 );
+
 
 if(!name){
 
 renderWorkout();
+
 return;
 
 }
+
 
 const clean=
 name.trim();
 
+
 if(!clean){
 
 renderWorkout();
+
 return;
 
 }
 
+
 const baseMatch=
 (BASE_MENU[group]||[])
 .find(
+
 x=>
 x.toLowerCase()===
 clean.toLowerCase()
+
 );
+
 
 if(baseMatch){
 
 db.deletedExercises[group]??=[];
 
+
 db.deletedExercises[group]=
 db.deletedExercises[group]
 .filter(
+
 x=>x!==baseMatch
+
 );
+
 
 saveDB();
 
 refreshMenu();
+
 
 chooseForGroup(
 group,
 baseMatch
 );
 
+
 toast(
 baseMatch+" restored"
 );
+
 
 return;
 
 }
 
+
 const existing=
 (MENU[group]||[])
 .find(
+
 x=>
 x.toLowerCase()===
 clean.toLowerCase()
+
 );
+
 
 if(existing){
 
@@ -454,38 +1613,48 @@ group,
 existing
 );
 
+
 toast(
 "That exercise already exists"
 );
+
 
 return;
 
 }
 
+
 db.customExercises[group]??=[];
 
-db.customExercises[group].push(
-clean
-);
+
+db.customExercises[group]
+.push(clean);
+
 
 db.deletedExercises[group]??=[];
+
 
 db.deletedExercises[group]=
 db.deletedExercises[group]
 .filter(
+
 x=>
 x.toLowerCase()!==
 clean.toLowerCase()
+
 );
+
 
 saveDB();
 
 refreshMenu();
 
+
 chooseForGroup(
 group,
 clean
 );
+
 
 toast(
 clean+" added"
@@ -493,10 +1662,12 @@ clean+" added"
 
 }
 
+
 function deleteCurrentExercise(group){
 
 const ex=
 selectedForGroup(group);
+
 
 if(!ex){
 
@@ -508,30 +1679,41 @@ return;
 
 }
 
+
 if(
+
 !confirm(
+
 `Delete "${ex}" from your ${groupLabel(group)} choices?
 
 Workout history for ${ex} will NOT be deleted.`
+
 )
+
 ){
 
 return;
 
 }
 
+
 db.selected=
 db.selected.filter(
+
 x=>x!==ex
+
 );
+
 
 const isBuiltIn=
 (BASE_MENU[group]||[])
 .includes(ex);
 
+
 if(isBuiltIn){
 
 db.deletedExercises[group]??=[];
+
 
 if(
 !db.deletedExercises[group]
@@ -548,13 +1730,17 @@ else{
 
 db.customExercises[group]??=[];
 
+
 db.customExercises[group]=
 db.customExercises[group]
 .filter(
+
 x=>x!==ex
+
 );
 
 }
+
 
 saveDB();
 
@@ -562,11 +1748,13 @@ refreshMenu();
 
 renderWorkout();
 
+
 toast(
 ex+" removed"
 );
 
 }
+
 
 function chooseForGroup(
 group,
@@ -576,19 +1764,27 @@ ex
 const groupExercises=
 MENU[group]||[];
 
+
 const existing=
 db.selected.find(
-x=>groupExercises.includes(x)
+
+x=>
+groupExercises.includes(x)
+
 );
+
 
 if(existing){
 
 db.selected=
 db.selected.filter(
+
 x=>x!==existing
+
 );
 
 }
+
 
 if(ex){
 
@@ -597,22 +1793,32 @@ db.selected.length>=8
 ){
 
 if(existing){
+
 db.selected.push(existing);
+
 }
+
 
 renderWorkout();
 
-return toast(
+
+toast(
 "Maximum 8 exercises"
 );
 
+
+return;
+
 }
 
+
 db.selected.push(ex);
+
 
 getDraftExercise(ex);
 
 }
+
 
 saveDB();
 
@@ -620,26 +1826,39 @@ renderWorkout();
 
 }
 
+
 function renderWorkout(){
 
 refreshMenu();
 
-let el=
-document.getElementById("workout");
+
+const el=
+document.getElementById(
+"workout"
+);
+
 
 el.innerHTML="";
 
-Object.entries(MENU).forEach(
+
+Object.entries(MENU)
+.forEach(
+
 ([group,arr])=>{
 
 const current=
 selectedForGroup(group);
 
+
 const card=
-document.createElement("div");
+document.createElement(
+"div"
+);
+
 
 card.className=
 "workout-part";
+
 
 const options=`
 
@@ -648,13 +1867,16 @@ const options=`
 </option>
 
 ${arr.map(
+
 ex=>
+
 `<option
-value="${ex}"
+value="${escapeHTML(ex)}"
 ${ex===current?"selected":""}
 >
-${ex}
+${escapeHTML(ex)}
 </option>`
+
 ).join("")}
 
 <option value="__add__">
@@ -663,30 +1885,45 @@ ${ex}
 
 `;
 
+
 let logger="";
+
 
 if(current){
 
 const previous=
-lastSessionForExercise(current);
+lastSessionForExercise(
+current
+);
+
 
 const draft=
-getDraftExercise(current);
+getDraftExercise(
+current
+);
+
 
 let previousBox="";
+
 
 if(previous){
 
 const date=
-new Date(previous.date)
+new Date(
+previous.date
+)
 .toLocaleDateString(
+
 undefined,
+
 {
 month:"short",
 day:"numeric",
 year:"numeric"
 }
+
 );
+
 
 previousBox=`
 
@@ -697,21 +1934,25 @@ Last workout (${date})
 </div>
 
 ${previous.sets.map(
+
 (s,index)=>
+
 `<div class="last-set">
 Set ${index+1}: ${s.weight} × ${s.reps}
 </div>`
+
 ).join("")}
 
 </div>
 
 <div class="prefill-note">
-Pre-filled from last workout — update as you go
+Pre-filled from last workout — update or confirm each set
 </div>
 
 `;
 
 }
+
 
 logger=`
 
@@ -719,9 +1960,9 @@ logger=`
 
 <button
 class="danger small"
-onclick="deleteCurrentExercise('${group}')"
+data-delete-group="${escapeHTML(group)}"
 >
-Delete ${current}
+Delete ${escapeHTML(current)}
 </button>
 
 </div>
@@ -733,23 +1974,30 @@ ${previousBox}
 <div class="sets">
 
 ${[0,1,2].map(
+
 j=>{
 
 const s=
 draft.sets[j];
 
-let rowClass=
+
+const rowClass=
 s.confirmed
 ? "completed"
 : s.prefilled
 ? "prefilled"
 : "edited";
 
+
+const rowId=
+`set-${safeId(current)}-${j}`;
+
+
 return`
 
 <div
 class="set ${rowClass}"
-data-set-row="${current}-${j}"
+id="${rowId}"
 >
 
 <div class="setnum">
@@ -764,8 +2012,10 @@ Weight
 
 <input
 inputmode="decimal"
-value="${s.weight}"
-oninput="saveDraftField('${current}',${j},'weight',this.value)"
+data-exercise="${escapeHTML(current)}"
+data-set="${j}"
+data-field="weight"
+value="${escapeHTML(s.weight)}"
 >
 
 </div>
@@ -778,16 +2028,19 @@ Reps
 
 <input
 inputmode="numeric"
-value="${s.reps}"
+data-exercise="${escapeHTML(current)}"
+data-set="${j}"
+data-field="reps"
+value="${escapeHTML(s.reps)}"
 placeholder="${target(current).replace("–","-")}"
-oninput="saveDraftField('${current}',${j},'reps',this.value)"
 >
 
 </div>
 
 <button
 class="secondary check"
-onclick="confirmDraftSet('${current}',${j})"
+data-confirm-exercise="${escapeHTML(current)}"
+data-confirm-set="${j}"
 >
 ✓
 </button>
@@ -797,9 +2050,11 @@ onclick="confirmDraftSet('${current}',${j})"
 `;
 
 }
+
 ).join("")}
 
 </div>
+
 
 ${
 
@@ -824,6 +2079,7 @@ Do not take deadlifts to failure.
 
 }
 
+
 card.innerHTML=`
 
 <div class="row between">
@@ -837,9 +2093,10 @@ ${groupLabel(group)}
 ${
 
 current
-
-? `Target ${target(current)}`
-: "Optional"
+?
+`Target ${target(current)}`
+:
+"Optional"
 
 }
 
@@ -848,12 +2105,7 @@ current
 </div>
 
 <select
-onchange="
-chooseOrAdd(
-'${group}',
-this.value
-)
-"
+data-group="${escapeHTML(group)}"
 >
 
 ${options}
@@ -864,26 +2116,193 @@ ${logger}
 
 `;
 
+
 el.appendChild(card);
 
 }
+
+);
+
+
+bindWorkoutEvents();
+
+updateDraftBanner();
+
+}
+
+
+function bindWorkoutEvents(){
+
+document.querySelectorAll(
+"select[data-group]"
+)
+.forEach(
+
+select=>{
+
+select.addEventListener(
+"change",
+()=>{
+
+chooseOrAdd(
+
+select.dataset.group,
+
+select.value
+
 );
 
 }
 
+);
+
+}
+
+);
+
+
+document.querySelectorAll(
+"input[data-exercise]"
+)
+.forEach(
+
+input=>{
+
+input.addEventListener(
+"input",
+()=>{
+
+saveDraftField(
+
+input.dataset.exercise,
+
+Number(
+input.dataset.set
+),
+
+input.dataset.field,
+
+input.value
+
+);
+
+}
+
+);
+
+}
+
+);
+
+
+document.querySelectorAll(
+"button[data-confirm-exercise]"
+)
+.forEach(
+
+button=>{
+
+button.addEventListener(
+"click",
+()=>{
+
+confirmDraftSet(
+
+button.dataset.confirmExercise,
+
+Number(
+button.dataset.confirmSet
+)
+
+);
+
+}
+
+);
+
+}
+
+);
+
+
+document.querySelectorAll(
+"button[data-delete-group]"
+)
+.forEach(
+
+button=>{
+
+button.addEventListener(
+"click",
+()=>{
+
+deleteCurrentExercise(
+button.dataset.deleteGroup
+);
+
+}
+
+);
+
+}
+
+);
+
+}
+
+
 function newWorkout(){
 
 if(
-db.draftWorkout &&
-Object.keys(
+db.draftWorkout
+){
+
+let hasData=false;
+
+
+Object.values(
 db.draftWorkout.exercises||{}
-).length
+)
+.forEach(
+
+exercise=>{
+
+(exercise.sets||[])
+.forEach(
+
+s=>{
+
+if(
+s.weight!=="" ||
+s.reps!=="" ||
+s.confirmed
+){
+
+hasData=true;
+
+}
+
+}
+
+);
+
+}
+
+);
+
+
+if(
+hasData
 ){
 
 if(
+
 !confirm(
-"Start a new workout? This will discard your current unfinished workout."
+
+"Start a new workout? This will discard the current unfinished workout."
+
 )
+
 ){
 
 return;
@@ -892,14 +2311,23 @@ return;
 
 }
 
+}
+
+
 db.draftWorkout={
-startedAt:new Date().toISOString(),
+
+startedAt:
+new Date().toISOString(),
+
 exercises:{}
+
 };
+
 
 saveDB();
 
 renderWorkout();
+
 
 toast(
 "New workout started"
@@ -907,9 +2335,12 @@ toast(
 
 }
 
+
 function saveWorkout(){
 
-if(!db.draftWorkout){
+if(
+!db.draftWorkout
+){
 
 toast(
 "No workout in progress"
@@ -919,59 +2350,104 @@ return;
 
 }
 
-let session={
-date:new Date().toISOString(),
+
+const session={
+
+date:
+new Date().toISOString(),
+
 exercises:[]
+
 };
 
+
 for(
+
 const [ex,data]
 of Object.entries(
 db.draftWorkout.exercises
 )
+
 ){
 
 const sets=
 (data.sets||[])
+
 .filter(
+
 s=>
 s.confirmed &&
-s.weight &&
-s.reps
+s.weight!=="" &&
+s.reps!==""
+
 )
+
 .map(
+
 s=>({
-weight:+s.weight,
-reps:+s.reps
+
+weight:
+Number(s.weight),
+
+reps:
+Number(s.reps)
+
 })
+
 );
 
-if(!sets.length){
+
+if(
+!sets.length
+){
+
 continue;
+
 }
 
+
 session.exercises.push({
-name:ex,
+
+name:
+ex,
+
 sets
+
 });
+
 
 const best=
 sets.reduce(
+
 (a,b)=>
+
 b.weight>a.weight
-? b
-: a
+?
+b
+:
+a
+
 );
+
 
 db.history[ex]??=[];
 
+
 db.history[ex].push({
-weight:best.weight,
-reps:best.reps,
-date:session.date
+
+weight:
+best.weight,
+
+reps:
+best.reps,
+
+date:
+session.date
+
 });
 
 }
+
 
 if(
 !session.exercises.length
@@ -985,11 +2461,14 @@ return;
 
 }
 
+
 db.sessions.push(
 session
 );
 
+
 db.draftWorkout=null;
+
 
 saveDB();
 
@@ -999,11 +2478,13 @@ populateChartExercises();
 
 renderWorkout();
 
+
 toast(
 "Workout saved"
 );
 
 }
+
 
 function renderHistory(){
 
@@ -1012,65 +2493,90 @@ document.getElementById(
 ).textContent=
 db.sessions.length;
 
+
 document.getElementById(
 "ecount"
 ).textContent=
+
 db.sessions.reduce(
+
 (a,s)=>
-a+s.exercises.length,
+
+a+
+s.exercises.length,
+
 0
+
 );
 
-let el=
+
+const el=
 document.getElementById(
 "historyList"
 );
 
+
 el.innerHTML="";
 
-let entries=
+
+const entries=
 Object.entries(
 db.history
 )
+
 .filter(
-([_,a])=>a.length
+
+([_,a])=>
+a.length
+
 )
+
 .reverse();
 
-if(!entries.length){
+
+if(
+!entries.length
+){
 
 el.innerHTML=
+
 "<div class='muted'>No exercise history yet.</div>";
 
 return;
 
 }
 
+
 entries.forEach(
+
 ([ex,a])=>{
 
-let x=
+const x=
 a[a.length-1];
 
-let d=
+
+const d=
 new Date(
 x.date
 ).toLocaleDateString();
 
-let div=
+
+const div=
 document.createElement(
 "div"
 );
 
+
 div.className=
 "history-item";
+
 
 div.innerHTML=
 
 `<span>
 
 <b>
-${ex}
+${escapeHTML(ex)}
 </b>
 
 <br>
@@ -1085,26 +2591,34 @@ ${d}
 ${x.weight} × ${x.reps}
 </b>`;
 
+
 el.appendChild(
 div
 );
 
 }
+
 );
 
 }
 
+
 function clearHistory(){
 
 if(
+
 confirm(
-"Delete all workout history, exercise selections, custom exercises and your current draft workout?"
+
+"Delete all workout history, exercise selections, custom exercises and your current unfinished workout?"
+
 )
+
 ){
 
 localStorage.removeItem(
-"ganiStrengthV2"
+STORAGE_KEY
 );
+
 
 location.reload();
 
@@ -1112,19 +2626,24 @@ location.reload();
 
 }
 
-function show(
+
+function showScreen(
 id,
 btn
 ){
 
 document.querySelectorAll(
 ".screen"
-).forEach(
+)
+.forEach(
+
 x=>
 x.classList.remove(
 "active"
 )
+
 );
+
 
 document.getElementById(
 id
@@ -1132,58 +2651,92 @@ id
 "active"
 );
 
+
 document.querySelectorAll(
 "nav button"
-).forEach(
+)
+.forEach(
+
 x=>
 x.classList.remove(
 "active"
 )
+
 );
+
 
 btn.classList.add(
 "active"
 );
 
-if(id==="train"){
+
+if(
+id==="train"
+){
+
 renderWorkout();
+
 }
 
-if(id==="history"){
+
+if(
+id==="history"
+){
+
 renderHistory();
+
 }
 
-if(id==="charts"){
+
+if(
+id==="charts"
+){
+
 populateChartExercises();
+
 renderCharts();
+
 }
 
 }
+
 
 let timer=null;
+
 let remaining=0;
+
 
 function startTimer(sec){
 
-clearInterval(timer);
+clearInterval(
+timer
+);
+
 
 remaining=sec;
+
 
 toast(
 "Rest timer started"
 );
 
+
 timer=
 setInterval(
+
 ()=>{
 
 remaining--;
+
 
 if(
 remaining<=0
 ){
 
-clearInterval(timer);
+clearInterval(
+timer
+);
+
 
 toast(
 "Rest complete"
@@ -1202,39 +2755,50 @@ remaining+
 }
 
 },
+
 1000
+
 );
 
 }
 
+
 function toast(t){
 
-let x=
+const x=
 document.getElementById(
 "toast"
 );
 
+
 x.textContent=t;
+
 
 x.style.display=
 "block";
+
 
 clearTimeout(
 x._t
 );
 
+
 x._t=
 setTimeout(
+
 ()=>{
 
 x.style.display=
 "none";
 
 },
+
 1800
+
 );
 
 }
+
 
 function populateChartExercises(){
 
@@ -1243,16 +2807,23 @@ document.getElementById(
 "chartExercise"
 );
 
+
 const names=
 Object.keys(
 db.history
 )
+
 .filter(
-k=>db.history[k]?.length
+
+k=>
+db.history[k]?.length
+
 );
+
 
 const current=
 sel.value;
+
 
 sel.innerHTML=
 
@@ -1261,10 +2832,13 @@ names.length
 ?
 
 names.map(
+
 n=>
-`<option value="${n}">
-${n}
+
+`<option value="${escapeHTML(n)}">
+${escapeHTML(n)}
 </option>`
+
 ).join("")
 
 :
@@ -1272,6 +2846,7 @@ ${n}
 `<option>
 No logged exercises yet
 </option>`;
+
 
 if(
 names.includes(current)
@@ -1282,6 +2857,7 @@ sel.value=current;
 }
 
 }
+
 
 function svgLineChart(
 containerId,
@@ -1295,58 +2871,94 @@ document.getElementById(
 containerId
 );
 
-if(!points.length){
+
+if(
+!points.length
+){
 
 el.innerHTML=
+
 "<div class='muted'>Log workouts to see this chart.</div>";
 
 return;
 
 }
 
+
 const W=640;
+
 const H=220;
+
 const pL=48;
+
 const pR=18;
+
 const pT=20;
+
 const pB=35;
 
+
 const vals=
-points.map(valueFn);
+points.map(
+valueFn
+);
+
 
 const min=
-Math.min(...vals);
+Math.min(
+...vals
+);
+
 
 const max=
-Math.max(...vals);
+Math.max(
+...vals
+);
+
 
 const lo=
 min===max
-? Math.max(0,min-1)
-: min;
+?
+Math.max(
+0,
+min-1
+)
+:
+min;
+
 
 const hi=
 min===max
-? max+1
-: max;
+?
+max+1
+:
+max;
+
 
 const x=i=>
+
 pL+
 (
 points.length===1
-? (W-pL-pR)/2
-: i*
+?
+(W-pL-pR)/2
+:
+i*
 (W-pL-pR)/
 (points.length-1)
 );
 
+
 const y=v=>
+
 pT+
 (hi-v)*
 (H-pT-pB)/
 (hi-lo||1);
 
+
 let grid="";
+
 
 for(
 let i=0;
@@ -1354,12 +2966,15 @@ i<5;
 i++
 ){
 
-let yy=
+const yy=
+
 pT+
 i*
 (H-pT-pB)/4;
 
+
 grid+=
+
 `<line
 class="chart-grid"
 x1="${pL}"
@@ -1370,15 +2985,24 @@ y2="${yy}"
 
 }
 
-let poly=
+
+const poly=
+
 points.map(
+
 (p,i)=>
+
 `${x(i)},${y(valueFn(p))}`
+
 ).join(" ");
 
-let dots=
+
+const dots=
+
 points.map(
+
 (p,i)=>
+
 `<circle
 class="chart-dot"
 cx="${x(i)}"
@@ -1395,19 +3019,23 @@ ${valueLabel}
 </title>
 
 </circle>`
+
 ).join("");
 
-let first=
+
+const first=
 new Date(
 points[0].date
 ).toLocaleDateString();
 
-let lastd=
+
+const lastd=
 new Date(
 points[
 points.length-1
 ].date
 ).toLocaleDateString();
+
 
 el.innerHTML=
 
@@ -1462,6 +3090,7 @@ ${lo.toFixed(0)}
 
 }
 
+
 function renderCharts(){
 
 const name=
@@ -1469,63 +3098,117 @@ document.getElementById(
 "chartExercise"
 )?.value;
 
+
 const pts=
 (
 name &&
 db.history[name]
 )
-? db.history[name]
-: [];
+
+?
+db.history[name]
+:
+[];
+
 
 svgLineChart(
+
 "weightChart",
+
 pts,
-p=>+p.weight,
+
+p=>
+Number(
+p.weight
+),
+
 "lb"
+
 );
 
+
 svgLineChart(
+
 "e1rmChart",
+
 pts,
+
 p=>
-+p.weight*
+
+Number(
+p.weight
+)*
 (
 1+
-(+p.reps/30)
+Number(
+p.reps
+)/30
 ),
+
 "lb"
+
 );
+
 
 const sessions=
+
 db.sessions.map(
+
 s=>({
-date:s.date,
+
+date:
+s.date,
+
 volume:
+
 s.exercises.reduce(
+
 (sum,e)=>
+
 sum+
+
 e.sets.reduce(
+
 (a,z)=>
+
 a+
 (
-+z.weight*
-+z.reps
-),
-0
-),
-0
+Number(
+z.weight
+)*
+Number(
+z.reps
 )
+),
+
+0
+
+),
+
+0
+
+)
+
 })
+
 );
 
+
 svgLineChart(
+
 "volumeChart",
+
 sessions,
-p=>p.volume,
+
+p=>
+p.volume,
+
 "lb-reps"
+
 );
 
 }
+
 
 ensureDraft();
 
@@ -1533,22 +3216,38 @@ renderWorkout();
 
 renderHistory();
 
+populateChartExercises();
+
+
 if(
 "serviceWorker"
 in navigator
 ){
 
 window.addEventListener(
+
 "load",
+
 ()=>{
 
 navigator.serviceWorker.register(
 "./sw.js"
+)
+.catch(
+err=>
+console.log(
+"Service worker error",
+err
+)
 );
 
 }
+
 );
 
 }
 
 </script>
+
+</body>
+</html>
