@@ -1,4 +1,4 @@
-const CACHE='gani-strength-v10';
+const CACHE='gani-strength-v10-2';
 
 const ASSETS=[
 './',
