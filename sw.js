@@ -1,4 +1,4 @@
-const CACHE='gani-strength-v9';
+const CACHE='gani-strength-v10';
 
 const ASSETS=[
 './',
@@ -11,44 +11,61 @@ const ASSETS=[
 
 self.addEventListener(
 'install',
-e=>
-e.waitUntil(
-caches.open(CACHE)
+event=>{
+
+event.waitUntil(
+
+caches
+.open(CACHE)
 .then(
-c=>c.addAll(ASSETS)
+cache=>cache.addAll(ASSETS)
 )
-)
+
+);
+
+self.skipWaiting();
+
+}
 );
 
 self.addEventListener(
 'activate',
-e=>
-e.waitUntil(
-caches.keys()
+event=>{
+
+event.waitUntil(
+
+caches
+.keys()
 .then(
 keys=>
 Promise.all(
+
 keys
 .filter(
-k=>k!==CACHE
+key=>key!==CACHE
 )
 .map(
-k=>caches.delete(k)
+key=>caches.delete(key)
 )
+
 )
 )
 .then(
 ()=>self.clients.claim()
 )
-)
+
+);
+
+}
 );
 
 self.addEventListener(
 'fetch',
-e=>
-e.respondWith(
+event=>{
 
-fetch(e.request)
+event.respondWith(
+
+fetch(event.request)
 
 .then(
 response=>{
@@ -56,11 +73,12 @@ response=>{
 const copy=
 response.clone();
 
-caches.open(CACHE)
+caches
+.open(CACHE)
 .then(
 cache=>
 cache.put(
-e.request,
+event.request,
 copy
 )
 );
@@ -72,9 +90,11 @@ return response;
 
 .catch(
 ()=>caches.match(
-e.request
+event.request
 )
 )
 
-)
+);
+
+}
 );
