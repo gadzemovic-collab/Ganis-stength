@@ -14,13 +14,11 @@ self.addEventListener(
 event=>{
 
 event.waitUntil(
-
 caches
 .open(CACHE)
 .then(
 cache=>cache.addAll(ASSETS)
 )
-
 );
 
 self.skipWaiting();
@@ -33,13 +31,11 @@ self.addEventListener(
 event=>{
 
 event.waitUntil(
-
 caches
 .keys()
 .then(
 keys=>
 Promise.all(
-
 keys
 .filter(
 key=>key!==CACHE
@@ -47,13 +43,11 @@ key=>key!==CACHE
 .map(
 key=>caches.delete(key)
 )
-
 )
 )
 .then(
 ()=>self.clients.claim()
 )
-
 );
 
 }
