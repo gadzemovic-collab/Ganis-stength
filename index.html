@@ -576,20 +576,22 @@ left:50%;
 bottom:max(12px,env(safe-area-inset-bottom));
 transform:translateX(-50%);
 z-index:12;
-width:min(680px,calc(100% - 24px));
+width:max-content;
+max-width:calc(100% - 16px);
 display:grid;
-grid-template-columns:minmax(90px,1fr) auto auto;
+grid-template-columns:auto auto auto auto;
 align-items:center;
-gap:8px;
-padding:9px;
+gap:5px;
+padding:5px 7px;
 background:#fff;
 border:1px solid var(--blue-border);
-border-radius:15px;
+border-radius:12px;
 box-shadow:0 5px 22px #0a203b48;
 }
 
-.rest-float strong{font-size:14px;padding-left:5px}
-.rest-float button{white-space:nowrap}
+.rest-float strong{font-size:12px;min-width:65px;white-space:nowrap}
+.rest-float select{width:67px;padding:6px 3px;font-size:12px;border-radius:8px}
+.rest-float button{white-space:nowrap;padding:7px 8px;font-size:12px}
 }
 
 .stat{
@@ -895,7 +897,7 @@ Delete all workout data
 
 <section id="settings" class="screen">
 <div class="card"><h2>Settings</h2>
-<label for="restSeconds">Rest timer (seconds)</label><input id="restSeconds" type="number" min="10" max="3600" step="5" onchange="updateSettings()" inputmode="numeric">
+<label for="restSeconds">Rest timer</label><select id="restSeconds" onchange="updateSettings()"><option value="30">30 seconds</option><option value="45">45 seconds</option><option value="60">1 minute</option><option value="90">1 minute 30 seconds</option><option value="120">2 minutes</option><option value="180">3 minutes</option><option value="240">4 minutes</option><option value="300">5 minutes</option></select>
 <label for="timerAlert" style="margin-top:15px">Timer alert</label><select id="timerAlert" onchange="updateSettings()"><option value="both">Sound and vibration</option><option value="sound">Sound</option><option value="vibrate">Vibration</option><option value="none">Visual only</option></select>
 <div class="muted" style="margin-top:10px">Sound and vibration depend on your phone and browser settings. Keep the app open for reliable alerts.</div>
 <label for="theme" style="margin-top:15px">Color theme</label><select id="theme" onchange="updateSettings()"><option value="blue">Blue</option><option value="green">Green</option><option value="purple">Purple</option><option value="dark">Dark</option></select>
@@ -994,6 +996,7 @@ class="chart"
 
 <div class="rest-float" role="timer" aria-label="Rest timer">
 <strong id="timerDisplay" aria-live="off">Rest timer ready</strong>
+<select id="restQuickSelect" aria-label="Rest duration" onchange="setRestFromTimer(this.value)"><option value="30">0:30</option><option value="45">0:45</option><option value="60">1:00</option><option value="90">1:30</option><option value="120">2:00</option><option value="180">3:00</option><option value="240">4:00</option><option value="300">5:00</option></select>
 <button class="secondary small" onclick="startTimer(Number(db.settings.restSeconds))">Start</button>
 <button class="secondary small" onclick="stopTimer()">Stop</button>
 </div>
@@ -1241,8 +1244,9 @@ const cfg=db.settings; const colors=THEMES[cfg.theme]||THEMES.blue;
 ["--blue","--blue-dark","--blue-light","--blue-lighter","--blue-border","--navy"].forEach((key,i)=>document.documentElement.style.setProperty(key,colors[i]));
 document.body.style.fontFamily=FONTS[cfg.font]||FONTS.system;
 document.querySelector("header").style.background=colors[5];
-for(const [id,value] of Object.entries({restSeconds:cfg.restSeconds,timerAlert:cfg.timerAlert,theme:cfg.theme,font:cfg.font})){const el=document.getElementById(id);if(el)el.value=value;}
+for(const [id,value] of Object.entries({restSeconds:cfg.restSeconds,restQuickSelect:cfg.restSeconds,timerAlert:cfg.timerAlert,theme:cfg.theme,font:cfg.font})){const el=document.getElementById(id);if(el){if((id==="restSeconds"||id==="restQuickSelect")&&!Array.from(el.options).some(option=>option.value===String(value))){const option=new Option(Math.floor(value/60)+":"+String(value%60).padStart(2,"0"),value);el.add(option);}el.value=value;}}
 }
+function setRestFromTimer(value){document.getElementById("restSeconds").value=value;updateSettings();}
 function updateSettings(){
 const seconds=Number(document.getElementById("restSeconds").value);
 if(!Number.isInteger(seconds)||seconds<10||seconds>3600){toast("Choose 10 to 3600 seconds");applySettings();return;}
