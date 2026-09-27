@@ -523,6 +523,22 @@ color:#fff;
 border-color:#25a049;
 }
 
+.set.completed .check::after{
+content:"✓";
+position:absolute;
+right:-4px;
+bottom:-4px;
+width:17px;
+height:17px;
+line-height:17px;
+border-radius:50%;
+background:#fff;
+color:#16863b;
+font-size:13px;
+font-weight:900;
+box-shadow:0 1px 4px #0005;
+}
+
 .setnum{
 font-weight:800;
 
@@ -539,7 +555,41 @@ height:44px;
 }
 
 .check{
-font-size:22px;
+position:relative;
+display:grid;
+place-items:center;
+width:44px;
+padding:4px!important;
+}
+
+.check img{
+display:block;
+width:34px;
+height:34px;
+border-radius:7px;
+object-fit:cover;
+}
+
+.rest-float{
+position:fixed;
+left:50%;
+bottom:max(12px,env(safe-area-inset-bottom));
+transform:translateX(-50%);
+z-index:12;
+width:min(680px,calc(100% - 24px));
+display:grid;
+grid-template-columns:minmax(90px,1fr) auto auto;
+align-items:center;
+gap:8px;
+padding:9px;
+background:#fff;
+border:1px solid var(--blue-border);
+border-radius:15px;
+box-shadow:0 5px 22px #0a203b48;
+}
+
+.rest-float strong{font-size:14px;padding-left:5px}
+.rest-float button{white-space:nowrap}
 }
 
 .stat{
@@ -625,7 +675,7 @@ stroke-width:1;
 #toast{
 position:fixed;
 
-bottom:22px;
+bottom:92px;
 left:50%;
 
 transform:
@@ -749,8 +799,6 @@ Workout autosave is on.
 
 </div>
 
-<div class="card"><div class="row between"><strong id="timerDisplay" aria-live="polite">Rest timer ready</strong><button class="secondary small" onclick="stopTimer()">Stop</button></div></div>
-
 <div id="workout">
 </div>
 
@@ -764,13 +812,6 @@ style="flex:1"
 onclick="saveWorkout()"
 >
 Finish & Save Workout
-</button>
-
-<button
-class="secondary"
-onclick="startTimer(Number(db.settings.restSeconds))"
->
-Start Rest
 </button>
 
 </div>
@@ -950,6 +991,12 @@ class="chart"
 </section>
 
 </main>
+
+<div class="rest-float" role="timer" aria-label="Rest timer">
+<strong id="timerDisplay" aria-live="off">Rest timer ready</strong>
+<button class="secondary small" onclick="startTimer(Number(db.settings.restSeconds))">Start</button>
+<button class="secondary small" onclick="stopTimer()">Stop</button>
+</div>
 
 <div id="toast">
 </div>
@@ -1521,6 +1568,12 @@ row.classList.remove(
 "edited",
 "completed"
 );
+
+const button=row.querySelector(".check");
+if(button){
+button.setAttribute("aria-pressed",String(!!s.confirmed));
+button.setAttribute("aria-label",`${s.confirmed?"Set completed":"Complete set"} ${setIndex+1} for ${ex}`);
+}
 
 
 if(
@@ -2161,8 +2214,10 @@ placeholder="${target(current).replace("–","-")}"
 class="secondary check"
 data-confirm-exercise="${escapeHTML(current)}"
 data-confirm-set="${j}"
+aria-label="${s.confirmed?"Set completed":"Complete set"} ${j+1} for ${escapeHTML(current)}"
+aria-pressed="${s.confirmed}"
 >
-✓
+<img src="rep-harbor-192.png?v=12" alt="" width="34" height="34">
 </button>
 
 </div>
@@ -2795,7 +2850,7 @@ let timerEnd=0;
 let audioContext=null;
 function stopTimer(){clearInterval(timer);timer=null;timerEnd=0;updateTimerDisplay();}
 function updateTimerDisplay(){const left=Math.max(0,Math.ceil((timerEnd-Date.now())/1000));const el=document.getElementById("timerDisplay");if(el)el.textContent=timerEnd?"Rest: "+Math.floor(left/60)+":"+String(left%60).padStart(2,"0"):"Rest timer ready";}
-function timerFinished(){stopTimer();toast("Rest complete");const mode=db.settings.timerAlert;if((mode==="both"||mode==="vibrate")&&navigator.vibrate)navigator.vibrate([200,100,200]);if((mode==="both"||mode==="sound")&&audioContext){try{audioContext.resume();const osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.frequency.value=880;gain.gain.value=0.12;osc.connect(gain);gain.connect(audioContext.destination);osc.start();osc.stop(audioContext.currentTime+0.3);}catch(e){}}}
+function timerFinished(){stopTimer();document.getElementById("timerDisplay").textContent="Rest complete";toast("Rest complete");const mode=db.settings.timerAlert;if((mode==="both"||mode==="vibrate")&&navigator.vibrate)navigator.vibrate([200,100,200]);if((mode==="both"||mode==="sound")&&audioContext){try{audioContext.resume();const osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.frequency.value=880;gain.gain.value=0.12;osc.connect(gain);gain.connect(audioContext.destination);osc.start();osc.stop(audioContext.currentTime+0.3);}catch(e){}}}
 
 let remaining=0;
 
