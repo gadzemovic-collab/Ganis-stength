@@ -1,12 +1,12 @@
-const CACHE='gani-strength-v11';
+const CACHE='rep-harbor-v12';
 
 const ASSETS=[
 './',
 './index.html',
 './manifest.webmanifest',
-'./icon-180.png',
-'./icon-192.png',
-'./icon-512.png'
+'./rep-harbor-180.png?v=12',
+'./rep-harbor-192.png?v=12',
+'./rep-harbor-512.png?v=12'
 ];
 
 self.addEventListener(
