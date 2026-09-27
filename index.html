@@ -687,6 +687,12 @@ History
 </button>
 
 <button
+onclick="showScreen('settings',this)"
+>
+Settings
+</button>
+
+<button
 onclick="showScreen('charts',this)"
 >
 Charts
@@ -743,6 +749,8 @@ Workout autosave is on.
 
 </div>
 
+<div class="card"><div class="row between"><strong id="timerDisplay" aria-live="polite">Rest timer ready</strong><button class="secondary small" onclick="stopTimer()">Stop</button></div></div>
+
 <div id="workout">
 </div>
 
@@ -760,9 +768,9 @@ Finish & Save Workout
 
 <button
 class="secondary"
-onclick="startTimer(90)"
+onclick="startTimer(Number(db.settings.restSeconds))"
 >
-90s Rest
+Start Rest
 </button>
 
 </div>
@@ -822,7 +830,7 @@ Exercises logged
 <div class="card">
 
 <h2>
-Exercise History
+Workout History
 </h2>
 
 <div id="historyList">
@@ -836,13 +844,23 @@ Exercise History
 class="secondary"
 onclick="clearHistory()"
 >
-Clear all saved data
+Delete all workout data
 </button>
 
 </div>
 
 </section>
 
+
+<section id="settings" class="screen">
+<div class="card"><h2>Settings</h2>
+<label for="restSeconds">Rest timer (seconds)</label><input id="restSeconds" type="number" min="10" max="3600" step="5" onchange="updateSettings()" inputmode="numeric">
+<label for="timerAlert" style="margin-top:15px">Timer alert</label><select id="timerAlert" onchange="updateSettings()"><option value="both">Sound and vibration</option><option value="sound">Sound</option><option value="vibrate">Vibration</option><option value="none">Visual only</option></select>
+<div class="muted" style="margin-top:10px">Sound and vibration depend on your phone and browser settings. Keep the app open for reliable alerts.</div>
+<label for="theme" style="margin-top:15px">Color theme</label><select id="theme" onchange="updateSettings()"><option value="blue">Blue</option><option value="green">Green</option><option value="purple">Purple</option><option value="dark">Dark</option></select>
+<label for="font" style="margin-top:15px">Font</label><select id="font" onchange="updateSettings()"><option value="system">System</option><option value="arial">Arial</option><option value="georgia">Georgia</option><option value="verdana">Verdana</option></select></div>
+<div class="card"><h2>Workout data</h2><button class="danger" onclick="clearWorkoutData()">Delete all workout data</button><p class="muted">Keeps your exercise choices and Settings.</p></div>
+</section>
 
 <section
 id="charts"
@@ -938,7 +956,8 @@ const BASE_MENU={
 
 Quads:[
 "Leg Press",
-"Leg Extension"
+"Leg Extension",
+"Squat"
 ],
 
 Hamstrings:[
@@ -998,6 +1017,9 @@ const startWeights={
 };
 
 
+const THEMES={blue:["#3f8fe8","#276bb8","#e7f3ff","#f4f9ff","#cfe5fb","#17324d"],green:["#20865c","#166646","#e2f5e9","#f2fbf4","#bde5cd","#143c32"],purple:["#8051ba","#633c96","#f1eafa","#faf6ff","#dbc7f2","#36234c"],dark:["#468fd7","#8bbdf0","#273a50","#1b2a3b","#456078","#121e2b"]};
+const FONTS={system:"-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif",arial:"Arial,sans-serif",georgia:"Georgia,serif",verdana:"Verdana,sans-serif"};
+
 const STORAGE_KEY=
 "ganiStrengthV2";
 
@@ -1055,6 +1077,8 @@ db.sessions=[];
 if(!db.history){
 db.history={};
 }
+if(!db.settings){db.settings={};}
+db.settings={restSeconds:90,timerAlert:"both",theme:"blue",font:"system",...db.settings};
 
 if(!("draftWorkout" in db)){
 db.draftWorkout=null;
@@ -1161,6 +1185,18 @@ Object.values(MENU)
 saveDB();
 
 
+function applySettings(){
+const cfg=db.settings; const colors=THEMES[cfg.theme]||THEMES.blue;
+["--blue","--blue-dark","--blue-light","--blue-lighter","--blue-border","--navy"].forEach((key,i)=>document.documentElement.style.setProperty(key,colors[i]));
+document.body.style.fontFamily=FONTS[cfg.font]||FONTS.system;
+document.querySelector("header").style.background=colors[5];
+for(const [id,value] of Object.entries({restSeconds:cfg.restSeconds,timerAlert:cfg.timerAlert,theme:cfg.theme,font:cfg.font})){const el=document.getElementById(id);if(el)el.value=value;}
+}
+function updateSettings(){
+const seconds=Number(document.getElementById("restSeconds").value);
+if(!Number.isInteger(seconds)||seconds<10||seconds>3600){toast("Choose 10 to 3600 seconds");applySettings();return;}
+db.settings={restSeconds:seconds,timerAlert:document.getElementById("timerAlert").value,theme:document.getElementById("theme").value,font:document.getElementById("font").value};saveDB();applySettings();
+}
 function refreshMenu(){
 
 MENU=
@@ -2566,122 +2602,70 @@ toast(
 }
 
 
+function rebuildHistory(){
+db.history={};
+for(const session of db.sessions){
+for(const ex of session.exercises||[]){
+if(!ex.sets?.length)continue;
+const best=ex.sets.reduce((a,b)=>Number(b.weight)>Number(a.weight)?b:a);
+(db.history[ex.name]??=[]).push({weight:Number(best.weight),reps:Number(best.reps),date:session.date});
+}
+}
+}
 function renderHistory(){
-
-document.getElementById(
-"wcount"
-).textContent=
-db.sessions.length;
-
-
-document.getElementById(
-"ecount"
-).textContent=
-
-db.sessions.reduce(
-
-(a,s)=>
-
-a+
-s.exercises.length,
-
-0
-
-);
-
-
-const el=
-document.getElementById(
-"historyList"
-);
-
-
-el.innerHTML="";
-
-
-const entries=
-Object.entries(
-db.history
-)
-
-.filter(
-
-([_,a])=>
-a.length
-
-)
-
-.reverse();
-
-
-if(
-!entries.length
-){
-
-el.innerHTML=
-
-"<div class='muted'>No exercise history yet.</div>";
-
-return;
-
+document.getElementById("wcount").textContent=db.sessions.length;
+document.getElementById("ecount").textContent=db.sessions.reduce((n,s)=>n+(s.exercises?.length||0),0);
+const el=document.getElementById("historyList");el.innerHTML="";
+if(!db.sessions.length){el.innerHTML="<div class='muted'>No workouts saved yet.</div>";return;}
+db.sessions.slice().reverse().forEach(session=>{
+const index=db.sessions.indexOf(session);
+const card=document.createElement("div");card.className="card";
+const date=new Date(session.date).toLocaleString();
+card.innerHTML='<div class="row between"><strong>'+escapeHTML(date)+'</strong><button class="secondary small" data-edit-session="'+index+'">Edit</button></div>'+
+(session.exercises||[]).map(ex=>'<div style="margin-top:10px"><b>'+escapeHTML(ex.name)+'</b><div class="muted">'+(ex.sets||[]).map((set,i)=>'Set '+(i+1)+': '+escapeHTML(set.weight)+' lb × '+escapeHTML(set.reps)).join('<br>')+'</div></div>').join("");
+el.appendChild(card);
+});
+el.querySelectorAll("[data-edit-session]").forEach(button=>button.addEventListener("click",()=>editSession(Number(button.dataset.editSession))));
 }
-
-
-entries.forEach(
-
-([ex,a])=>{
-
-const x=
-a[a.length-1];
-
-
-const d=
-new Date(
-x.date
-).toLocaleDateString();
-
-
-const div=
-document.createElement(
-"div"
-);
-
-
-div.className=
-"history-item";
-
-
-div.innerHTML=
-
-`<span>
-
-<b>
-${escapeHTML(ex)}
-</b>
-
-<br>
-
-<small>
-${d}
-</small>
-
-</span>
-
-<b>
-${x.weight} × ${x.reps}
-</b>`;
-
-
-el.appendChild(
-div
-);
-
+function editSession(index){
+const session=db.sessions[index];if(!session)return;
+const card=document.createElement("div");card.className="card";card.id="historyEditor";
+card.innerHTML='<h3>Edit workout</h3><label>Date and time</label><input type="datetime-local" id="editDate"><div id="editExercises"></div><div class="row"><button class="primary" id="saveEdit">Save corrections</button><button class="secondary" id="cancelEdit">Cancel</button></div>';
+document.getElementById("historyList").prepend(card);
+const date=new Date(session.date);document.getElementById("editDate").value=new Date(date.getTime()-date.getTimezoneOffset()*60000).toISOString().slice(0,16);
+const area=document.getElementById("editExercises");
+session.exercises.forEach((ex,ei)=>{
+const block=document.createElement("div");block.className="card";block.innerHTML='<label>Exercise</label><input class="edit-name" value="'+escapeHTML(ex.name)+'"><div class="edit-sets"></div><button class="secondary small add-set">Add set</button><button class="danger small remove-exercise">Remove exercise</button>';
+const sets=block.querySelector(".edit-sets");
+(ex.sets||[]).forEach(set=>appendEditSet(sets,set));
+block.querySelector(".add-set").onclick=()=>appendEditSet(sets,{weight:"",reps:""});
+block.querySelector(".remove-exercise").onclick=()=>block.remove();area.appendChild(block);
+});
+const add=document.createElement("button");add.className="secondary small";add.textContent="Add exercise";add.onclick=()=>{const block=document.createElement("div");block.className="card";block.innerHTML='<label>Exercise</label><input class="edit-name" placeholder="Exercise name"><div class="edit-sets"></div><button class="secondary small add-set">Add set</button><button class="danger small remove-exercise">Remove exercise</button>';block.querySelector(".add-set").onclick=()=>appendEditSet(block.querySelector(".edit-sets"),{weight:"",reps:""});block.querySelector(".remove-exercise").onclick=()=>block.remove();appendEditSet(block.querySelector(".edit-sets"),{weight:"",reps:""});area.appendChild(block);};area.after(add);
+document.getElementById("cancelEdit").onclick=()=>renderHistory();
+document.getElementById("saveEdit").onclick=()=>{
+const edited=[];for(const block of area.querySelectorAll(".card")){
+const name=block.querySelector(".edit-name").value.trim();if(!name){toast("Enter an exercise name");return;}
+const sets=[];for(const row of block.querySelectorAll(".edit-set")){
+const weightInput=row.querySelector(".edit-weight").value,repsInput=row.querySelector(".edit-reps").value;
+const weight=Number(weightInput),reps=Number(repsInput);
+if(weightInput===""||repsInput===""||!Number.isFinite(weight)||weight<0||!Number.isInteger(reps)||reps<1){toast("Check weight and reps");return;}sets.push({weight,reps});
+}if(sets.length)edited.push({name,sets});
 }
-
-);
-
+if(!edited.length){toast("Keep at least one set");return;}
+const dateValue=document.getElementById("editDate").value;const parsed=new Date(dateValue);if(!dateValue||Number.isNaN(parsed.getTime())){toast("Enter a valid date");return;}
+session.date=parsed.toISOString();session.exercises=edited;db.sessions.sort((a,b)=>new Date(a.date)-new Date(b.date));rebuildHistory();saveDB();renderHistory();populateChartExercises();renderCharts();toast("Workout updated");
+};
 }
-
+function appendEditSet(container,set){
+const row=document.createElement("div");row.className="row edit-set";row.style.margin="8px 0";
+row.innerHTML='<input class="edit-weight" aria-label="Weight in pounds" inputmode="decimal" type="number" min="0" step="any" value="'+escapeHTML(set.weight)+'"><input class="edit-reps" aria-label="Reps" inputmode="numeric" type="number" min="1" step="1" value="'+escapeHTML(set.reps)+'"><button class="danger small" aria-label="Remove set">×</button>';
+row.querySelector("button").onclick=()=>row.remove();container.appendChild(row);
+}
+function clearWorkoutData(){
+if(!confirm("Delete all saved workouts and the unfinished workout? This cannot be undone."))return;
+db.sessions=[];db.history={};db.draftWorkout=null;saveDB();renderWorkout();renderHistory();populateChartExercises();renderCharts();toast("Workout data deleted");
+}
 
 function clearHistory(){
 
@@ -2782,66 +2766,21 @@ renderCharts();
 
 
 let timer=null;
+let timerEnd=0;
+let audioContext=null;
+function stopTimer(){clearInterval(timer);timer=null;timerEnd=0;updateTimerDisplay();}
+function updateTimerDisplay(){const left=Math.max(0,Math.ceil((timerEnd-Date.now())/1000));const el=document.getElementById("timerDisplay");if(el)el.textContent=timerEnd?"Rest: "+Math.floor(left/60)+":"+String(left%60).padStart(2,"0"):"Rest timer ready";}
+function timerFinished(){stopTimer();toast("Rest complete");const mode=db.settings.timerAlert;if((mode==="both"||mode==="vibrate")&&navigator.vibrate)navigator.vibrate([200,100,200]);if((mode==="both"||mode==="sound")&&audioContext){try{audioContext.resume();const osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.frequency.value=880;gain.gain.value=0.12;osc.connect(gain);gain.connect(audioContext.destination);osc.start();osc.stop(audioContext.currentTime+0.3);}catch(e){}}}
 
 let remaining=0;
 
 
 function startTimer(sec){
-
-clearInterval(
-timer
-);
-
-
-remaining=sec;
-
-
-toast(
-"Rest timer started"
-);
-
-
-timer=
-setInterval(
-
-()=>{
-
-remaining--;
-
-
-if(
-remaining<=0
-){
-
-clearInterval(
-timer
-);
-
-
-toast(
-"Rest complete"
-);
-
+if(!Number.isFinite(sec)||sec<10){toast("Set a rest time in Settings");return;}
+try{audioContext??=new (window.AudioContext||window.webkitAudioContext)();audioContext.resume();}catch(e){}
+clearInterval(timer);timerEnd=Date.now()+sec*1000;updateTimerDisplay();toast("Rest timer started");
+timer=setInterval(()=>{if(Date.now()>=timerEnd)timerFinished();else updateTimerDisplay();},500);
 }
-else if(
-remaining%30===0
-){
-
-toast(
-remaining+
-" sec remaining"
-);
-
-}
-
-},
-
-1000
-
-);
-
-}
-
 
 function toast(t){
 
@@ -3285,6 +3224,9 @@ p.volume,
 }
 
 
+applySettings();
+rebuildHistory();
+saveDB();
 ensureDraft();
 
 renderWorkout();
