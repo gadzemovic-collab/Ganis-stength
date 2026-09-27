@@ -592,6 +592,9 @@ box-shadow:0 5px 22px #0a203b48;
 .rest-float strong{font-size:12px;min-width:65px;white-space:nowrap}
 .rest-float select{width:67px;padding:6px 3px;font-size:12px;border-radius:8px}
 .rest-float button{white-space:nowrap;padding:7px 8px;font-size:12px}
+.rest-float.collapsed select,
+.rest-float.collapsed .timer-action{display:none}
+.rest-float.collapsed{opacity:.92}
 }
 
 .stat{
@@ -997,8 +1000,9 @@ class="chart"
 <div class="rest-float" role="timer" aria-label="Rest timer">
 <strong id="timerDisplay" aria-live="off">Rest timer ready</strong>
 <select id="restQuickSelect" aria-label="Rest duration" onchange="setRestFromTimer(this.value)"><option value="30">0:30</option><option value="45">0:45</option><option value="60">1:00</option><option value="90">1:30</option><option value="120">2:00</option><option value="180">3:00</option><option value="240">4:00</option><option value="300">5:00</option></select>
-<button class="secondary small" onclick="startTimer(Number(db.settings.restSeconds))">Start</button>
-<button class="secondary small" onclick="stopTimer()">Stop</button>
+<button class="secondary small timer-action" onclick="startTimer(Number(db.settings.restSeconds))">Start</button>
+<button class="secondary small timer-action" onclick="stopTimer()">Stop</button>
+<button id="timerToggle" class="secondary small" onclick="toggleRestTimer()" aria-expanded="true" aria-label="Hide rest timer controls">Hide</button>
 </div>
 
 <div id="toast">
@@ -2852,6 +2856,13 @@ renderCharts();
 let timer=null;
 let timerEnd=0;
 let audioContext=null;
+function toggleRestTimer(){
+const panel=document.querySelector(".rest-float"),button=document.getElementById("timerToggle");
+const collapsed=panel.classList.toggle("collapsed");
+button.textContent=collapsed?"Show":"Hide";
+button.setAttribute("aria-expanded",String(!collapsed));
+button.setAttribute("aria-label",collapsed?"Show rest timer controls":"Hide rest timer controls");
+}
 function stopTimer(){clearInterval(timer);timer=null;timerEnd=0;updateTimerDisplay();}
 function updateTimerDisplay(){const left=Math.max(0,Math.ceil((timerEnd-Date.now())/1000));const el=document.getElementById("timerDisplay");if(el)el.textContent=timerEnd?"Rest: "+Math.floor(left/60)+":"+String(left%60).padStart(2,"0"):"Rest timer ready";}
 function timerFinished(){stopTimer();document.getElementById("timerDisplay").textContent="Rest complete";toast("Rest complete");const mode=db.settings.timerAlert;if((mode==="both"||mode==="vibrate")&&navigator.vibrate)navigator.vibrate([200,100,200]);if((mode==="both"||mode==="sound")&&audioContext){try{audioContext.resume();const osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.frequency.value=880;gain.gain.value=0.12;osc.connect(gain);gain.connect(audioContext.destination);osc.start();osc.stop(audioContext.currentTime+0.3);}catch(e){}}}
