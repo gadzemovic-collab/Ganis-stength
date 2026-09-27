@@ -860,6 +860,10 @@ Delete all workout data
 <label for="theme" style="margin-top:15px">Color theme</label><select id="theme" onchange="updateSettings()"><option value="blue">Blue</option><option value="green">Green</option><option value="purple">Purple</option><option value="dark">Dark</option></select>
 <label for="font" style="margin-top:15px">Font</label><select id="font" onchange="updateSettings()"><option value="system">System</option><option value="arial">Arial</option><option value="georgia">Georgia</option><option value="verdana">Verdana</option></select></div>
 <div class="card"><h2>Workout data</h2><button class="danger" onclick="clearWorkoutData()">Delete all workout data</button><p class="muted">Keeps your exercise choices and Settings.</p></div>
+<div class="card"><h2>Backup</h2><p class="muted">Save a copy before removing the app from your Home Screen or changing phones.</p>
+<div class="row"><button class="secondary" onclick="exportData()">Download backup</button><button class="secondary" onclick="document.getElementById('backupFile').click()">Restore backup</button></div>
+<input id="backupFile" type="file" accept="application/json,.json" style="display:none" onchange="importData(this)">
+</div>
 </section>
 
 <section
@@ -2665,6 +2669,27 @@ row.querySelector("button").onclick=()=>row.remove();container.appendChild(row);
 function clearWorkoutData(){
 if(!confirm("Delete all saved workouts and the unfinished workout? This cannot be undone."))return;
 db.sessions=[];db.history={};db.draftWorkout=null;saveDB();renderWorkout();renderHistory();populateChartExercises();renderCharts();toast("Workout data deleted");
+}
+
+function exportData(){
+saveDB();
+const blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"});
+const url=URL.createObjectURL(blob);const link=document.createElement("a");
+link.href=url;link.download="repharbor-backup-"+new Date().toISOString().slice(0,10)+".json";
+document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+toast("Backup downloaded");
+}
+async function importData(input){
+const file=input.files?.[0];if(!file)return;
+try{
+const restored=JSON.parse(await file.text());
+if(!restored||!Array.isArray(restored.sessions)||!Array.isArray(restored.selected)||typeof restored.history!=="object"||!restored.history){throw Error("Invalid backup");}
+if(!confirm("Replace all current workouts and settings with this backup?"))return;
+db=restored;db.customExercises??={};db.deletedExercises??={};db.draftWorkout??=null;
+db.settings={restSeconds:90,timerAlert:"both",theme:"blue",font:"system",...db.settings};
+rebuildHistory();saveDB();location.reload();
+}catch(e){toast("Could not read this backup file");}
+finally{input.value="";}
 }
 
 function clearHistory(){
