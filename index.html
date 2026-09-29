@@ -128,12 +128,18 @@ body.welcome-open > .rest-float{display:none;}
 .welcome-art{
  width:min(68vw,280px);
  aspect-ratio:1;
- object-fit:cover;
+ position:relative;
+ display:block;
+ margin:auto;
  border-radius:50%;
  border:2px solid #5ec8ed;
  box-shadow:0 0 0 10px #4ecff018,0 24px 55px #001428aa,0 0 75px #2ec7ed55;
+ overflow:hidden;
  animation:shark-rise .7s ease-out both;
 }
+.welcome-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.squat-top{animation:squat-top 2.2s ease-in-out 2 both;}
+.squat-bottom{animation:squat-bottom 2.2s ease-in-out 2 both;}
 .welcome h2{font-size:34px;letter-spacing:.01em;margin:24px 0 5px;}
 .welcome p{color:#c7e8f7;margin:0 0 28px;line-height:1.4;}
 .welcome-choice{
@@ -145,7 +151,9 @@ body.welcome-open > .rest-float{display:none;}
 .welcome-choice span{display:block;font-size:13px;color:#4d667c;margin-top:3px;}
 .welcome-choice:active{transform:scale(.985);}
 @keyframes shark-rise{from{opacity:0;transform:translateY(16px) scale(.95)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){.welcome-art{animation:none;}}
+@keyframes squat-top{0%,24%,72%,100%{opacity:1}36%,60%{opacity:0}}
+@keyframes squat-bottom{0%,24%,72%,100%{opacity:0}36%,60%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.welcome-art,.squat-top,.squat-bottom{animation:none;}.squat-bottom{display:none;}}
 
 nav{
 display:flex;
@@ -769,7 +777,10 @@ max-width:90%;
 
 <section id="welcome" class="welcome" aria-labelledby="welcomeTitle" hidden>
  <div class="welcome-inner">
-  <img class="welcome-art" src="rep-harbor-512.png?v=12" alt="RepHarbor shark lifting a barbell" width="280" height="280">
+  <div class="welcome-art" role="img" aria-label="RepHarbor shark doing a barbell squat">
+   <img class="squat-top" src="shark-squat-top.webp" alt="" width="280" height="280">
+   <img class="squat-bottom" src="shark-squat-bottom.webp" alt="" width="280" height="280">
+  </div>
   <h2 id="welcomeTitle">Ready to lift?</h2>
   <p>Choose how you want to train today.</p>
   <button type="button" class="welcome-choice" onclick="enterWorkout('full')"><strong>Full Body</strong><span>Train with Gani's full body setup</span></button>
@@ -1970,6 +1981,11 @@ function changeWorkoutMode(mode){
 function showWelcome(){
  document.getElementById("welcome").hidden=false;
  document.body.classList.add("welcome-open");
+ document.querySelectorAll(".welcome-art img").forEach(frame=>{
+  frame.style.animation="none";
+  void frame.offsetWidth;
+  frame.style.animation="";
+ });
  window.scrollTo(0,0);
 }
 
