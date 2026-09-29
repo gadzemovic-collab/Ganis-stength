@@ -149,7 +149,7 @@ body.intro-open > .rest-float{display:none;}
 .intro-title{margin:32px 0 8px;font-size:28px;letter-spacing:.06em;}
 .intro-sub{color:#b9e9fa;font-size:14px;}
 .intro-progress{height:4px;width:170px;margin:26px auto 0;border-radius:8px;background:#ffffff35;overflow:hidden;}
-.intro-progress::after{content:"";display:block;height:100%;background:#60e2ff;animation:intro-progress 1.74s linear forwards;}
+.intro-progress::after{content:"";display:block;height:100%;background:#60e2ff;animation:intro-progress 4.56s linear forwards;}
 .intro-skip{margin-top:22px;padding:7px 15px;border:1px solid #8dcbe3;border-radius:30px;background:#ffffff12;color:#d7f3ff;font:inherit;font-size:13px;}
 .welcome-brand img{width:84px;height:84px;border-radius:22px;box-shadow:0 10px 25px #00142899;}
 .welcome h2{font-size:34px;letter-spacing:.01em;margin:24px 0 5px;}
@@ -2024,10 +2024,10 @@ async function showIntro(){
  document.getElementById("intro").hidden=false;
  document.body.classList.add("intro-open");
  const shark=document.getElementById("introShark");
- shark.src="shark-squat.gif?v=3";
+ shark.src="shark-squat.gif?v=4";
  try{await shark.decode?.();}catch(e){}
  if(!document.body.classList.contains("intro-open"))return;
- introTimer=setTimeout(showWelcome,1740);
+ introTimer=setTimeout(showWelcome,4560);
  window.scrollTo(0,0);
 }
 
