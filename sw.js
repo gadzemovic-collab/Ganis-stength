@@ -1,4 +1,4 @@
-const CACHE='rep-harbor-v22';
+const CACHE='rep-harbor-v23';
 
 const ASSETS=[
 './',
@@ -7,7 +7,7 @@ const ASSETS=[
 './rep-harbor-180.png?v=12',
 './rep-harbor-192.png?v=12',
 './rep-harbor-512.png?v=12',
-'./shark-squat.gif?v=1'
+'./shark-squat.gif?v=2'
 ];
 
 self.addEventListener(

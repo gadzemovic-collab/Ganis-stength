@@ -110,7 +110,11 @@ opacity:.8;
 body.welcome-open > header,
 body.welcome-open > nav,
 body.welcome-open > main,
-body.welcome-open > .rest-float{display:none;}
+body.welcome-open > .rest-float,
+body.intro-open > header,
+body.intro-open > nav,
+body.intro-open > main,
+body.intro-open > .rest-float{display:none;}
 .welcome[hidden]{display:none;}
 .welcome{
  min-height:100vh;
@@ -141,17 +145,31 @@ body.welcome-open > .rest-float{display:none;}
 .welcome-art img{
  display:block;width:100%;height:100%;object-fit:cover;
 }
+.intro .welcome-art{width:min(78vw,340px);}
+.intro-title{margin:32px 0 8px;font-size:28px;letter-spacing:.06em;}
+.intro-sub{color:#b9e9fa;font-size:14px;}
+.intro-progress{height:4px;width:170px;margin:26px auto 0;border-radius:8px;background:#ffffff35;overflow:hidden;}
+.intro-progress::after{content:"";display:block;height:100%;background:#60e2ff;animation:intro-progress 1.24s linear forwards;}
+.intro-skip{margin-top:22px;padding:7px 15px;border:1px solid #8dcbe3;border-radius:30px;background:#ffffff12;color:#d7f3ff;font:inherit;font-size:13px;}
+.welcome-brand img{width:84px;height:84px;border-radius:22px;box-shadow:0 10px 25px #00142899;}
 .welcome h2{font-size:34px;letter-spacing:.01em;margin:24px 0 5px;}
 .welcome p{color:#c7e8f7;margin:0 0 28px;line-height:1.4;}
 .welcome-choice{
- width:100%;display:block;text-align:left;border:1px solid #91d9f2;
- border-radius:18px;background:#fff;color:#103b5d;padding:17px 20px;
- margin:12px 0;font:inherit;box-shadow:0 9px 22px #00162955;
+ width:100%;display:grid;grid-template-columns:50px 1fr 24px;align-items:center;
+ gap:14px;text-align:left;border:1px solid #78d4f7;
+ border-radius:20px;background:linear-gradient(125deg,#e9faff,#b8e4f7);color:#0b3655;
+ padding:18px;margin:14px 0;font:inherit;box-shadow:0 10px 25px #00162977;
 }
-.welcome-choice strong{display:block;font-size:19px;}
-.welcome-choice span{display:block;font-size:13px;color:#4d667c;margin-top:3px;}
+.welcome-choice.split{background:linear-gradient(125deg,#d6edff,#a9c9ef);border-color:#9bc8ef;}
+.choice-icon{width:48px;height:48px;display:grid;place-items:center;border-radius:15px;background:#0a4d78;color:white;}
+.welcome-choice.split .choice-icon{background:#365b9c;}
+.choice-icon svg{width:30px;height:30px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+.choice-copy strong{display:block;font-size:19px;}
+.choice-copy small{display:block;font-size:13px;color:#385a71;margin-top:4px;line-height:1.3;}
+.choice-arrow{font-size:26px;font-weight:700;color:#2a7299;}
 .welcome-choice:active{transform:scale(.985);}
 @keyframes shark-rise{from{opacity:0;transform:translateY(16px) scale(.95)}to{opacity:1;transform:none}}
+@keyframes intro-progress{from{width:0}to{width:100%}}
 @media(prefers-reduced-motion:reduce){.welcome-art{animation:none;}}
 
 nav{
@@ -774,13 +792,29 @@ max-width:90%;
 
 <body>
 
+<section id="intro" class="welcome intro" aria-label="RepHarbor opening animation" hidden>
+ <div class="welcome-inner">
+  <div class="welcome-art"><img id="introShark" src="rep-harbor-512.png?v=12" alt="Shark doing a barbell squat" width="340" height="340"></div>
+  <div class="intro-title">RepHarbor</div>
+  <div class="intro-sub">Get ready to lift</div>
+  <div class="intro-progress" aria-hidden="true"></div>
+  <button type="button" class="intro-skip" onclick="showWelcome()">Skip intro</button>
+ </div>
+</section>
+
 <section id="welcome" class="welcome" aria-labelledby="welcomeTitle" hidden>
  <div class="welcome-inner">
-  <div class="welcome-art"><img id="welcomeShark" src="shark-squat.gif?v=1" alt="RepHarbor shark doing a barbell squat" width="280" height="280"></div>
-  <h2 id="welcomeTitle">Ready to lift?</h2>
-  <p>Choose how you want to train today.</p>
-  <button type="button" class="welcome-choice" onclick="enterWorkout('full')"><strong>Full Body</strong><span>Train your whole body in one workout</span></button>
-  <button type="button" class="welcome-choice" onclick="enterWorkout('split')"><strong>Body Part Split</strong><span>Pick the body parts and exercises for today</span></button>
+  <div class="welcome-brand"><img src="rep-harbor-192.png?v=12" alt="RepHarbor shark logo" width="84" height="84"></div>
+  <h2 id="welcomeTitle">Choose your workout</h2>
+  <p>Pick your style. You can change it later.</p>
+  <button type="button" class="welcome-choice" onclick="enterWorkout('full')">
+   <span class="choice-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 12v8m4-11v14m14-14v14m4-11v8M9 16h14"/></svg></span>
+   <span class="choice-copy"><strong>Full Body</strong><small>Train your whole body in one session</small></span><span class="choice-arrow" aria-hidden="true">›</span>
+  </button>
+  <button type="button" class="welcome-choice split" onclick="enterWorkout('split')">
+   <span class="choice-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 8h22M5 16h22M5 24h22"/><circle cx="11" cy="8" r="3" fill="currentColor" stroke="none"/><circle cx="22" cy="16" r="3" fill="currentColor" stroke="none"/><circle cx="15" cy="24" r="3" fill="currentColor" stroke="none"/></svg></span>
+   <span class="choice-copy"><strong>Body Part Split</strong><small>Choose the muscles and exercises for today</small></span><span class="choice-arrow" aria-hidden="true">›</span>
+  </button>
  </div>
 </section>
 
@@ -1974,12 +2008,26 @@ function changeWorkoutMode(mode){
  return true;
 }
 
+let introTimer;
+
+async function showIntro(){
+ if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){showWelcome();return;}
+ document.getElementById("intro").hidden=false;
+ document.body.classList.add("intro-open");
+ const shark=document.getElementById("introShark");
+ shark.src="shark-squat.gif?v=2";
+ try{await shark.decode?.();}catch(e){}
+ if(!document.body.classList.contains("intro-open"))return;
+ introTimer=setTimeout(showWelcome,1240);
+ window.scrollTo(0,0);
+}
+
 function showWelcome(){
+ clearTimeout(introTimer);
+ document.getElementById("intro").hidden=true;
+ document.body.classList.remove("intro-open");
  document.getElementById("welcome").hidden=false;
  document.body.classList.add("welcome-open");
- const shark=document.getElementById("welcomeShark");
- shark.src=window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  ?"rep-harbor-512.png?v=12":"shark-squat.gif?v=1";
  window.scrollTo(0,0);
 }
 
@@ -3394,7 +3442,7 @@ renderWorkout();
 renderHistory();
 
 populateChartExercises();
-showWelcome();
+showIntro();
 
 
 /*
