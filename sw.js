@@ -1,4 +1,4 @@
-const CACHE='rep-harbor-v25';
+const CACHE='rep-harbor-v26';
 
 const ASSETS=[
 './',
