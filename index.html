@@ -140,8 +140,6 @@ body.welcome-open > .rest-float{display:none;}
 }
 .welcome-art img{
  display:block;width:100%;height:100%;object-fit:cover;
- transform-origin:center 75%;
- animation:logo-squat 2.5s ease-in-out infinite;
 }
 .welcome h2{font-size:34px;letter-spacing:.01em;margin:24px 0 5px;}
 .welcome p{color:#c7e8f7;margin:0 0 28px;line-height:1.4;}
@@ -154,11 +152,7 @@ body.welcome-open > .rest-float{display:none;}
 .welcome-choice span{display:block;font-size:13px;color:#4d667c;margin-top:3px;}
 .welcome-choice:active{transform:scale(.985);}
 @keyframes shark-rise{from{opacity:0;transform:translateY(16px) scale(.95)}to{opacity:1;transform:none}}
-@keyframes logo-squat{
- 0%,15%,85%,100%{transform:translateY(-4px) scale(1.01,1.035)}
- 45%,55%{transform:translateY(12px) scale(1.055,.88)}
-}
-@media(prefers-reduced-motion:reduce){.welcome-art,.welcome-art img{animation:none;}}
+@media(prefers-reduced-motion:reduce){.welcome-art{animation:none;}}
 
 nav{
 display:flex;
@@ -782,7 +776,7 @@ max-width:90%;
 
 <section id="welcome" class="welcome" aria-labelledby="welcomeTitle" hidden>
  <div class="welcome-inner">
-  <div class="welcome-art"><img id="welcomeShark" src="rep-harbor-512.png?v=12" alt="RepHarbor shark lifting a barbell" width="280" height="280"></div>
+  <div class="welcome-art"><img id="welcomeShark" src="shark-squat.gif?v=1" alt="RepHarbor shark doing a barbell squat" width="280" height="280"></div>
   <h2 id="welcomeTitle">Ready to lift?</h2>
   <p>Choose how you want to train today.</p>
   <button type="button" class="welcome-choice" onclick="enterWorkout('full')"><strong>Full Body</strong><span>Train your whole body in one workout</span></button>
@@ -1984,9 +1978,8 @@ function showWelcome(){
  document.getElementById("welcome").hidden=false;
  document.body.classList.add("welcome-open");
  const shark=document.getElementById("welcomeShark");
- shark.style.animation="none";
- void shark.offsetWidth;
- shark.style.animation="";
+ shark.src=window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  ?"rep-harbor-512.png?v=12":"shark-squat.gif?v=1";
  window.scrollTo(0,0);
 }
 

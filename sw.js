@@ -1,4 +1,4 @@
-const CACHE='rep-harbor-v21';
+const CACHE='rep-harbor-v22';
 
 const ASSETS=[
 './',
@@ -6,7 +6,8 @@ const ASSETS=[
 './manifest.webmanifest',
 './rep-harbor-180.png?v=12',
 './rep-harbor-192.png?v=12',
-'./rep-harbor-512.png?v=12'
+'./rep-harbor-512.png?v=12',
+'./shark-squat.gif?v=1'
 ];
 
 self.addEventListener(
