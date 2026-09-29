@@ -1,4 +1,4 @@
-const CACHE='rep-harbor-v18';
+const CACHE='rep-harbor-v19';
 
 const ASSETS=[
 './',
@@ -8,6 +8,7 @@ const ASSETS=[
 './rep-harbor-192.png?v=12',
 './rep-harbor-512.png?v=12',
 './shark-squat-top.webp',
+'./shark-squat-middle.webp',
 './shark-squat-bottom.webp'
 ];
 

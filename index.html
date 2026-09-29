@@ -138,8 +138,9 @@ body.welcome-open > .rest-float{display:none;}
  animation:shark-rise .7s ease-out both;
 }
 .welcome-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-.squat-top{animation:squat-top 2.2s ease-in-out 2 both;}
-.squat-bottom{animation:squat-bottom 2.2s ease-in-out 2 both;}
+.squat-top{animation:squat-top 2.4s linear infinite;}
+.squat-middle{animation:squat-middle 2.4s linear infinite;}
+.squat-bottom{animation:squat-bottom 2.4s linear infinite;}
 .welcome h2{font-size:34px;letter-spacing:.01em;margin:24px 0 5px;}
 .welcome p{color:#c7e8f7;margin:0 0 28px;line-height:1.4;}
 .welcome-choice{
@@ -151,9 +152,10 @@ body.welcome-open > .rest-float{display:none;}
 .welcome-choice span{display:block;font-size:13px;color:#4d667c;margin-top:3px;}
 .welcome-choice:active{transform:scale(.985);}
 @keyframes shark-rise{from{opacity:0;transform:translateY(16px) scale(.95)}to{opacity:1;transform:none}}
-@keyframes squat-top{0%,24%,72%,100%{opacity:1}36%,60%{opacity:0}}
-@keyframes squat-bottom{0%,24%,72%,100%{opacity:0}36%,60%{opacity:1}}
-@media(prefers-reduced-motion:reduce){.welcome-art,.squat-top,.squat-bottom{animation:none;}.squat-bottom{display:none;}}
+@keyframes squat-top{0%,12%,88%,100%{opacity:1}20%,80%{opacity:0}}
+@keyframes squat-middle{0%,12%,42%,58%,88%,100%{opacity:0}20%,34%,66%,80%{opacity:1}}
+@keyframes squat-bottom{0%,34%,66%,100%{opacity:0}42%,58%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.welcome-art,.squat-top,.squat-middle,.squat-bottom{animation:none;}.squat-middle,.squat-bottom{display:none;}}
 
 nav{
 display:flex;
@@ -779,11 +781,12 @@ max-width:90%;
  <div class="welcome-inner">
   <div class="welcome-art" role="img" aria-label="RepHarbor shark doing a barbell squat">
    <img class="squat-top" src="shark-squat-top.webp" alt="" width="280" height="280">
+   <img class="squat-middle" src="shark-squat-middle.webp" alt="" width="280" height="280">
    <img class="squat-bottom" src="shark-squat-bottom.webp" alt="" width="280" height="280">
   </div>
   <h2 id="welcomeTitle">Ready to lift?</h2>
   <p>Choose how you want to train today.</p>
-  <button type="button" class="welcome-choice" onclick="enterWorkout('full')"><strong>Full Body</strong><span>Train with Gani's full body setup</span></button>
+  <button type="button" class="welcome-choice" onclick="enterWorkout('full')"><strong>Full Body</strong><span>Train your whole body in one workout</span></button>
   <button type="button" class="welcome-choice" onclick="enterWorkout('split')"><strong>Body Part Split</strong><span>Pick the body parts and exercises for today</span></button>
  </div>
 </section>
@@ -2063,7 +2066,7 @@ function renderWorkout(){
 
 refreshMenu();
 
-document.getElementById("modeLabel").textContent=db.workoutMode==="split"?"Body Part Split":"Gani's Full Body";
+document.getElementById("modeLabel").textContent=db.workoutMode==="split"?"Body Part Split":"Full Body";
 const picker=document.getElementById("splitPicker");
 picker.hidden=db.workoutMode!=="split";
 if(db.workoutMode==="split"){
