@@ -107,6 +107,46 @@ font-size:13px;
 opacity:.8;
 }
 
+body.welcome-open > header,
+body.welcome-open > nav,
+body.welcome-open > main,
+body.welcome-open > .rest-float{display:none;}
+.welcome[hidden]{display:none;}
+.welcome{
+ min-height:100vh;
+ min-height:100dvh;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ padding:28px 22px max(28px,env(safe-area-inset-bottom));
+ color:#fff;
+ text-align:center;
+ background:radial-gradient(circle at 50% 30%,#195580 0%,#07345c 43%,#041c36 100%);
+ overflow:hidden;
+}
+.welcome-inner{width:min(100%,430px);position:relative;z-index:1;}
+.welcome-art{
+ width:min(68vw,280px);
+ aspect-ratio:1;
+ object-fit:cover;
+ border-radius:50%;
+ border:2px solid #5ec8ed;
+ box-shadow:0 0 0 10px #4ecff018,0 24px 55px #001428aa,0 0 75px #2ec7ed55;
+ animation:shark-rise .7s ease-out both;
+}
+.welcome h2{font-size:34px;letter-spacing:.01em;margin:24px 0 5px;}
+.welcome p{color:#c7e8f7;margin:0 0 28px;line-height:1.4;}
+.welcome-choice{
+ width:100%;display:block;text-align:left;border:1px solid #91d9f2;
+ border-radius:18px;background:#fff;color:#103b5d;padding:17px 20px;
+ margin:12px 0;font:inherit;box-shadow:0 9px 22px #00162955;
+}
+.welcome-choice strong{display:block;font-size:19px;}
+.welcome-choice span{display:block;font-size:13px;color:#4d667c;margin-top:3px;}
+.welcome-choice:active{transform:scale(.985);}
+@keyframes shark-rise{from{opacity:0;transform:translateY(16px) scale(.95)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.welcome-art{animation:none;}}
+
 nav{
 display:flex;
 
@@ -395,6 +435,16 @@ font-size:20px;
 .workout-part select{
 margin-top:10px;
 }
+
+.workout-mode{margin-top:16px;}
+.workout-mode label{display:block;margin-bottom:6px;font-weight:700;}
+.split-groups{display:flex;flex-wrap:wrap;gap:8px;}
+.split-groups button{flex:0 0 auto;}
+.split-groups button[aria-pressed="true"]{background:var(--blue);color:white;border-color:var(--blue);}
+.split-slot{padding:12px 0;border-top:1px solid var(--blue-border);}
+.split-slot:first-of-type{border-top:0;}
+.split-slot-label{font-size:13px;font-weight:700;}
+.split-add{margin-top:12px;}
 
 .exercise-actions{
 display:flex;
@@ -717,11 +767,21 @@ max-width:90%;
 
 <body>
 
+<section id="welcome" class="welcome" aria-labelledby="welcomeTitle" hidden>
+ <div class="welcome-inner">
+  <img class="welcome-art" src="rep-harbor-512.png?v=12" alt="RepHarbor shark lifting a barbell" width="280" height="280">
+  <h2 id="welcomeTitle">Ready to lift?</h2>
+  <p>Choose how you want to train today.</p>
+  <button type="button" class="welcome-choice" onclick="enterWorkout('full')"><strong>Full Body</strong><span>Train with Gani's full body setup</span></button>
+  <button type="button" class="welcome-choice" onclick="enterWorkout('split')"><strong>Body Part Split</strong><span>Pick the body parts and exercises for today</span></button>
+ </div>
+</section>
+
 <header>
 
 <div class="brand">
 <img src="rep-harbor-192.png?v=12" alt="RepHarbor shark logo" width="52" height="52">
-<div><h1>RepHarbor</h1><div class="sub">Full-body strength • max 8 exercises</div></div>
+<div><h1>RepHarbor</h1><div class="sub">Train your way • max 8 exercises</div></div>
 </div>
 
 </header>
@@ -785,6 +845,14 @@ onclick="newWorkout()"
 New
 </button>
 
+</div>
+
+<div class="workout-mode">
+<div class="row between"><strong id="modeLabel">Full Body</strong><button class="secondary small" type="button" onclick="showWelcome()">Change workout style</button></div>
+<div id="splitPicker" hidden>
+<p class="muted">Choose the body parts for today. Add up to 8 exercises across them.</p>
+<div id="splitGroups" class="split-groups"></div>
+</div>
 </div>
 
 <div
@@ -1135,6 +1203,9 @@ db.sessions=[];
 if(!db.history){
 db.history={};
 }
+db.workoutMode=db.workoutMode==="split"?"split":"full";
+db.splitGroups=Array.isArray(db.splitGroups)?db.splitGroups.filter(g=>Object.hasOwn(BASE_MENU,g)):[];
+db.splitSelected=db.splitSelected&&typeof db.splitSelected==="object"?db.splitSelected:{};
 if(!db.settings){db.settings={};}
 db.settings={restSeconds:90,timerAlert:"both",theme:"blue",font:"system",...db.settings};
 
@@ -1238,6 +1309,12 @@ Object.values(MENU)
 .includes(ex)
 
 );
+
+for(const group of Object.keys(BASE_MENU)){
+db.splitSelected[group]=Array.isArray(db.splitSelected[group])
+?db.splitSelected[group].filter(ex=>MENU[group]?.includes(ex)).slice(0,8)
+:[];
+}
 
 
 saveDB();
@@ -1441,7 +1518,11 @@ return db.draftWorkout.exercises[ex];
 }
 
 
-function selectedForGroup(group){
+function selectedForGroup(group,slot=0){
+
+if(db.workoutMode==="split"){
+return db.splitSelected[group]?.[slot]||"";
+}
 
 const options=
 MENU[group]||[];
@@ -1471,6 +1552,7 @@ getDraftExercise(ex);
 draft.sets[setIndex][field]=value;
 
 draft.sets[setIndex].prefilled=false;
+draft.sets[setIndex].touched=true;
 
 draft.sets[setIndex].confirmed=false;
 
@@ -1692,14 +1774,15 @@ banner.textContent=
 
 function chooseOrAdd(
 group,
-value
+value,
+slot=0
 ){
 
 if(
 value==="__add__"
 ){
 
-addCustomExercise(group);
+addCustomExercise(group,slot);
 
 return;
 
@@ -1708,13 +1791,14 @@ return;
 
 chooseForGroup(
 group,
-value
+value,
+slot=0
 );
 
 }
 
 
-function addCustomExercise(group){
+function addCustomExercise(group,slot=0){
 
 const name=
 prompt(
@@ -1780,7 +1864,7 @@ refreshMenu();
 
 chooseForGroup(
 group,
-baseMatch
+baseMatch,slot
 );
 
 
@@ -1809,7 +1893,7 @@ if(existing){
 
 chooseForGroup(
 group,
-existing
+existing,slot
 );
 
 
@@ -1851,7 +1935,7 @@ refreshMenu();
 
 chooseForGroup(
 group,
-clean
+clean,slot
 );
 
 
@@ -1862,173 +1946,116 @@ clean+" added"
 }
 
 
-function deleteCurrentExercise(group){
-
-const ex=
-selectedForGroup(group);
-
-
-if(!ex){
-
-toast(
-"Choose an exercise first"
-);
-
-return;
-
+function activeExercises(){
+ if(db.workoutMode==="full")return db.selected;
+ return db.splitGroups.flatMap(group=>db.splitSelected[group]||[]).filter(Boolean);
 }
 
-
-if(
-
-!confirm(
-
-`Delete "${ex}" from your ${groupLabel(group)} choices?
-
-Workout history for ${ex} will NOT be deleted.`
-
-)
-
-){
-
-return;
-
+function draftHasChanges(){
+ return Object.values(db.draftWorkout?.exercises||{}).some(item=>
+  (item.sets||[]).some(set=>set.confirmed||set.touched||(!set.prefilled&&set.reps!=="")));
 }
 
-
-db.selected=
-db.selected.filter(
-
-x=>x!==ex
-
-);
-
-
-const isBuiltIn=
-(BASE_MENU[group]||[])
-.includes(ex);
-
-
-if(isBuiltIn){
-
-db.deletedExercises[group]??=[];
-
-
-if(
-!db.deletedExercises[group]
-.includes(ex)
-){
-
-db.deletedExercises[group]
-.push(ex);
-
+function changeWorkoutMode(mode){
+ if(mode!=="full"&&mode!=="split")return false;
+ if(mode!==db.workoutMode&&draftHasChanges()&&!confirm("Switch workout style and discard the unfinished workout?")){
+  return false;
+ }
+ if(mode!==db.workoutMode)db.draftWorkout=null;
+ db.workoutMode=mode;
+ saveDB();renderWorkout();
+ return true;
 }
 
-}
-else{
-
-db.customExercises[group]??=[];
-
-
-db.customExercises[group]=
-db.customExercises[group]
-.filter(
-
-x=>x!==ex
-
-);
-
+function showWelcome(){
+ document.getElementById("welcome").hidden=false;
+ document.body.classList.add("welcome-open");
+ window.scrollTo(0,0);
 }
 
-
-saveDB();
-
-refreshMenu();
-
-renderWorkout();
-
-
-toast(
-ex+" removed"
-);
-
+function enterWorkout(mode){
+ if(!changeWorkoutMode(mode))return;
+ document.getElementById("welcome").hidden=true;
+ document.body.classList.remove("welcome-open");
+ showScreen("train",document.querySelector("nav button"));
+ window.scrollTo(0,0);
 }
 
-
-function chooseForGroup(
-group,
-ex
-){
-
-const groupExercises=
-MENU[group]||[];
-
-
-const existing=
-db.selected.find(
-
-x=>
-groupExercises.includes(x)
-
-);
-
-
-if(existing){
-
-db.selected=
-db.selected.filter(
-
-x=>x!==existing
-
-);
-
+function toggleSplitGroup(group){
+ if(!Object.hasOwn(MENU,group))return;
+ const chosen=db.splitGroups.includes(group);
+ const groupHasChanges=(db.splitSelected[group]||[]).some(ex=>
+  (db.draftWorkout?.exercises?.[ex]?.sets||[]).some(set=>set.confirmed||set.touched||(!set.prefilled&&set.reps!=="")));
+ if(chosen&&groupHasChanges&&!confirm("Remove this body part? Any unsaved sets for it will be left out of this workout."))return;
+ db.splitGroups=chosen?db.splitGroups.filter(g=>g!==group):[...db.splitGroups,group];
+ saveDB();renderWorkout();
 }
 
-
-if(ex){
-
-if(
-db.selected.length>=8
-){
-
-if(existing){
-
-db.selected.push(existing);
-
+function addSplitSlot(group){
+ if(activeExercises().length>=8){toast("Maximum 8 exercises");return;}
+ const slots=db.splitSelected[group]||[];
+ if(slots.length>=8||slots.includes("")){toast("Choose the open exercise first");return;}
+ slots.push("");db.splitSelected[group]=slots;saveDB();renderWorkout();
 }
 
-
-renderWorkout();
-
-
-toast(
-"Maximum 8 exercises"
-);
-
-
-return;
-
+function removeSplitSlot(group,slot){
+ db.splitSelected[group]?.splice(slot,1);saveDB();renderWorkout();
 }
 
-
-db.selected.push(ex);
-
-
-getDraftExercise(ex);
-
+function deleteCurrentExercise(group,slot=0){
+ const ex=selectedForGroup(group,slot);
+ if(!ex){toast("Choose an exercise first");return;}
+ if(!confirm(`Delete "${ex}" from your ${groupLabel(group)} choices?\n\nWorkout history for ${ex} will NOT be deleted.`))return;
+ db.selected=db.selected.filter(x=>x!==ex);
+ db.splitSelected[group]=db.splitSelected[group].filter(x=>x!==ex);
+ if((BASE_MENU[group]||[]).includes(ex)){
+  db.deletedExercises[group]??=[];
+  if(!db.deletedExercises[group].includes(ex))db.deletedExercises[group].push(ex);
+ }else{
+  db.customExercises[group]=(db.customExercises[group]||[]).filter(x=>x!==ex);
+ }
+ saveDB();refreshMenu();renderWorkout();toast(ex+" removed");
 }
 
-
-saveDB();
-
-renderWorkout();
-
+function chooseForGroup(group,ex,slot=0){
+ if(db.workoutMode==="split"){
+  const slots=db.splitSelected[group]||[];
+  if(ex&&slots.some((item,i)=>i!==slot&&item===ex)){
+   toast("Exercise already chosen for this body part");renderWorkout();return;
+  }
+  if(ex&&!slots[slot]&&activeExercises().length>=8){
+   toast("Maximum 8 exercises");renderWorkout();return;
+  }
+  if(ex){slots[slot]=ex;getDraftExercise(ex);}
+  else slots.splice(slot,1);
+  db.splitSelected[group]=slots;
+ }else{
+  const previous=selectedForGroup(group);
+  db.selected=db.selected.filter(x=>x!==previous);
+  if(ex){
+   if(db.selected.length>=8){
+    if(previous)db.selected.push(previous);
+    toast("Maximum 8 exercises");renderWorkout();return;
+   }
+   db.selected.push(ex);getDraftExercise(ex);
+  }
+ }
+ saveDB();renderWorkout();
 }
-
 
 function renderWorkout(){
 
 refreshMenu();
+
+document.getElementById("modeLabel").textContent=db.workoutMode==="split"?"Body Part Split":"Gani's Full Body";
+const picker=document.getElementById("splitPicker");
+picker.hidden=db.workoutMode!=="split";
+if(db.workoutMode==="split"){
+ document.getElementById("splitGroups").innerHTML=Object.keys(MENU).map(group=>
+ `<button type="button" class="secondary small" data-split-group="${escapeHTML(group)}" aria-pressed="${db.splitGroups.includes(group)}">${escapeHTML(groupLabel(group))}</button>`
+ ).join("");
+ document.querySelectorAll("[data-split-group]").forEach(button=>button.onclick=()=>toggleSplitGroup(button.dataset.splitGroup));
+}
 
 
 const el=
@@ -2040,13 +2067,20 @@ document.getElementById(
 el.innerHTML="";
 
 
-Object.entries(MENU)
-.forEach(
+const displayed=db.workoutMode==="split"
+ ?db.splitGroups.flatMap(group=>{
+   const slots=db.splitSelected[group]?.length?db.splitSelected[group]:[""];
+   return slots.map((_,slot)=>[group,MENU[group]||[],slot]);
+  })
+ :Object.entries(MENU).map(([group,arr])=>[group,arr,0]);
 
-([group,arr])=>{
+if(db.workoutMode==="split"&&!db.splitGroups.length){
+ el.innerHTML='<div class="card muted">Choose one or more body parts above to build your split day.</div>';
+}
 
-const current=
-selectedForGroup(group);
+displayed.forEach(([group,arr,slot])=>{
+
+const current=selectedForGroup(group,slot);
 
 
 const card=
@@ -2142,6 +2176,7 @@ logger=`
 <button
 class="danger small"
 data-delete-group="${escapeHTML(group)}"
+data-slot="${slot}"
 >
 Delete ${escapeHTML(current)}
 </button>
@@ -2268,7 +2303,7 @@ card.innerHTML=`
 <div class="row between">
 
 <h3>
-${groupLabel(group)}
+${groupLabel(group)}${db.workoutMode==="split"?` · Exercise ${slot+1}`:""}
 </h3>
 
 <span class="tag">
@@ -2289,6 +2324,7 @@ current
 
 <select
 data-group="${escapeHTML(group)}"
+data-slot="${slot}"
 >
 
 ${options}
@@ -2301,6 +2337,13 @@ ${logger}
 
 
 el.appendChild(card);
+
+if(db.workoutMode==="split"&&current&&slot===(db.splitSelected[group]?.length||1)-1){
+ const actions=document.createElement("div");
+ actions.className="row split-add";
+ actions.innerHTML=`<button class="secondary small" data-add-split="${escapeHTML(group)}">+ Add ${escapeHTML(groupLabel(group))} exercise</button>`;
+ el.appendChild(actions);
+}
 
 }
 
@@ -2331,7 +2374,8 @@ chooseOrAdd(
 
 select.dataset.group,
 
-select.value
+select.value,
+Number(select.dataset.slot)
 
 );
 
@@ -2420,7 +2464,8 @@ button.addEventListener(
 ()=>{
 
 deleteCurrentExercise(
-button.dataset.deleteGroup
+button.dataset.deleteGroup,
+Number(button.dataset.slot)
 );
 
 }
@@ -2430,6 +2475,10 @@ button.dataset.deleteGroup
 }
 
 );
+
+document.querySelectorAll("[data-add-split]").forEach(button=>{
+ button.onclick=()=>addSplitSlot(button.dataset.addSplit);
+});
 
 }
 
@@ -2539,6 +2588,9 @@ const session={
 date:
 new Date().toISOString(),
 
+mode:db.workoutMode,
+bodyParts:db.workoutMode==="split"?[...db.splitGroups]:[],
+
 exercises:[]
 
 };
@@ -2552,6 +2604,8 @@ db.draftWorkout.exercises
 )
 
 ){
+
+if(!activeExercises().includes(ex))continue;
 
 const sets=
 (data.sets||[])
@@ -2688,7 +2742,8 @@ db.sessions.slice().reverse().forEach(session=>{
 const index=db.sessions.indexOf(session);
 const card=document.createElement("div");card.className="card";
 const date=new Date(session.date).toLocaleString();
-card.innerHTML='<div class="row between"><strong>'+escapeHTML(date)+'</strong><button class="secondary small" data-edit-session="'+index+'">Edit</button></div>'+
+const workoutLabel=session.mode==="split"?"Split · "+(session.bodyParts||[]).map(groupLabel).join(" + "):"Full body";
+card.innerHTML='<div class="row between"><strong>'+escapeHTML(date)+'</strong><button class="secondary small" data-edit-session="'+index+'">Edit</button></div><div class="muted">'+escapeHTML(workoutLabel)+'</div>'+
 (session.exercises||[]).map(ex=>'<div style="margin-top:10px"><b>'+escapeHTML(ex.name)+'</b><div class="muted">'+(ex.sets||[]).map((set,i)=>'Set '+(i+1)+': '+escapeHTML(set.weight)+' lb × '+escapeHTML(set.reps)).join('<br>')+'</div></div>').join("");
 el.appendChild(card);
 });
@@ -3329,6 +3384,7 @@ renderWorkout();
 renderHistory();
 
 populateChartExercises();
+showWelcome();
 
 
 /*
