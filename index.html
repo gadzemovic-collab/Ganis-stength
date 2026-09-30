@@ -200,6 +200,27 @@ body.intro-open > .rest-float{display:none;}
 @keyframes shark-rise{from{opacity:0;transform:translateY(16px) scale(.95)}to{opacity:1;transform:none}}
 @keyframes intro-progress{from{width:0}to{width:100%}}
 @media(prefers-reduced-motion:reduce){.welcome-art{animation:none;}.welcome-choice{transition:none;}}
+.history-tools{display:flex;align-items:center;gap:12px;margin:12px 0 20px;}
+.history-tools select{width:auto;flex:1;max-width:200px;font-size:14px;padding:10px;}
+.history-tools .muted{font-size:12px;white-space:nowrap;}
+.history-month{font-size:14px;color:var(--muted);margin:22px 0 10px;}
+.history-workout{border:1px solid var(--blue-border);border-radius:18px;margin-bottom:12px;overflow:hidden;background:#fff;}
+.history-summary{display:flex;align-items:center;gap:12px;padding:15px;cursor:pointer;list-style:none;}
+.history-summary::-webkit-details-marker{display:none;}
+.history-summary:focus-visible{outline:3px solid var(--blue);outline-offset:-3px;}
+.history-date-badge{display:grid;justify-items:center;gap:2px;min-width:48px;padding:8px 6px;border-radius:12px;background:var(--blue-light);color:var(--blue-dark);}
+.history-date-badge b{font-size:22px;line-height:1;}.history-date-badge span{font-size:11px;font-weight:700;text-transform:uppercase;}
+.history-summary-copy{display:grid;gap:4px;flex:1;min-width:0;}.history-summary-copy strong{font-size:16px;color:var(--navy);}
+.history-summary-copy>span{font-size:12px;color:var(--muted);line-height:1.4;}
+.history-chevron{font-size:27px;color:var(--blue);}.history-workout[open] .history-chevron{transform:rotate(90deg);}
+.history-preview{color:var(--muted);font-size:12px;line-height:1.5;}
+.history-workout[open] .history-preview{display:none;}
+.history-detail{padding:0 15px 16px;border-top:1px solid var(--blue-border);}.history-detail>.row{padding-top:12px;gap:10px;}
+.history-exercise{padding-top:15px;margin-top:12px;border-top:1px solid #e8eef4;}.history-exercise>strong{font-size:14px;}
+.history-sets{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px;}
+.history-set{display:grid;gap:4px;padding:9px 11px;border-radius:10px;background:#f4f7fb;}.history-set>span{color:var(--muted);font-size:10px;}.history-set>b{font-size:13px;}
+.history-empty{text-align:center;padding:30px 12px;color:var(--muted);}.history-empty strong{color:var(--text);}.history-empty p{font-size:14px;line-height:1.5;}
+#historyEditor{scroll-margin-top:160px;}
 .theme-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:9px;margin-top:12px;}
 .theme-choice{display:flex;flex-direction:column;align-items:flex-start;gap:9px;padding:12px;border:2px solid #e3eaf0;border-radius:14px;background:#fff;color:#26364a;font:inherit;font-size:13px;font-weight:700;cursor:pointer;}
 .theme-choice[aria-pressed="true"]{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-light);}
@@ -990,9 +1011,7 @@ class="screen"
 
 <div class="card">
 
-<h2>
-Progress
-</h2>
+<h2>Workout overview</h2>
 
 <div class="grid">
 
@@ -1021,7 +1040,7 @@ id="ecount"
 </div>
 
 <div class="statlabel">
-Exercises logged
+Sets completed
 </div>
 
 </div>
@@ -1032,25 +1051,20 @@ Exercises logged
 
 <div class="card">
 
-<h2>
-Workout History
-</h2>
+<h2>Workout History</h2>
+<label for="historySearch">Find a workout</label>
+<input id="historySearch" type="search" placeholder="Search exercises or body parts" oninput="renderHistory()">
+<div class="history-tools">
+<select id="historyMode" aria-label="Filter workout style" onchange="renderHistory()"><option value="all">All workouts</option><option value="full">Full Body</option><option value="split">Body Part Split</option></select>
+<span id="historyResults" class="muted" aria-live="polite"></span>
+</div>
 
 <div id="historyList">
 </div>
 
 </div>
 
-<div class="card">
 
-<button
-class="secondary"
-onclick="clearHistory()"
->
-Delete all workout data
-</button>
-
-</div>
 
 </section>
 
@@ -2910,26 +2924,56 @@ const best=ex.sets.reduce((a,b)=>Number(b.weight)>Number(a.weight)?b:a);
 }
 }
 function renderHistory(){
+const search=document.getElementById("historySearch"),mode=document.getElementById("historyMode");
+search.disabled=false;mode.disabled=false;
+const query=search.value.trim().toLowerCase(),filter=mode.value;
 document.getElementById("wcount").textContent=db.sessions.length;
-document.getElementById("ecount").textContent=db.sessions.reduce((n,s)=>n+(s.exercises?.length||0),0);
+document.getElementById("ecount").textContent=db.sessions.reduce((n,s)=>n+(s.exercises||[]).reduce((total,ex)=>total+(ex.sets?.length||0),0),0);
 const el=document.getElementById("historyList");el.innerHTML="";
-if(!db.sessions.length){el.innerHTML="<div class='muted'>No workouts saved yet.</div>";return;}
-db.sessions.slice().reverse().forEach(session=>{
-const index=db.sessions.indexOf(session);
-const card=document.createElement("div");card.className="card";
-const date=new Date(session.date).toLocaleString();
-const workoutLabel=session.mode==="split"?"Split · "+(session.bodyParts||[]).map(groupLabel).join(" + "):"Full body";
-card.innerHTML='<div class="row between"><strong>'+escapeHTML(date)+'</strong><button class="secondary small" data-edit-session="'+index+'">Edit</button></div><div class="muted">'+escapeHTML(workoutLabel)+'</div>'+
-(session.exercises||[]).map(ex=>'<div style="margin-top:10px"><b>'+escapeHTML(ex.name)+'</b><div class="muted">'+(ex.sets||[]).map((set,i)=>'Set '+(i+1)+': '+escapeHTML(set.weight)+' lb × '+escapeHTML(set.reps)).join('<br>')+'</div></div>').join("");
-el.appendChild(card);
+const sessions=db.sessions.map((session,index)=>({session,index})).filter(({session})=>{
+ const style=session.mode==="split"?"split":"full";
+ const text=[style==="split"?"Body Part Split":"Full Body",...(session.bodyParts||[]).map(groupLabel),...(session.exercises||[]).map(ex=>ex.name)].join(" ").toLowerCase();
+ return (filter==="all"||filter===style)&&text.includes(query);
+}).sort((a,b)=>new Date(b.session.date)-new Date(a.session.date));
+document.getElementById("historyResults").textContent=`${sessions.length} workout${sessions.length===1?"":"s"}`;
+if(!sessions.length){
+ el.innerHTML=`<div class="history-empty"><strong>${db.sessions.length?"No matching workouts":"Your history starts here"}</strong><p>${db.sessions.length?"Try a different exercise or select All workouts.":"Finish and save a workout to see every exercise and set here."}</p></div>`;
+ return;
+}
+let lastMonth="";
+sessions.forEach(({session,index})=>{
+ const date=new Date(session.date);
+ const month=date.toLocaleDateString(undefined,{month:"long",year:"numeric"});
+ if(month!==lastMonth){const heading=document.createElement("h3");heading.className="history-month";heading.textContent=month;el.appendChild(heading);lastMonth=month;}
+ const exercises=session.exercises||[];
+ const setCount=exercises.reduce((total,ex)=>total+(ex.sets?.length||0),0);
+ const workoutLabel=session.mode==="split"?"Body Part Split":"Full Body";
+ const parts=(session.bodyParts||[]).map(groupLabel).join(" + ");
+ const matching=exercises.filter(ex=>ex.name.toLowerCase().includes(query));
+ const preview=(query&&matching.length?matching:exercises).slice(0,3).map(ex=>ex.name).join(" · ");
+ const card=document.createElement("details");card.className="history-workout";
+ card.innerHTML=`<summary class="history-summary">
+ <span class="history-date-badge" aria-hidden="true"><b>${date.getDate()}</b><span>${date.toLocaleDateString(undefined,{month:"short"})}</span></span>
+ <span class="history-summary-copy"><strong>${escapeHTML(workoutLabel)}</strong><span class="history-session-date">${escapeHTML(date.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric",year:"numeric"}))} · ${escapeHTML(date.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"}))}</span><span>${exercises.length} exercise${exercises.length===1?"":"s"} · ${setCount} set${setCount===1?"":"s"}</span><span class="history-preview">${escapeHTML(preview)}${exercises.length>3&&!query?" …":""}</span></span>
+ <span class="history-chevron" aria-hidden="true">›</span>
+ </summary>
+ <div class="history-detail">
+ <div class="row between"><span class="muted">${escapeHTML(parts||(session.mode==="split"?"Selected muscles":"Whole body"))}</span><button type="button" class="secondary small" data-edit-session="${index}">Edit workout</button></div>
+ ${exercises.map(ex=>`<div class="history-exercise"><strong>${escapeHTML(ex.name)}</strong><div class="history-sets">${(ex.sets||[]).map((set,i)=>`<span class="history-set"><span>Set ${i+1}</span><b>${escapeHTML(set.weight)} lb × ${escapeHTML(set.reps)}</b></span>`).join("")}</div></div>`).join("")}
+ </div>`;
+ el.appendChild(card);
 });
 el.querySelectorAll("[data-edit-session]").forEach(button=>button.addEventListener("click",()=>editSession(Number(button.dataset.editSession))));
 }
 function editSession(index){
 const session=db.sessions[index];if(!session)return;
+document.getElementById("historySearch").disabled=true;
+document.getElementById("historyMode").disabled=true;
+document.getElementById("historyList").querySelectorAll("[data-edit-session]").forEach(button=>button.disabled=true);
 const card=document.createElement("div");card.className="card";card.id="historyEditor";
 card.innerHTML='<h3>Edit workout</h3><label>Date and time</label><input type="datetime-local" id="editDate"><div id="editExercises"></div><div class="row"><button class="primary" id="saveEdit">Save corrections</button><button class="secondary" id="cancelEdit">Cancel</button></div>';
 document.getElementById("historyList").prepend(card);
+card.scrollIntoView({behavior:"smooth",block:"start"});
 const date=new Date(session.date);document.getElementById("editDate").value=new Date(date.getTime()-date.getTimezoneOffset()*60000).toISOString().slice(0,16);
 const area=document.getElementById("editExercises");
 session.exercises.forEach((ex,ei)=>{
