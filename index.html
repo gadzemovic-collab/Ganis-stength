@@ -107,6 +107,9 @@ font-size:13px;
 opacity:.8;
 }
 
+html.opening-screen,
+body.welcome-open,
+body.intro-open{background:#041c36;overscroll-behavior:none;}
 body.welcome-open > header,
 body.welcome-open > nav,
 body.welcome-open > main,
@@ -117,16 +120,19 @@ body.intro-open > main,
 body.intro-open > .rest-float{display:none;}
 .welcome[hidden]{display:none;}
 .welcome{
+ position:fixed;
+ inset:0;
+ z-index:20;
  min-height:100vh;
  min-height:100dvh;
  display:flex;
  align-items:center;
  justify-content:center;
- padding:28px 22px max(28px,env(safe-area-inset-bottom));
+ padding:max(28px,env(safe-area-inset-top)) 22px max(28px,env(safe-area-inset-bottom));
  color:#fff;
  text-align:center;
  background:radial-gradient(circle at 50% 30%,#195580 0%,#07345c 43%,#041c36 100%);
- overflow:hidden;
+ overflow-y:auto;
 }
 .welcome-inner{width:min(100%,430px);position:relative;z-index:1;}
 .welcome-art{
@@ -2068,6 +2074,7 @@ async function showIntro(){
  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){showWelcome();return;}
  document.getElementById("intro").hidden=false;
  document.body.classList.add("intro-open");
+ document.documentElement.classList.add("opening-screen");
  const shark=document.getElementById("introShark");
  shark.src="shark-squat.gif?v=4";
  try{await shark.decode?.();}catch(e){}
@@ -2082,6 +2089,7 @@ function showWelcome(){
  document.body.classList.remove("intro-open");
  document.getElementById("welcome").hidden=false;
  document.body.classList.add("welcome-open");
+ document.documentElement.classList.add("opening-screen");
  window.scrollTo(0,0);
 }
 
@@ -2089,6 +2097,7 @@ function enterWorkout(mode){
  if(!changeWorkoutMode(mode))return;
  document.getElementById("welcome").hidden=true;
  document.body.classList.remove("welcome-open");
+ document.documentElement.classList.remove("opening-screen");
  showScreen("train",document.querySelector("nav button"));
  window.scrollTo(0,0);
 }
