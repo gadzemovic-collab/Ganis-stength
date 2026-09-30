@@ -520,6 +520,13 @@ margin:0;
 .exercise-summary:focus-visible{outline:3px solid var(--blue);outline-offset:5px;border-radius:8px;}
 .remove-set{display:block;margin:6px auto 0;padding:0;width:28px;height:28px;border:0;border-radius:8px;background:var(--danger-bg);color:var(--danger);font-size:20px;cursor:pointer;}
 .remove-set:disabled{opacity:.35;cursor:default;}
+.set-comparison{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:6px 0 14px 37px;font-size:11px;color:var(--muted);}
+.progress-badge{padding:4px 7px;border-radius:7px;background:var(--green-bg);color:#22663b;font-weight:700;}
+.template-panel>p{font-size:12px;line-height:1.5;margin:10px 0;}
+.template-row{display:flex;align-items:center;gap:10px;border-top:1px solid var(--blue-border);padding:10px 0;}
+.template-load{flex:1;min-width:0;text-align:left;display:grid;gap:5px;padding:10px;border:1px solid var(--blue-border);border-radius:12px;background:#f6f9fc;color:var(--text);font:inherit;cursor:pointer;}
+.template-load strong{font-size:14px;overflow-wrap:anywhere;}.template-load span{font-size:11px;color:var(--muted);}
+.template-load:focus-visible{outline:3px solid var(--blue);outline-offset:2px;}.template-empty{font-size:12px;padding:6px 0;}
 .add-draft-set{margin:12px 0;}
 .workout-part h3{
 font-size:20px;
@@ -982,6 +989,11 @@ Workout autosave is on.
 
 </div>
 
+<div class="card template-panel">
+<div class="row between"><h2 style="margin:0">Saved workouts</h2><button type="button" class="secondary small" onclick="saveWorkoutTemplate()">Save current</button></div>
+<p class="muted">Save your exercise choices and set counts for next time.</p>
+<div id="templateList"></div>
+</div>
 <div id="workout">
 </div>
 
@@ -1357,6 +1369,7 @@ db.sessions=[];
 if(!db.history){
 db.history={};
 }
+db.templates=(Array.isArray(db.templates)?db.templates:[]).filter(t=>t&&typeof t.name==="string"&&Array.isArray(t.choices));
 db.workoutMode=db.workoutMode==="split"?"split":"full";
 db.splitGroups=Array.isArray(db.splitGroups)?db.splitGroups.filter(g=>Object.hasOwn(BASE_MENU,g)):[];
 db.splitSelected=db.splitSelected&&typeof db.splitSelected==="object"?db.splitSelected:{};
@@ -1609,6 +1622,23 @@ return null;
 
 }
 
+function setComparisonHTML(ex,set,index){
+ const previous=lastSessionForExercise(ex)?.sets?.[index];
+ const last=previous?`<span>Last time: ${escapeHTML(previous.weight)} lb × ${escapeHTML(previous.reps)}</span>`:"<span>No previous set</span>";
+ if(!set.confirmed)return last;
+ const weight=Number(set.weight),reps=Number(set.reps);
+ if(!Number.isFinite(weight)||weight<0||!Number.isInteger(reps)||reps<1)return last;
+ const history=db.sessions.flatMap(session=>(session.exercises||[]).filter(item=>item.name===ex).flatMap(item=>item.sets||[]));
+ let badge="";
+ if(history.length&&weight>Math.max(...history.map(item=>Number(item.weight))))badge="New weight best";
+ else{
+  const sameWeight=history.filter(item=>Number(item.weight)===weight);
+  if(sameWeight.length&&reps>Math.max(...sameWeight.map(item=>Number(item.reps))))badge="Rep best at this weight";
+  else if(previous&&weight===Number(previous.weight)&&reps>Number(previous.reps))badge=`+${reps-Number(previous.reps)} reps vs last time`;
+ }
+ return last+(badge?`<span class="progress-badge">${escapeHTML(badge)}</span>`:"");
+}
+
 function lastLoggedLabel(ex){
  const last=lastSessionForExercise(ex);
  if(!last)return "New";
@@ -1764,12 +1794,11 @@ draft.sets[setIndex];
 if(!s||s.confirmed)return;
 
 if(
-s.weight==="" ||
-s.reps===""
+s.weight==="" || s.reps==="" || !Number.isFinite(Number(s.weight)) || Number(s.weight)<0 || !Number.isInteger(Number(s.reps)) || Number(s.reps)<1
 ){
 
 toast(
-"Enter weight and reps first"
+"Enter a valid weight and rep count"
 );
 
 return;
@@ -1838,6 +1867,8 @@ row.classList.remove(
 "completed"
 );
 
+const comparison=document.getElementById(`comparison-${safeId(ex)}-${setIndex}`);
+if(comparison)comparison.innerHTML=setComparisonHTML(ex,s,setIndex);
 const button=row.querySelector(".check");
 if(button){
 button.setAttribute("aria-pressed",String(!!s.confirmed));
@@ -2130,6 +2161,55 @@ clean+" added"
 }
 
 
+function saveWorkoutTemplate(){
+ refreshMenu();
+ const choices=(db.workoutMode==="split"?db.splitGroups:Object.keys(MENU)).flatMap(group=>{
+  const names=db.workoutMode==="split"?(db.splitSelected[group]||[]).filter(Boolean):[selectedForGroup(group)].filter(Boolean);
+  return names.map(exercise=>({group,exercise,setCount:getDraftExercise(exercise).sets.length}));
+ });
+ if(!choices.length){toast("Choose at least one exercise first");return;}
+ const entered=prompt("Name this workout (for example, Full Body A or Push Day):");
+ if(!entered?.trim())return;
+ const name=entered.trim().slice(0,60);
+ const index=db.templates.findIndex(t=>t.name.toLowerCase()===name.toLowerCase());
+ if(index>=0&&!confirm(`Replace the saved workout "${name}"?`))return;
+ const template={name,mode:db.workoutMode,choices};
+ if(index>=0)db.templates[index]=template;else db.templates.push(template);
+ saveDB();renderWorkoutTemplates();toast("Workout template saved");
+}
+function loadWorkoutTemplate(index){
+ const template=db.templates[index];if(!template)return;
+ refreshMenu();
+ const choices=template.choices;
+ if(!["full","split"].includes(template.mode)||!choices.length||choices.length>8||choices.some(c=>!c||!MENU[c.group]?.includes(c.exercise)||!Number.isInteger(c.setCount)||c.setCount<1)||new Set(choices.map(c=>c.exercise)).size!==choices.length||(template.mode==="full"&&new Set(choices.map(c=>c.group)).size!==choices.length)){
+  toast("Some template exercises are unavailable. Save an updated template.");return;
+ }
+ if(draftHasChanges()&&!confirm("Load this saved workout and discard your unfinished sets?"))return;
+ db.workoutMode=template.mode;
+ if(template.mode==="full")db.selected=choices.map(c=>c.exercise);
+ else{
+  db.splitGroups=[...new Set(choices.map(c=>c.group))];
+  db.splitSelected=Object.fromEntries(db.splitGroups.map(group=>[group,choices.filter(c=>c.group===group).map(c=>c.exercise)]));
+ }
+ db.draftWorkout={startedAt:new Date().toISOString(),exercises:{}};
+ choices.forEach(c=>{
+  const draft=getDraftExercise(c.exercise);
+  draft.sets=Array.from({length:c.setCount},(_,i)=>draft.sets[i]||{weight:"",reps:"",prefilled:false,confirmed:false});
+ });
+ expandedCards.clear();saveDB();renderWorkout();toast(`Loaded ${template.name}`);
+}
+function deleteWorkoutTemplate(index){
+ const template=db.templates[index];if(!template)return;
+ if(!confirm(`Delete saved workout "${template.name}"? Your workout history will stay.`))return;
+ db.templates.splice(index,1);saveDB();renderWorkoutTemplates();
+}
+function renderWorkoutTemplates(){
+ const el=document.getElementById("templateList");
+ el.innerHTML=db.templates.length?db.templates.map((template,index)=>`<div class="template-row"><button type="button" class="template-load" data-load-template="${index}"><strong>${escapeHTML(template.name)}</strong><span>${template.mode==="split"?"Body Part Split":"Full Body"} · ${template.choices.length} exercises</span></button><button type="button" class="secondary small" data-delete-template="${index}" aria-label="Delete saved workout ${escapeHTML(template.name)}">Delete</button></div>`).join(""):'<div class="muted template-empty">Your saved workouts will appear here.</div>';
+ el.querySelectorAll("[data-load-template]").forEach(button=>button.onclick=()=>loadWorkoutTemplate(Number(button.dataset.loadTemplate)));
+ el.querySelectorAll("[data-delete-template]").forEach(button=>button.onclick=()=>deleteWorkoutTemplate(Number(button.dataset.deleteTemplate)));
+}
+
 function activeExercises(){
  if(db.workoutMode==="full")return db.selected;
  return db.splitGroups.flatMap(group=>db.splitSelected[group]||[]).filter(Boolean);
@@ -2250,6 +2330,7 @@ function chooseForGroup(group,ex,slot=0){
 function renderWorkout(){
 
 refreshMenu();
+renderWorkoutTemplates();
 
 document.getElementById("modeLabel").textContent=db.workoutMode==="split"?"Body Part Split":"Full Body";
 const picker=document.getElementById("splitPicker");
@@ -2467,6 +2548,7 @@ aria-pressed="${s.confirmed}"
 </button>
 
 </div>
+<div class="set-comparison" id="comparison-${safeId(current)}-${j}">${setComparisonHTML(current,s,j)}</div>
 
 `;
 
