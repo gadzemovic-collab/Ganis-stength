@@ -899,6 +899,7 @@ New
 
 <div class="workout-mode">
 <div class="row between"><strong id="modeLabel">Full Body</strong><button class="secondary small" type="button" onclick="showWelcome()">Change workout style</button></div>
+<p id="fullBodyDateHint" class="muted">Exercise dates show the last saved workout. New means you haven't logged it yet.</p>
 <div id="splitPicker" hidden>
 <p class="muted">Choose the body parts for today. Add up to 8 exercises across them.</p>
 <div id="splitGroups" class="split-groups"></div>
@@ -1537,6 +1538,13 @@ return null;
 
 }
 
+function lastLoggedLabel(ex){
+ const last=lastSessionForExercise(ex);
+ if(!last)return "New";
+ const date=new Date(last.date);
+ return Number.isNaN(date.getTime())?"New":date.toLocaleDateString(undefined,{month:"numeric",day:"numeric",year:"2-digit"});
+}
+
 
 function getDraftExercise(ex){
 
@@ -2154,6 +2162,7 @@ refreshMenu();
 document.getElementById("modeLabel").textContent=db.workoutMode==="split"?"Body Part Split":"Full Body";
 const picker=document.getElementById("splitPicker");
 picker.hidden=db.workoutMode!=="split";
+document.getElementById("fullBodyDateHint").hidden=db.workoutMode!=="full";
 if(db.workoutMode==="split"){
  document.getElementById("splitGroups").innerHTML=Object.keys(MENU).map(group=>
  `<button type="button" class="secondary small" data-split-group="${escapeHTML(group)}" aria-pressed="${db.splitGroups.includes(group)}">${escapeHTML(groupLabel(group))}</button>`
@@ -2211,7 +2220,7 @@ ex=>
 value="${escapeHTML(ex)}"
 ${ex===current?"selected":""}
 >
-${escapeHTML(ex)}
+${escapeHTML(ex)}${db.workoutMode==="full"?` — ${escapeHTML(lastLoggedLabel(ex))}`:""}
 </option>`
 
 ).join("")}
@@ -2880,7 +2889,7 @@ if(weightInput===""||repsInput===""||!Number.isFinite(weight)||weight<0||!Number
 }
 if(!edited.length){toast("Keep at least one set");return;}
 const dateValue=document.getElementById("editDate").value;const parsed=new Date(dateValue);if(!dateValue||Number.isNaN(parsed.getTime())){toast("Enter a valid date");return;}
-session.date=parsed.toISOString();session.exercises=edited;db.sessions.sort((a,b)=>new Date(a.date)-new Date(b.date));rebuildHistory();saveDB();renderHistory();populateChartExercises();renderCharts();toast("Workout updated");
+session.date=parsed.toISOString();session.exercises=edited;db.sessions.sort((a,b)=>new Date(a.date)-new Date(b.date));rebuildHistory();saveDB();renderHistory();populateChartExercises();renderCharts();renderWorkout();toast("Workout updated");
 };
 }
 function appendEditSet(container,set){
