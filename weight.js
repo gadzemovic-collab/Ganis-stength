@@ -44,7 +44,8 @@ function renderWeightCharts(){
  const samples=[{week:0,weight:plan.startWeight,bodyFat:plan.startBF},...entries].filter(e=>e.bodyFat!==null&&e.bodyFat!==undefined);
  const compositionSeries=[{name:'Estimated fat',color:'#c05a24',points:samples.map(e=>({week:e.week,value:weightComposition(e.weight,e.bodyFat).fat}))},{name:'Non-fat weight',color:'#147966',points:samples.map(e=>({week:e.week,value:weightComposition(e.weight,e.bodyFat).nonFat}))}];
  if(original.startBF!==null&&original.goalBF!==null)compositionSeries.push({name:'Initial planned fat',color:'#c05a24',dashed:true,points:weeks.map(week=>({week,value:weightPlanComposition(original,week).fat}))},{name:'Initial planned non-fat',color:'#147966',dashed:true,points:weeks.map(week=>({week,value:weightPlanComposition(original,week).nonFat}))});
- renderWeightChart('compositionWeightChart',compositionSeries,range);
+ const compositionView=document.getElementById('compositionChartView').value;
+ renderWeightChart('compositionWeightChart',compositionSeries.filter(s=>compositionView==='fat'?s.name.toLowerCase().includes('fat')&&!s.name.toLowerCase().includes('non-fat'):compositionView==='nonFat'?s.name.toLowerCase().includes('non-fat'):true),range);
  document.getElementById('weightChartRangeLabel').textContent=`${weightDateLabel(weightDate(plan.startDate,range.start))} – ${weightDateLabel(weightDate(plan.startDate,range.end))}`;
  document.getElementById('weightChartPrevious').disabled=!range.span||range.start===0;document.getElementById('weightChartNext').disabled=!range.span||range.end>=range.horizon;
 }
@@ -93,13 +94,14 @@ function renderWeightTracking(){
  if(!tracking.initialPlan){tracking.initialPlan={...plan};saveDB();}
  syncWeightProjection(tracking);
  const entries=tracking.entries,horizon=Math.max(plan.weeks,entries.at(-1)?.week||0,Math.max(0,Math.round((weightDay(weightToday())-weightDay(plan.startDate))/7))),latest=entries.at(-1)||{week:0,date:plan.startDate,weight:plan.startWeight,bodyFat:plan.startBF};
- const baseline=weightComposition(plan.startWeight,plan.startBF),compositionEntries=entries.filter(e=>e.bodyFat!==null&&e.bodyFat!==undefined),lastComposition=compositionEntries.at(-1)||{date:plan.startDate,weight:plan.startWeight,bodyFat:plan.startBF},composition=weightComposition(lastComposition.weight,lastComposition.bodyFat);
+ const compositionEntries=entries.filter(e=>validWeightBF(e.bodyFat)&&e.bodyFat!==null&&e.bodyFat!==undefined),baselineEntry=plan.startBF!==null&&plan.startBF!==undefined?{date:plan.startDate,weight:plan.startWeight,bodyFat:plan.startBF}:compositionEntries[0],lastComposition=compositionEntries.at(-1)||baselineEntry;
+ const baseline=baselineEntry?weightComposition(baselineEntry.weight,baselineEntry.bodyFat):null,composition=lastComposition?weightComposition(lastComposition.weight,lastComposition.bodyFat):null,hasCompositionChange=!!(baseline&&composition&&baselineEntry.date!==lastComposition.date);
  document.getElementById('weightYearGoal').textContent=`End-date target: ${updatedWeightTarget(tracking,plan.weeks).toFixed(1)} lb · ${weightDateLabel(weightDate(plan.startDate,plan.weeks))}.`;
  document.getElementById('weightCurrent').textContent=latest.weight.toFixed(1);const gap=latest.weight-weightTarget(tracking.initialPlan,latest.week);const ahead=tracking.initialPlan.direction==='gain'?gap:-gap;document.getElementById('weightAheadStat').hidden=ahead<.05;document.getElementById('weightGap').textContent=ahead>=.05?ahead.toFixed(1):'';document.getElementById('weightPlanSummary').textContent=`${latest.week?'Week '+latest.week:'Starting measurement'} · ${weightDateLabel(latest.date)}.`;
  document.getElementById('weightRevisionSummary').textContent=tracking.updatedPlan?`Updated plan automatically follows your latest weigh-in: ${weightDateLabel(latest.date)} · ${latest.weight.toFixed(1)} lb. Your initial plan stays visible.`:'The updated line appears automatically after your first weigh-in.';
  document.getElementById('weightChange').textContent=weightSigned(latest.weight-plan.startWeight);
- document.getElementById('fatChange').textContent=baseline&&composition?weightSigned(composition.fat-baseline.fat):'—';document.getElementById('nonFatChange').textContent=baseline&&composition?weightSigned(composition.nonFat-baseline.nonFat):'—';
- document.getElementById('compositionAsOf').textContent=baseline&&composition?`Composition changes estimated as of ${weightDateLabel(lastComposition.date)}.`:'Enter starting body-fat % and body-fat % at weigh-ins to estimate composition changes.';
+ document.getElementById('fatChange').textContent=hasCompositionChange?weightSigned(composition.fat-baseline.fat):'—';document.getElementById('nonFatChange').textContent=hasCompositionChange?weightSigned(composition.nonFat-baseline.nonFat):'—';
+ document.getElementById('compositionAsOf').textContent=hasCompositionChange?`Estimated change from ${weightDateLabel(baselineEntry.date)} to ${weightDateLabel(lastComposition.date)}.`:baseline?'Save another weigh-in with body-fat % to calculate changes.':'Add body-fat % to two weigh-ins, or enter a starting body-fat % and a later weigh-in.';
  document.getElementById('weeklyWeightDate').value=weightToday();document.getElementById('weeklyWeight').value='';document.getElementById('weeklyBF').value='';
  const next=entries.length?latest.week+1:1;document.getElementById('weeklyDue').textContent=`Next check-in: ${weightDateLabel(weightDate(plan.startDate,next))} · Week ${next}.`;
  renderWeightCharts();

@@ -117,7 +117,7 @@ body.welcome-open > .rest-float,
 body.intro-open > header,
 body.intro-open > nav,
 body.intro-open > main,
-body.intro-open > .rest-float{display:none;}
+body.intro-open > .rest-float,body:has(#weight.active) > .rest-float{display:none;}
 .welcome[hidden]{display:none;}
 .welcome{
  position:fixed;
@@ -1215,7 +1215,7 @@ class="chart"
 <div id="weightDashboard" hidden>
 <div class="card"><h2>Actual vs plan</h2><p id="weightYearGoal" class="weight-goal"></p><div class="weight-stats"><div><strong id="weightCurrent">—</strong><span>Current weight (lb)</span></div><div id="weightAheadStat" hidden><strong id="weightGap"></strong><span>Ahead of initial plan (lb)</span></div></div><p class="weight-total">Total change <strong id="weightChange">—</strong></p><p id="weightPlanSummary" class="muted weight-help"></p><div class="weight-zoom"><label for="weightChartPeriod">Chart view</label><select id="weightChartPeriod" onchange="changeWeightChartPeriod()"><option value="4">4 weeks</option><option value="12">12 weeks</option><option value="26">26 weeks</option><option value="52">52 weeks</option><option value="all" selected>Full plan</option></select><button id="weightChartPrevious" type="button" class="secondary small" onclick="moveWeightChart(-1)" aria-label="Earlier chart period">‹</button><button id="weightChartNext" type="button" class="secondary small" onclick="moveWeightChart(1)" aria-label="Later chart period">›</button></div><p id="weightChartRangeLabel" class="muted weight-help"></p><div id="bodyWeightChart" class="weight-chart"></div><p id="weightRevisionSummary" class="muted weight-help"></p></div>
 <div class="card"><h2>Weekly weigh-in</h2><p id="weeklyDue" class="muted"></p><form id="weeklyWeightForm" onsubmit="saveWeeklyWeight(event)"><div class="weekly-date"><div><label for="weeklyWeightDate">Weigh-in date</label><input id="weeklyWeightDate" type="date" required onchange="focusWeeklyField('weeklyWeight')"></div><button type="button" class="secondary small" onclick="useTodayForWeighIn()">Today</button></div><div class="weekly-entry-fields"><div><label for="weeklyWeight">Weight (lb)</label><input id="weeklyWeight" type="text" inputmode="decimal" enterkeyhint="next" required onkeydown="weeklyEntryNext(event,'weeklyBF')"><button type="button" class="entry-next" onclick="focusWeeklyField('weeklyBF')">Next: body fat % →</button></div><div><label for="weeklyBF">Body fat % <span class="weight-optional">Optional</span></label><input id="weeklyBF" type="text" inputmode="decimal" enterkeyhint="done" placeholder="Optional"></div></div><button type="submit" class="primary">Save weigh-in</button></form></div>
-<details class="card"><summary class="weight-section-title">Body composition <span class="weight-optional">Optional</span></summary><p class="muted weight-help">Estimates use the body-fat percentages you enter. Non-fat weight includes muscle, water, bone and organs.</p><div class="weight-stats"><div><strong id="fatChange">—</strong><span>Estimated fat change</span></div><div><strong id="nonFatChange">—</strong><span>Non-fat change</span></div></div><p id="compositionAsOf" class="muted weight-help"></p><div id="compositionWeightChart" class="weight-chart"></div></details>
+<details class="card"><summary class="weight-section-title">Body composition <span class="weight-optional">Optional</span></summary><p class="muted weight-help">Estimates use the body-fat percentages you enter. Non-fat weight includes muscle, water, bone and organs.</p><div class="weight-stats"><div><strong id="fatChange">—</strong><span>Estimated fat change</span></div><div><strong id="nonFatChange">—</strong><span>Non-fat change</span></div></div><p id="compositionAsOf" class="muted weight-help"></p><div class="weight-zoom"><label for="compositionChartView">Show</label><select id="compositionChartView" onchange="renderWeightCharts()"><option value="both">Fat and non-fat</option><option value="fat">Estimated fat only</option><option value="nonFat">Non-fat weight only</option></select></div><div id="compositionWeightChart" class="weight-chart"></div></details>
 <div class="card"><h2>Your weigh-ins</h2><div id="weeklyWeightLog"></div></div>
 <details class="card"><summary class="weight-section-title">Full plan and weekly comparison</summary><p class="muted weight-help">Swipe the table sideways on smaller screens. Week 0 is your starting measurement.</p><div class="row between weight-pagination"><button id="weightPagePrevious" class="secondary small" type="button" onclick="changeWeightPlanPage(-1)">Previous</button><span id="weightPageLabel" class="muted weight-help"></span><button id="weightPageNext" class="secondary small" type="button" onclick="changeWeightPlanPage(1)">Next</button></div><div class="weight-table-wrap" tabindex="0" role="region" aria-label="Weekly planned and actual weights"><table class="weight-table"><thead><tr><th>Week</th><th>Planned date</th><th>Initial lb</th><th>Updated lb</th><th>Actual lb</th><th>Ahead of initial plan</th><th>Fat lb</th><th>Non-fat lb</th></tr></thead><tbody id="weightPlanRows"></tbody></table></div></details>
 </div></section>
@@ -1234,7 +1234,7 @@ class="chart"
 <div id="toast">
 </div>
 
-<script src="weight.js?v=7"></script>
+<script src="weight.js?v=8"></script>
 <script>
 
 const BASE_MENU={
