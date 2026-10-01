@@ -721,31 +721,26 @@ object-fit:cover;
 }
 
 .rest-float{
-position:fixed;
-left:50%;
-bottom:max(12px,env(safe-area-inset-bottom));
-transform:translateX(-50%);
-z-index:12;
-width:max-content;
-max-width:calc(100% - 16px);
-display:grid;
-grid-template-columns:auto auto auto auto;
-align-items:center;
-gap:5px;
-padding:5px 7px;
-background:#fff;
-border:1px solid var(--blue-border);
-border-radius:12px;
-box-shadow:0 5px 22px #0a203b48;
+ position:fixed;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);
+ z-index:12;width:max-content;max-width:calc(100% - 16px);
+ display:grid;grid-template-columns:28px auto auto auto auto;align-items:center;gap:5px;
+ padding:7px;background:#fff;border:1px solid var(--blue-border);border-radius:14px;box-shadow:0 5px 22px #0a203b48;
 }
-
-.rest-float strong{font-size:12px;min-width:65px;white-space:nowrap}
-.rest-float select{width:67px;padding:6px 3px;font-size:12px;border-radius:8px}
-.rest-float button{white-space:nowrap;padding:7px 8px;font-size:12px}
-.rest-float.collapsed select,
-.rest-float.collapsed .timer-action{display:none}
-.rest-float.collapsed{opacity:.92}
-}
+.rest-float strong{grid-column:2/-1;font-size:12px;white-space:nowrap;}
+.rest-float select{width:67px;padding:6px 3px;font-size:12px;border-radius:8px;min-height:34px;}
+.rest-float button{white-space:nowrap;padding:7px 8px;font-size:12px;min-height:34px;}
+.rest-float .timer-drag{grid-row:1/span 2;width:28px;padding:0;align-self:stretch;background:var(--blue-light);color:var(--blue-dark);border:0;border-radius:8px;cursor:grab;touch-action:none;user-select:none;}
+.timer-drag svg{width:16px;height:24px;fill:currentColor;vertical-align:middle;}
+.rest-float.dragging .timer-drag{cursor:grabbing;}
+.rest-float.collapsed select,.rest-float.collapsed .timer-action,
+.rest-float.keyboard-open select,.rest-float.keyboard-open .timer-action{display:none;}
+.rest-float.collapsed,.rest-float.keyboard-open{grid-template-columns:28px auto auto;}
+.rest-float.collapsed strong,.rest-float.keyboard-open strong{grid-column:auto;}
+.rest-float.collapsed .timer-drag,.rest-float.keyboard-open .timer-drag{grid-row:auto;}
+.rest-float.keyboard-open #timerToggle{display:none;}
+.rest-float.keyboard-open{grid-template-columns:28px auto;}
+:root{--timer-safe-top:env(safe-area-inset-top,0px);--timer-safe-bottom:env(safe-area-inset-bottom,0px);}
+@media(max-width:360px){main{padding-left:10px;padding-right:10px;}.card,.workout-part{padding:12px;}.row.between{flex-wrap:wrap;}.template-panel .row{gap:8px;}}
 
 .stat{
 font-size:24px;
@@ -1182,8 +1177,9 @@ class="chart"
 
 </main>
 
-<div class="rest-float" role="timer" aria-label="Rest timer">
-<strong id="timerDisplay" aria-live="off">Rest timer ready</strong>
+<div class="rest-float" aria-label="Rest timer controls">
+<button type="button" class="timer-drag" aria-label="Move rest timer. Drag or use arrow keys; Home resets position." title="Drag to move timer"><svg viewBox="0 0 16 24" aria-hidden="true"><circle cx="5" cy="5" r="1.5"/><circle cx="11" cy="5" r="1.5"/><circle cx="5" cy="12" r="1.5"/><circle cx="11" cy="12" r="1.5"/><circle cx="5" cy="19" r="1.5"/><circle cx="11" cy="19" r="1.5"/></svg></button>
+<strong id="timerDisplay" role="timer" aria-live="off">Rest timer ready</strong>
 <select id="restQuickSelect" aria-label="Rest duration" onchange="setRestFromTimer(this.value)"><option value="30">0:30</option><option value="45">0:45</option><option value="60">1:00</option><option value="90">1:30</option><option value="120">2:00</option><option value="180">3:00</option><option value="240">4:00</option><option value="300">5:00</option></select>
 <button class="secondary small timer-action" onclick="startTimer(Number(db.settings.restSeconds))">Start</button>
 <button class="secondary small timer-action" onclick="stopTimer()">Stop</button>
@@ -3213,6 +3209,66 @@ renderCharts();
 let timer=null;
 let timerEnd=0;
 let audioContext=null;
+function timerBounds(panel){
+ const viewport=window.visualViewport;
+ const style=getComputedStyle(document.documentElement);
+ const topInset=parseFloat(style.getPropertyValue("--timer-safe-top"))||0;
+ const bottomInset=parseFloat(style.getPropertyValue("--timer-safe-bottom"))||0;
+ const left=(viewport?.offsetLeft||0)+8,top=(viewport?.offsetTop||0)+topInset+8;
+ return {left,top,right:Math.max(left,(viewport?.offsetLeft||0)+(viewport?.width||window.innerWidth)-panel.offsetWidth-8),bottom:Math.max(top,(viewport?.offsetTop||0)+(viewport?.height||window.innerHeight)-panel.offsetHeight-bottomInset-8)};
+}
+function clampTimerPoint(bounds,x,y){return {x:Math.max(bounds.left,Math.min(bounds.right,x)),y:Math.max(bounds.top,Math.min(bounds.bottom,y))};}
+function initMovableRestTimer(){
+ const panel=document.querySelector(".rest-float"),handle=panel.querySelector(".timer-drag");
+ let drag=null,lastFocused=null;
+ function place(x,y){panel.style.left=`${x}px`;panel.style.top=`${y}px`;panel.style.bottom="auto";panel.style.transform="none";}
+ function reposition(){
+  if(drag||!panel.offsetWidth)return;
+  const keyboardOpen=!!window.visualViewport&&window.innerHeight-window.visualViewport.height>120;
+  panel.classList.toggle("keyboard-open",keyboardOpen);
+  const bounds=timerBounds(panel),position=db.timerPosition||{x:.5,y:1};
+  place(bounds.left+(bounds.right-bounds.left)*Math.max(0,Math.min(1,Number(position.x)||0)),bounds.top+(bounds.bottom-bounds.top)*Math.max(0,Math.min(1,Number(position.y)||0)));
+  const focused=document.activeElement;
+  if(!keyboardOpen)lastFocused=null;
+  else if(focused&&focused!==lastFocused&&!panel.contains(focused)&&focused.matches("input,select,textarea")){
+   const field=focused.getBoundingClientRect(),timerRect=panel.getBoundingClientRect();
+   if(field.bottom>timerRect.top&&field.top<timerRect.bottom&&field.right>timerRect.left&&field.left<timerRect.right){lastFocused=focused;focused.scrollIntoView({block:"center",behavior:"smooth"});}
+  }
+ }
+ function remember(){
+  const bounds=timerBounds(panel),rect=panel.getBoundingClientRect();
+  db.timerPosition={x:bounds.right===bounds.left ? .5 :Math.max(0,Math.min(1,(rect.left-bounds.left)/(bounds.right-bounds.left))),y:bounds.bottom===bounds.top?1:Math.max(0,Math.min(1,(rect.top-bounds.top)/(bounds.bottom-bounds.top)))};
+  saveDB();
+ }
+ handle.addEventListener("pointerdown",event=>{
+  if(event.button!==0)return;
+  const rect=panel.getBoundingClientRect();drag={id:event.pointerId,x:event.clientX,y:event.clientY,left:rect.left,top:rect.top};
+  handle.setPointerCapture(event.pointerId);panel.classList.add("dragging");event.preventDefault();
+ });
+ handle.addEventListener("pointermove",event=>{
+  if(!drag||event.pointerId!==drag.id)return;
+  const point=clampTimerPoint(timerBounds(panel),drag.left+event.clientX-drag.x,drag.top+event.clientY-drag.y);place(point.x,point.y);
+ });
+ function end(event){
+  if(!drag||event.pointerId!==drag.id)return;
+  const canceled=event.type==="pointercancel";drag=null;panel.classList.remove("dragging");
+  if(!canceled)remember();reposition();
+ }
+ handle.addEventListener("pointerup",end);handle.addEventListener("pointercancel",end);
+ handle.addEventListener("keydown",event=>{
+  const moves={ArrowLeft:[-20,0],ArrowRight:[20,0],ArrowUp:[0,-20],ArrowDown:[0,20]};
+  if(event.key==="Home"){event.preventDefault();db.timerPosition={x:.5,y:1};saveDB();reposition();return;}
+  if(!moves[event.key])return;event.preventDefault();const rect=panel.getBoundingClientRect(),move=moves[event.key];
+  const point=clampTimerPoint(timerBounds(panel),rect.left+move[0],rect.top+move[1]);place(point.x,point.y);remember();
+ });
+ window.addEventListener("resize",reposition);
+ window.visualViewport?.addEventListener("resize",reposition);window.visualViewport?.addEventListener("scroll",reposition);
+ document.addEventListener("focusin",()=>requestAnimationFrame(reposition));
+ document.addEventListener("focusout",()=>{lastFocused=null;requestAnimationFrame(reposition);});
+ new ResizeObserver(reposition).observe(panel);
+ reposition();
+}
+
 function toggleRestTimer(){
 const panel=document.querySelector(".rest-float"),button=document.getElementById("timerToggle");
 const collapsed=panel.classList.toggle("collapsed");
@@ -3676,6 +3732,7 @@ p.volume,
 }
 
 
+initMovableRestTimer();
 applySettings();
 rebuildHistory();
 saveDB();
