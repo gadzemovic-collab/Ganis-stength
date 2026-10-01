@@ -187,6 +187,8 @@ body.intro-open > .rest-float{display:none;}
  border-color:#91afcb40;
  background:linear-gradient(115deg,#203b54db,#132c46eb);
 }
+.welcome-choice.weight{--choice-accent:#94e9bd;border-color:#94e9bd45;background:linear-gradient(115deg,#194b4cdb,#153748eb);}
+.welcome-choice.weight .choice-icon{background:#94e9bd14;border-color:#94e9bd25;}
 .choice-icon{width:52px;height:52px;display:grid;place-items:center;border-radius:17px;background:#79e5ee1f;color:var(--choice-accent);border:1px solid #99eff02b;}
 .welcome-choice.split .choice-icon{background:#f5d09914;border-color:#f5d09925;}
 .choice-icon svg{width:28px;height:28px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
@@ -888,8 +890,8 @@ max-width:90%;
 <section id="welcome" class="welcome" aria-labelledby="welcomeTitle" hidden>
  <div class="welcome-inner">
   <div class="welcome-brand"><img src="rep-harbor-192.png?v=12" alt="RepHarbor shark logo" width="84" height="84"></div>
-  <h2 id="welcomeTitle">Choose your workout</h2>
-  <p>Pick your style. You can change it later.</p>
+  <h2 id="welcomeTitle">Choose your focus</h2>
+  <p>Start a workout or check your weight progress.</p>
   <button type="button" class="welcome-choice" onclick="enterWorkout('full')">
    <span class="choice-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 12v8m4-11v14m14-14v14m4-11v8M9 16h14"/></svg></span>
    <span class="choice-copy"><strong>Full Body</strong><small>A complete session for your whole body</small></span><span class="choice-arrow" aria-hidden="true">›</span>
@@ -897,6 +899,10 @@ max-width:90%;
   <button type="button" class="welcome-choice split" onclick="enterWorkout('split')">
    <span class="choice-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="6" r="3"/><path d="M11 13h10l3 7m-13-7-3 7m5-6v7l-2 7m8-14v7l2 7M13 21h6"/></svg></span>
    <span class="choice-copy"><strong>Body Part Split</strong><small>Focus on the muscles you choose</small></span><span class="choice-arrow" aria-hidden="true">›</span>
+  </button>
+  <button type="button" class="welcome-choice weight" onclick="enterWeightTracker()">
+   <span class="choice-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="4" width="22" height="24" rx="5"/><path d="M11 10a7 7 0 0 1 10 0M16 13l3-4M11 23h10"/></svg></span>
+   <span class="choice-copy"><strong>Weight Tracker</strong><small>Plan your goals and log weekly weigh-ins</small></span><span class="choice-arrow" aria-hidden="true">›</span>
   </button>
  </div>
 </section>
@@ -2290,6 +2296,14 @@ function enterWorkout(mode){
  document.body.classList.remove("welcome-open");
  document.documentElement.classList.remove("opening-screen");
  showScreen("train",document.querySelector("nav button"));
+ window.scrollTo(0,0);
+}
+
+function enterWeightTracker(){
+ document.getElementById("welcome").hidden=true;
+ document.body.classList.remove("welcome-open");
+ document.documentElement.classList.remove("opening-screen");
+ showScreen("weight",document.querySelector('nav button[onclick*="\'weight\'"]'));
  window.scrollTo(0,0);
 }
 
