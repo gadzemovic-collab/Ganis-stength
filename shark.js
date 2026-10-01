@@ -1,4 +1,4 @@
-let sharkPlayback=null,sharkFramesPromise=null,sharkPlaybackGeneration=0;
+let sharkPlayback=null,sharkFramesPromise=null,sharkPlaybackGeneration=0,femaleSharkFramesPromise=null;
 function stopSharkAnimation(){sharkPlaybackGeneration++;cancelAnimationFrame(sharkPlayback);sharkPlayback=null;}
 // Remove only navy pixels connected to the outer background; retain dark interior details.
 function clearSharkBackground(pixels,width,height){
@@ -14,14 +14,28 @@ function prepareSharkFrame(image){
  const context=surface.getContext('2d',{willReadFrequently:true});context.drawImage(image,0,0);
  const data=context.getImageData(0,0,320,320);clearSharkBackground(data.data,320,320);context.putImageData(data,0,0);return surface;
 }
+async function loadFemaleSharkFrames(){
+ const sheet=new Image();sheet.src='female-shark-sheet.webp?v=1';await sheet.decode();
+ const durations=[380,320,340,520,360,360],frames=[];
+ for(let i=0;i<6;i++){
+  const surface=document.createElement('canvas');surface.width=320;surface.height=320;const context=surface.getContext('2d',{willReadFrequently:true});
+  context.drawImage(sheet,(i%3)*sheet.width/3,Math.floor(i/3)*sheet.height/2,sheet.width/3,sheet.height/2,0,0,320,320);
+  const data=context.getImageData(0,0,320,320);clearSharkBackground(data.data,320,320);context.putImageData(data,0,0);
+  let floor=299;for(let y=319;y>=180;y--){let count=0;for(let x=40;x<280;x++)if(data.data[(y*320+x)*4+3]>128)count++;if(count>3){floor=y;break;}}
+  frames.push({image:surface,duration:durations[i],floor});
+ }
+ return frames;
+}
 async function startSharkAnimation(){
  stopSharkAnimation();const generation=sharkPlaybackGeneration;
  const canvas=document.getElementById('sharkCanvas'),fallback=document.getElementById('welcomeShark');
  canvas.hidden=true;fallback.hidden=false;
+ const female=db.settings.sharkStyle==='female';fallback.src=female?'female-shark.webp?v=1':'rep-harbor-512.png?v=12';
  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
  try{
-  sharkFramesPromise??=fetch('shark-frames.json?v=1').then(r=>{if(!r.ok)throw Error('Shark frames unavailable');return r.json();}).then(frames=>Promise.all(frames.map(async frame=>{const image=new Image();image.src=frame.src;await image.decode();return {...frame,image:prepareSharkFrame(image)};}))).catch(error=>{sharkFramesPromise=null;throw error;});
-  const frames=await sharkFramesPromise;if(generation!==sharkPlaybackGeneration)return;
+  if(female)femaleSharkFramesPromise??=loadFemaleSharkFrames().catch(error=>{femaleSharkFramesPromise=null;throw error;});
+  else sharkFramesPromise??=fetch('shark-frames.json?v=1').then(r=>{if(!r.ok)throw Error('Shark frames unavailable');return r.json();}).then(frames=>Promise.all(frames.map(async frame=>{const image=new Image();image.src=frame.src;await image.decode();return {...frame,image:prepareSharkFrame(image)};}))).catch(error=>{sharkFramesPromise=null;throw error;});
+  const frames=await (female?femaleSharkFramesPromise:sharkFramesPromise);if(generation!==sharkPlaybackGeneration)return;
   const context=canvas.getContext('2d'),duration=frames.reduce((sum,f)=>sum+f.duration,0),floor=Math.max(...frames.map(f=>f.floor));
   let started=null,last=-1;
   function draw(time){

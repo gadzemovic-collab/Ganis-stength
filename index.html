@@ -141,6 +141,10 @@ body.intro-open > .rest-float,body:has(#weight.active) > .rest-float{display:non
 #welcome .welcome-art img,#welcome .welcome-art canvas{position:absolute;z-index:1;width:90%;height:90%;left:5%;top:7%;object-fit:contain;}
 #welcome .welcome-art img{mix-blend-mode:screen;}
 #welcome .welcome-art [hidden]{display:none;}
+body[data-shark-style="female"] .welcome{background:radial-gradient(circle at 50% 25%,#502a62 0%,#142d4a 48%,#071c34 100%);}
+body[data-shark-style="female"] .welcome-choice,body[data-shark-style="female"] .welcome-choice.split,body[data-shark-style="female"] .welcome-choice.weight{--choice-accent:#ff8fd2;border-color:#ee66b666;background:linear-gradient(115deg,#6c2858cc,#263b5ee8);}
+body[data-shark-style="female"] .welcome-choice .choice-icon{color:#ffb3df;background:#f462b326;border-color:#ff8fd244;}
+body[data-shark-style="female"] .choice-arrow{color:#ffb3df;}
 .squat-rack{position:absolute;z-index:0;inset:0;width:100%;height:100%;pointer-events:none;filter:drop-shadow(0 6px 5px #00142880);}
 #welcome h2{margin:30px 0 8px;}
 #welcome p{margin-bottom:26px;}
@@ -1104,6 +1108,7 @@ Sets completed
 <label for="autoRest" style="margin-top:15px">Rest after completing a set</label><select id="autoRest" onchange="updateSettings()"><option value="on">Start automatically</option><option value="off">Start manually</option></select>
 <label for="timerAlert" style="margin-top:15px">Timer alert</label><select id="timerAlert" onchange="updateSettings()"><option value="both">Sound and vibration</option><option value="sound">Sound</option><option value="vibrate">Vibration</option><option value="none">Visual only</option></select>
 <div class="muted" style="margin-top:10px">Sound and vibration depend on your phone and browser settings. Keep the app open for reliable alerts.</div>
+<label for="sharkStyle" style="margin-top:15px">Shark style</label><select id="sharkStyle" onchange="changeSharkStyle(this.value)"><option value="original">Original shark</option><option value="female">Female shark · pink</option></select><p class="muted">The pink shark starts with the fuchsia theme. You can customize the colors below.</p>
 <label for="theme" style="margin-top:15px">Color theme</label><select id="theme" onchange="updateSettings()"><option value="blue">Blue</option><option value="green">Green</option><option value="purple">Purple</option><option value="dark">Dark</option></select>
 <div id="themeChoices" class="theme-choices" role="group" aria-label="Choose a color theme"></div>
 <label for="font" style="margin-top:15px">Font</label><select id="font" onchange="updateSettings()"><option value="system">System</option><option value="arial">Arial</option><option value="georgia">Georgia</option><option value="verdana">Verdana</option></select></div>
@@ -1226,8 +1231,8 @@ class="chart"
 <div id="toast">
 </div>
 
-<script src="shark.js?v=2"></script>
-<script src="weight.js?v=8"></script>
+<script src="shark.js?v=3"></script>
+<script src="weight.js?v=9"></script>
 <script>
 
 const BASE_MENU={
@@ -1333,6 +1338,7 @@ const startWeights={
 
 
 const THEMES={
+fuchsia:["#d62a91","#a51f70","#fce4f3","#fff5fb","#efb9dc","#14243a"],
 blue:["#3f8fe8","#276bb8","#e7f3ff","#f4f9ff","#cfe5fb","#17324d"],
 green:["#20865c","#166646","#e2f5e9","#f2fbf4","#bde5cd","#143c32"],
 purple:["#8051ba","#633c96","#f1eafa","#faf6ff","#dbc7f2","#36234c"],
@@ -1344,7 +1350,7 @@ red:["#c44747","#a33232","#fde9e7","#fff6f5","#efbfbc","#52272b"],
 gold:["#9b7417","#77580b","#faf2d9","#fffbef","#e6d29a","#453a21"],
 slate:["#5c6f85","#42566e","#e9eef4","#f5f7fa","#c9d3e0","#263447"]
 };
-const THEME_LABELS={blue:"Blue",green:"Green",purple:"Purple",dark:"Dark",teal:"Ocean Teal",orange:"Sunset",rose:"Rose",red:"Crimson",gold:"Gold",slate:"Slate"};
+const THEME_LABELS={fuchsia:"Fuchsia",blue:"Blue",green:"Green",purple:"Purple",dark:"Dark",teal:"Ocean Teal",orange:"Sunset",rose:"Rose",red:"Crimson",gold:"Gold",slate:"Slate"};
 const FONTS={system:"-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif",arial:"Arial,sans-serif",georgia:"Georgia,serif",verdana:"Verdana,sans-serif"};
 
 const STORAGE_KEY=
@@ -1411,7 +1417,7 @@ db.workoutMode=db.workoutMode==="split"?"split":"full";
 db.splitGroups=Array.isArray(db.splitGroups)?db.splitGroups.filter(g=>Object.hasOwn(BASE_MENU,g)):[];
 db.splitSelected=db.splitSelected&&typeof db.splitSelected==="object"?db.splitSelected:{};
 if(!db.settings){db.settings={};}
-db.settings={restSeconds:90,autoRest:true,timerAlert:"both",theme:"blue",font:"system",weightStep:5,...db.settings};
+db.settings={restSeconds:90,autoRest:true,timerAlert:"both",theme:"blue",font:"system",weightStep:5,sharkStyle:"original",...db.settings};
 
 if(!("draftWorkout" in db)){
 db.draftWorkout=null;
@@ -1525,7 +1531,7 @@ saveDB();
 
 
 function applySettings(){
-const cfg=db.settings; const colors=THEMES[cfg.theme]||THEMES.blue;
+const cfg=db.settings;document.body.dataset.sharkStyle=cfg.sharkStyle||"original";document.querySelector("header .brand img").src=cfg.sharkStyle==="female"?"female-shark.webp?v=1":"rep-harbor-192.png?v=12"; const colors=THEMES[cfg.theme]||THEMES.blue;
 const themeSelect=document.getElementById("theme");
 themeSelect.innerHTML=Object.entries(THEME_LABELS).map(([key,label])=>`<option value="${key}">${label}</option>`).join("");
 const themeChoices=document.getElementById("themeChoices");
@@ -1534,13 +1540,19 @@ themeChoices.querySelectorAll("[data-theme]").forEach(button=>button.onclick=()=
 ["--blue","--blue-dark","--blue-light","--blue-lighter","--blue-border","--navy"].forEach((key,i)=>document.documentElement.style.setProperty(key,colors[i]));
 document.body.style.fontFamily=FONTS[cfg.font]||FONTS.system;
 document.querySelector("header").style.background=colors[5];
-for(const [id,value] of Object.entries({restSeconds:cfg.restSeconds,restQuickSelect:cfg.restSeconds,timerAlert:cfg.timerAlert,autoRest:cfg.autoRest?"on":"off",weightStep:cfg.weightStep,theme:cfg.theme,font:cfg.font})){const el=document.getElementById(id);if(el){if((id==="restSeconds"||id==="restQuickSelect")&&!Array.from(el.options).some(option=>option.value===String(value))){const option=new Option(Math.floor(value/60)+":"+String(value%60).padStart(2,"0"),value);el.add(option);}el.value=value;}}
+for(const [id,value] of Object.entries({restSeconds:cfg.restSeconds,restQuickSelect:cfg.restSeconds,timerAlert:cfg.timerAlert,autoRest:cfg.autoRest?"on":"off",weightStep:cfg.weightStep,theme:cfg.theme,font:cfg.font,sharkStyle:cfg.sharkStyle||"original"})){const el=document.getElementById(id);if(el){if((id==="restSeconds"||id==="restQuickSelect")&&!Array.from(el.options).some(option=>option.value===String(value))){const option=new Option(Math.floor(value/60)+":"+String(value%60).padStart(2,"0"),value);el.add(option);}el.value=value;}}
+}
+function changeSharkStyle(style){
+ if(!['original','female'].includes(style))return;
+ db.settings.sharkStyle=style;db.settings.theme=style==='female'?'fuchsia':'blue';saveDB();applySettings();
+ if(!document.getElementById('welcome').hidden)startSharkAnimation();
+ toast(style==='female'?'Pink shark and fuchsia theme selected':'Original shark selected');
 }
 function setRestFromTimer(value){document.getElementById("restSeconds").value=value;updateSettings();}
 function updateSettings(){
 const seconds=Number(document.getElementById("restSeconds").value);
 if(!Number.isInteger(seconds)||seconds<10||seconds>3600){toast("Choose 10 to 3600 seconds");applySettings();return;}
-db.settings={restSeconds:seconds,weightStep:Number(document.getElementById("weightStep").value),autoRest:document.getElementById("autoRest").value==="on",timerAlert:document.getElementById("timerAlert").value,theme:document.getElementById("theme").value,font:document.getElementById("font").value};saveDB();applySettings();
+db.settings={...db.settings,restSeconds:seconds,weightStep:Number(document.getElementById("weightStep").value),autoRest:document.getElementById("autoRest").value==="on",timerAlert:document.getElementById("timerAlert").value,theme:document.getElementById("theme").value,font:document.getElementById("font").value};saveDB();applySettings();
 }
 function refreshMenu(){
 
@@ -2594,7 +2606,7 @@ data-confirm-set="${j}"
 aria-label="${s.confirmed?"Set completed":"Complete set"} ${j+1} for ${escapeHTML(current)}"
 aria-pressed="${s.confirmed}"
 >
-<img src="rep-harbor-192.png?v=12" alt="" width="34" height="34">
+<img src="${db.settings.sharkStyle==='female'?'female-shark.webp?v=1':'rep-harbor-192.png?v=12'}" alt="" width="34" height="34">
 </button>
 
 </div>
@@ -3164,7 +3176,7 @@ const restored=JSON.parse(await file.text());
 if(!restored||!Array.isArray(restored.sessions)||!Array.isArray(restored.selected)||typeof restored.history!=="object"||!restored.history){throw Error("Invalid backup");}
 if(!confirm("Replace all current workouts and settings with this backup?"))return;
 db=restored;db.customExercises??={};db.deletedExercises??={};db.draftWorkout??=null;
-db.settings={restSeconds:90,autoRest:true,timerAlert:"both",theme:"blue",font:"system",weightStep:5,...db.settings};
+db.settings={restSeconds:90,autoRest:true,timerAlert:"both",theme:"blue",font:"system",weightStep:5,sharkStyle:"original",...db.settings};
 rebuildHistory();saveDB();location.reload();
 }catch(e){toast("Could not read this backup file");}
 finally{input.value="";}

@@ -38,7 +38,7 @@ function renderWeightCharts(){
  const original=tracking.initialPlan||plan,entries=tracking.entries,range=weightChartWindow(plan,entries),count=Math.max(1,Math.ceil(Math.min(range.end-range.start,104)));
  const weeks=Array.from({length:count+1},(_,i)=>range.start+i*(range.end-range.start)/count);
  const actual=[{week:0,value:plan.startWeight},...entries.map(e=>({week:e.week,value:e.weight}))];
- const series=[{name:'Actual weight',color:'#1679b9',points:actual},{name:'Initial plan',color:'#7b8495',dashed:true,points:weeks.map(week=>({week,value:weightTarget(original,week)}))}];
+ const series=[{name:'Actual weight',color:'var(--blue)',points:actual},{name:'Initial plan',color:'#7b8495',dashed:true,points:weeks.map(week=>({week,value:weightTarget(original,week)}))}];
  if(tracking.updatedPlan){const start=Math.max(range.start,tracking.updatedPlan.week);const updatedWeeks=[...new Set([start,...weeks.filter(week=>week>=start)])].filter(week=>week<=range.end);series.push({name:'Updated plan',color:'#8b4eb6',dashed:true,points:updatedWeeks.map(week=>({week,value:updatedWeightTarget(tracking,week)}))});}
  renderWeightChart('bodyWeightChart',series,range);
  const samples=[{week:0,weight:plan.startWeight,bodyFat:plan.startBF},...entries].filter(e=>e.bodyFat!==null&&e.bodyFat!==undefined);
