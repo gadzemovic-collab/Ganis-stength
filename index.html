@@ -137,11 +137,13 @@ body.intro-open > .rest-float,body:has(#weight.active) > .rest-float{display:non
 .welcome-inner{width:min(100%,430px);position:relative;z-index:1;}
 #welcome{align-items:center;}
 #welcome .welcome-inner{margin:auto;padding:0;}
-#welcome .welcome-art{width:min(76vw,310px);animation:none;}
+#welcome .welcome-art{width:min(94vw,400px);max-width:100%;animation:none;border:0;border-radius:0;box-shadow:none;background:transparent;overflow:visible;}
+#welcome .welcome-art img{position:absolute;width:90%;height:90%;left:5%;top:7%;object-fit:contain;mix-blend-mode:screen;}
+.squat-rack{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;filter:drop-shadow(0 6px 5px #00142880);}
 #welcome h2{margin:30px 0 8px;}
 #welcome p{margin-bottom:26px;}
 #welcome .welcome-choice{padding:18px 20px;margin:12px 0;}
-@media(max-height:740px){#welcome .welcome-art{width:min(66vw,240px);}#welcome h2{font-size:26px;margin-top:16px;}#welcome .welcome-choice{padding:14px 16px;margin:10px 0;}#welcome p{margin-bottom:12px;}}
+@media(max-height:740px){#welcome .welcome-art{width:min(86vw,300px);}#welcome h2{font-size:26px;margin-top:16px;}#welcome .welcome-choice{padding:14px 16px;margin:10px 0;}#welcome p{margin-bottom:12px;}}
 .welcome-art{
  width:min(68vw,280px);
  aspect-ratio:1;
@@ -886,7 +888,7 @@ max-width:90%;
 
 <section id="welcome" class="welcome" aria-labelledby="welcomeTitle" hidden>
  <div class="welcome-inner">
-  <div class="welcome-art"><img id="welcomeShark" src="rep-harbor-512.png?v=12" alt="RepHarbor shark doing barbell squats" width="220" height="220"></div>
+  <div class="welcome-art"><img id="welcomeShark" src="rep-harbor-512.png?v=12" alt="RepHarbor shark squatting in a squat rack" width="360" height="360"><svg class="squat-rack" viewBox="0 0 400 400" aria-hidden="true"><defs><linearGradient id="rackSteel" x1="0" x2="1"><stop stop-color="#283e54"/><stop offset=".45" stop-color="#88a6bb"/><stop offset=".62" stop-color="#47667e"/><stop offset="1" stop-color="#1b3147"/></linearGradient></defs><path d="M32 370V25H368V370" fill="none" stroke="#071d30" stroke-width="24" stroke-linejoin="round"/><path d="M32 370V25H368V370" fill="none" stroke="url(#rackSteel)" stroke-width="16" stroke-linejoin="round"/><path d="M57 27H343" stroke="#a6deed" stroke-width="3"/><g fill="#081e32" stroke="#8fb2c6" stroke-width="1"><circle cx="32" cy="95" r="3"/><circle cx="32" cy="125" r="3"/><circle cx="32" cy="155" r="3"/><circle cx="32" cy="185" r="3"/><circle cx="32" cy="215" r="3"/><circle cx="32" cy="245" r="3"/><circle cx="32" cy="275" r="3"/><circle cx="32" cy="305" r="3"/><circle cx="368" cy="95" r="3"/><circle cx="368" cy="125" r="3"/><circle cx="368" cy="155" r="3"/><circle cx="368" cy="185" r="3"/><circle cx="368" cy="215" r="3"/><circle cx="368" cy="245" r="3"/><circle cx="368" cy="275" r="3"/><circle cx="368" cy="305" r="3"/></g><path d="M20 362H61M339 362H380" stroke="#142c42" stroke-width="18" stroke-linecap="round"/><path d="M20 358H61M339 358H380" stroke="#7899ad" stroke-width="4" stroke-linecap="round"/><path d="M33 250H51V242M367 250H349V242" fill="none" stroke="#7ca9bb" stroke-width="7" stroke-linejoin="round"/></svg></div>
   <h2 id="welcomeTitle">Choose your focus</h2>
   <p>Start a workout or check your weight progress.</p>
   <button type="button" class="welcome-choice" onclick="enterWorkout('full')">
