@@ -2281,19 +2281,36 @@ function changeWorkoutMode(mode){
  return true;
 }
 
+let sharkFootAnimation;
+function plantSharkFeet(shark){
+ sharkFootAnimation?.cancel();
+ // Keep the soles at the same floor height for every existing GIF frame.
+ const durations=[240,160,170,180,190,360,220,200,180,160,340,160,170,180,190,360,220,200,180,160,340];
+ const soles=[299,299,291,284,282,276,282,284,291,299,299,299,291,284,282,276,282,284,291,299,299];
+ let elapsed=0;
+ const frames=soles.map((sole,i)=>{const frame={transform:`translateY(${(299-sole)/320*100}%)`,offset:elapsed/4560,easing:'steps(1,end)'};elapsed+=durations[i];return frame;});
+ frames.push({transform:'translateY(0%)',offset:1});
+ sharkFootAnimation=shark.animate(frames,{duration:4560,iterations:Infinity});
+}
 function showIntro(){showWelcome();}
 
 function showWelcome(){
  const shark=document.getElementById("welcomeShark");
- shark.src=window.matchMedia("(prefers-reduced-motion: reduce)").matches?"rep-harbor-512.png?v=12":"shark-squat.gif?v=4";
+ sharkFootAnimation?.cancel();
+ const reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+ shark.onload=reduced?null:()=>plantSharkFeet(shark);
+ shark.src=reduced?"rep-harbor-512.png?v=12":"shark-squat.gif?v=4";
  document.getElementById("welcome").hidden=false;
  document.body.classList.add("welcome-open");
  document.documentElement.classList.add("opening-screen");
  window.scrollTo(0,0);
 }
 
+function stopSharkAnimation(){sharkFootAnimation?.cancel();const shark=document.getElementById("welcomeShark");shark.onload=null;shark.src="rep-harbor-512.png?v=12";}
+
 function enterWorkout(mode){
  if(!changeWorkoutMode(mode))return;
+ stopSharkAnimation();
  document.getElementById("welcome").hidden=true;
  document.body.classList.remove("welcome-open");
  document.documentElement.classList.remove("opening-screen");
@@ -2302,6 +2319,7 @@ function enterWorkout(mode){
 }
 
 function enterWeightTracker(){
+ stopSharkAnimation();
  document.getElementById("welcome").hidden=true;
  document.body.classList.remove("welcome-open");
  document.documentElement.classList.remove("opening-screen");
