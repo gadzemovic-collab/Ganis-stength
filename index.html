@@ -135,15 +135,13 @@ body.intro-open > .rest-float,body:has(#weight.active) > .rest-float{display:non
  overflow-y:auto;
 }
 .welcome-inner{width:min(100%,430px);position:relative;z-index:1;}
-#welcome{align-items:flex-end;}
-#welcome::before{
- content:"";position:absolute;inset:0;pointer-events:none;
- background-image:linear-gradient(180deg,#041c3620 0%,#041c3600 25%,#041c36a6 53%,#041c36f5 80%),url("rep-harbor-512.png?v=12");
- background-size:100% 100%,min(115vw,570px) auto;
- background-position:center,center 12%;background-repeat:no-repeat;
-}
-#welcome .welcome-inner{margin-top:min(68vw,300px);padding-bottom:max(10px,3vh);}
-#welcome .welcome-brand{display:none;}
+#welcome{align-items:center;}
+#welcome .welcome-inner{margin:auto;padding:0;}
+#welcome .welcome-art{width:min(55vw,220px);animation:none;}
+#welcome h2{margin:20px 0 8px;}
+#welcome p{margin-bottom:18px;}
+#welcome .welcome-choice{padding:18px 20px;margin:12px 0;}
+@media(max-height:740px){#welcome .welcome-art{width:min(44vw,170px);}#welcome h2{font-size:26px;margin-top:16px;}#welcome .welcome-choice{padding:14px 16px;margin:10px 0;}#welcome p{margin-bottom:12px;}}
 .welcome-art{
  width:min(68vw,280px);
  aspect-ratio:1;
@@ -886,19 +884,9 @@ max-width:90%;
 
 <body>
 
-<section id="intro" class="welcome intro" aria-label="RepHarbor opening animation" hidden>
- <div class="welcome-inner">
-  <div class="welcome-art"><img id="introShark" src="rep-harbor-512.png?v=12" alt="Shark doing a barbell squat" width="340" height="340"></div>
-  <div class="intro-title">RepHarbor</div>
-  <div class="intro-sub">Get ready to lift</div>
-  <div class="intro-progress" aria-hidden="true"></div>
-  <button type="button" class="intro-skip" onclick="showWelcome()">Skip intro</button>
- </div>
-</section>
-
 <section id="welcome" class="welcome" aria-labelledby="welcomeTitle" hidden>
  <div class="welcome-inner">
-  <div class="welcome-brand"><img src="rep-harbor-192.png?v=12" alt="RepHarbor shark logo" width="84" height="84"></div>
+  <div class="welcome-art"><img id="welcomeShark" src="rep-harbor-512.png?v=12" alt="RepHarbor shark doing barbell squats" width="220" height="220"></div>
   <h2 id="welcomeTitle">Choose your focus</h2>
   <p>Start a workout or check your weight progress.</p>
   <button type="button" class="welcome-choice" onclick="enterWorkout('full')">
@@ -2291,25 +2279,11 @@ function changeWorkoutMode(mode){
  return true;
 }
 
-let introTimer;
-
-async function showIntro(){
- if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){showWelcome();return;}
- document.getElementById("intro").hidden=false;
- document.body.classList.add("intro-open");
- document.documentElement.classList.add("opening-screen");
- const shark=document.getElementById("introShark");
- shark.src="shark-squat.gif?v=4";
- try{await shark.decode?.();}catch(e){}
- if(!document.body.classList.contains("intro-open"))return;
- introTimer=setTimeout(showWelcome,4560);
- window.scrollTo(0,0);
-}
+function showIntro(){showWelcome();}
 
 function showWelcome(){
- clearTimeout(introTimer);
- document.getElementById("intro").hidden=true;
- document.body.classList.remove("intro-open");
+ const shark=document.getElementById("welcomeShark");
+ shark.src=window.matchMedia("(prefers-reduced-motion: reduce)").matches?"rep-harbor-512.png?v=12":"shark-squat.gif?v=4";
  document.getElementById("welcome").hidden=false;
  document.body.classList.add("welcome-open");
  document.documentElement.classList.add("opening-screen");
