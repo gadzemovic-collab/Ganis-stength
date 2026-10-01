@@ -1,8 +1,9 @@
-const CACHE='rep-harbor-v34';
+const CACHE='rep-harbor-v35';
 
 const ASSETS=[
 './',
 './index.html',
+'./weight.js?v=1',
 './manifest.webmanifest',
 './rep-harbor-180.png?v=12',
 './rep-harbor-192.png?v=12',
