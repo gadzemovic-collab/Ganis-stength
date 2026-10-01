@@ -10,6 +10,10 @@ function weightWeek(plan,date){const days=weightDay(date)-weightDay(plan.startDa
 function weightBF(value){return value===''?null:Number(value);}
 function validWeightBF(value){return value===null||(Number.isFinite(value)&&value>0&&value<100);}
 function weightSigned(value){return `${value>0?'+':''}${value.toFixed(1)} lb`;}
+function weightAheadLabel(plan,entry){
+ const target=weightTarget(plan,entry.week),ahead=plan.direction==='gain'?entry.weight-target:target-entry.weight;
+ return ahead>=.05?` · ${ahead.toFixed(1)} lb ahead of initial plan`:'';
+}
 function weightPlanComposition(plan,week){if(plan.startBF===null||plan.goalBF===null)return null;return weightComposition(weightTarget(plan,week),plan.startBF+(plan.goalBF-plan.startBF)*Math.min(1,week/plan.weeks));}
 function updatedWeightTarget(tracking,week){
  const updated=tracking.updatedPlan;
@@ -99,7 +103,7 @@ function renderWeightTracking(){
  document.getElementById('weeklyWeightDate').value=weightToday();document.getElementById('weeklyWeight').value='';document.getElementById('weeklyBF').value='';
  const next=entries.length?latest.week+1:1;document.getElementById('weeklyDue').textContent=`Next check-in: ${weightDateLabel(weightDate(plan.startDate,next))} · Week ${next}.`;
  renderWeightCharts();
- document.getElementById('weeklyWeightLog').innerHTML=entries.length?entries.slice().reverse().map(e=>{const c=weightComposition(e.weight,e.bodyFat);return `<div class="weekly-entry"><div class="row between"><strong>Week ${e.week} · ${escapeHTML(weightDateLabel(e.date))}</strong><span><button class="secondary small" type="button" data-weight-edit="${e.week}">Edit</button> <button class="secondary small" type="button" data-weight-delete="${e.week}">Delete</button></span></div><p>${e.weight.toFixed(1)} lb · ${weightSigned(e.weight-weightTarget(tracking.initialPlan,e.week))} vs initial plan${c?`<br>Fat: ${c.fat.toFixed(1)} lb · Non-fat: ${c.nonFat.toFixed(1)} lb (${e.bodyFat}% body fat)`:''}</p></div>`;}).join(''):'<p class="muted">Your weekly weigh-ins will appear here.</p>';
+ document.getElementById('weeklyWeightLog').innerHTML=entries.length?entries.slice().reverse().map(e=>{const c=weightComposition(e.weight,e.bodyFat);return `<div class="weekly-entry"><div class="row between"><strong>Week ${e.week} · ${escapeHTML(weightDateLabel(e.date))}</strong><span><button class="secondary small" type="button" data-weight-edit="${e.week}">Edit</button> <button class="secondary small" type="button" data-weight-delete="${e.week}">Delete</button></span></div><p>${e.weight.toFixed(1)} lb${weightAheadLabel(tracking.initialPlan,e)}${c?`<br>Fat: ${c.fat.toFixed(1)} lb · Non-fat: ${c.nonFat.toFixed(1)} lb (${e.bodyFat}% body fat)`:''}</p></div>`;}).join(''):'<p class="muted">Your weekly weigh-ins will appear here.</p>';
  document.querySelectorAll('[data-weight-edit]').forEach(button=>button.onclick=()=>editWeeklyWeight(Number(button.dataset.weightEdit)));document.querySelectorAll('[data-weight-delete]').forEach(button=>button.onclick=()=>deleteWeeklyWeight(Number(button.dataset.weightDelete)));
  renderWeightPlanPage();
 }
