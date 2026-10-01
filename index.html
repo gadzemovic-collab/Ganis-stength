@@ -138,7 +138,8 @@ body.intro-open > .rest-float,body:has(#weight.active) > .rest-float{display:non
 #welcome{align-items:center;}
 #welcome .welcome-inner{margin:auto;padding:0;}
 #welcome .welcome-art{width:min(94vw,400px);max-width:100%;animation:none;border:0;border-radius:0;box-shadow:none;background:transparent;overflow:visible;}
-#welcome .welcome-art img{position:absolute;z-index:1;width:90%;height:90%;left:5%;top:7%;object-fit:contain;mix-blend-mode:screen;}
+#welcome .welcome-art img,#welcome .welcome-art canvas{position:absolute;z-index:1;width:90%;height:90%;left:5%;top:7%;object-fit:contain;mix-blend-mode:screen;}
+#welcome .welcome-art [hidden]{display:none;}
 .squat-rack{position:absolute;z-index:0;inset:0;width:100%;height:100%;pointer-events:none;filter:drop-shadow(0 6px 5px #00142880);}
 #welcome h2{margin:30px 0 8px;}
 #welcome p{margin-bottom:26px;}
@@ -888,7 +889,7 @@ max-width:90%;
 
 <section id="welcome" class="welcome" aria-labelledby="welcomeTitle" hidden>
  <div class="welcome-inner">
-  <div class="welcome-art"><img id="welcomeShark" src="rep-harbor-512.png?v=12" alt="RepHarbor shark squatting in a squat rack" width="360" height="360"><svg class="squat-rack" viewBox="0 0 400 400" aria-hidden="true"><defs><linearGradient id="rackSteel" x1="0" x2="1"><stop stop-color="#283e54"/><stop offset=".45" stop-color="#88a6bb"/><stop offset=".62" stop-color="#47667e"/><stop offset="1" stop-color="#1b3147"/></linearGradient></defs><path d="M32 370V25H368V370" fill="none" stroke="#071d30" stroke-width="24" stroke-linejoin="round"/><path d="M32 370V25H368V370" fill="none" stroke="url(#rackSteel)" stroke-width="16" stroke-linejoin="round"/><path d="M57 27H343" stroke="#a6deed" stroke-width="3"/><g fill="#081e32" stroke="#8fb2c6" stroke-width="1"><circle cx="32" cy="95" r="3"/><circle cx="32" cy="125" r="3"/><circle cx="32" cy="155" r="3"/><circle cx="32" cy="185" r="3"/><circle cx="32" cy="215" r="3"/><circle cx="32" cy="245" r="3"/><circle cx="32" cy="275" r="3"/><circle cx="32" cy="305" r="3"/><circle cx="368" cy="95" r="3"/><circle cx="368" cy="125" r="3"/><circle cx="368" cy="155" r="3"/><circle cx="368" cy="185" r="3"/><circle cx="368" cy="215" r="3"/><circle cx="368" cy="245" r="3"/><circle cx="368" cy="275" r="3"/><circle cx="368" cy="305" r="3"/></g><path d="M20 362H61M339 362H380" stroke="#142c42" stroke-width="18" stroke-linecap="round"/><path d="M20 358H61M339 358H380" stroke="#7899ad" stroke-width="4" stroke-linecap="round"/><path d="M33 250H51V242M367 250H349V242" fill="none" stroke="#7ca9bb" stroke-width="7" stroke-linejoin="round"/></svg></div>
+  <div class="welcome-art"><img id="welcomeShark" src="rep-harbor-512.png?v=12" alt="RepHarbor shark squatting in a squat rack" width="360" height="360"><canvas id="sharkCanvas" width="320" height="320" aria-label="Shark squatting with feet planted" role="img" hidden></canvas><svg class="squat-rack" viewBox="0 0 400 400" aria-hidden="true"><defs><linearGradient id="rackSteel" x1="0" x2="1"><stop stop-color="#283e54"/><stop offset=".45" stop-color="#88a6bb"/><stop offset=".62" stop-color="#47667e"/><stop offset="1" stop-color="#1b3147"/></linearGradient></defs><path d="M32 370V25H368V370" fill="none" stroke="#071d30" stroke-width="24" stroke-linejoin="round"/><path d="M32 370V25H368V370" fill="none" stroke="url(#rackSteel)" stroke-width="16" stroke-linejoin="round"/><path d="M57 27H343" stroke="#a6deed" stroke-width="3"/><g fill="#081e32" stroke="#8fb2c6" stroke-width="1"><circle cx="32" cy="95" r="3"/><circle cx="32" cy="125" r="3"/><circle cx="32" cy="155" r="3"/><circle cx="32" cy="185" r="3"/><circle cx="32" cy="215" r="3"/><circle cx="32" cy="245" r="3"/><circle cx="32" cy="275" r="3"/><circle cx="32" cy="305" r="3"/><circle cx="368" cy="95" r="3"/><circle cx="368" cy="125" r="3"/><circle cx="368" cy="155" r="3"/><circle cx="368" cy="185" r="3"/><circle cx="368" cy="215" r="3"/><circle cx="368" cy="245" r="3"/><circle cx="368" cy="275" r="3"/><circle cx="368" cy="305" r="3"/></g><path d="M20 362H61M339 362H380" stroke="#142c42" stroke-width="18" stroke-linecap="round"/><path d="M20 358H61M339 358H380" stroke="#7899ad" stroke-width="4" stroke-linecap="round"/><path d="M33 250H51V242M367 250H349V242" fill="none" stroke="#7ca9bb" stroke-width="7" stroke-linejoin="round"/></svg></div>
   <h2 id="welcomeTitle">Choose your focus</h2>
   <p>Start a workout or check your weight progress.</p>
   <button type="button" class="welcome-choice" onclick="enterWorkout('full')">
@@ -1224,6 +1225,7 @@ class="chart"
 <div id="toast">
 </div>
 
+<script src="shark.js?v=1"></script>
 <script src="weight.js?v=8"></script>
 <script>
 
@@ -2281,32 +2283,15 @@ function changeWorkoutMode(mode){
  return true;
 }
 
-let sharkFootAnimation;
-function plantSharkFeet(shark){
- sharkFootAnimation?.cancel();
- // Keep the soles at the same floor height for every existing GIF frame.
- const durations=[240,160,170,180,190,360,220,200,180,160,340,160,170,180,190,360,220,200,180,160,340];
- const soles=[299,299,291,284,282,276,282,284,291,299,299,299,291,284,282,276,282,284,291,299,299];
- let elapsed=0;
- const frames=soles.map((sole,i)=>{const frame={transform:`translateY(${(299-sole)/320*100}%)`,offset:elapsed/4560,easing:'steps(1,end)'};elapsed+=durations[i];return frame;});
- frames.push({transform:'translateY(0%)',offset:1});
- sharkFootAnimation=shark.animate(frames,{duration:4560,iterations:Infinity});
-}
 function showIntro(){showWelcome();}
 
 function showWelcome(){
- const shark=document.getElementById("welcomeShark");
- sharkFootAnimation?.cancel();
- const reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
- shark.onload=reduced?null:()=>plantSharkFeet(shark);
- shark.src=reduced?"rep-harbor-512.png?v=12":"shark-squat.gif?v=4";
+ startSharkAnimation();
  document.getElementById("welcome").hidden=false;
  document.body.classList.add("welcome-open");
  document.documentElement.classList.add("opening-screen");
  window.scrollTo(0,0);
 }
-
-function stopSharkAnimation(){sharkFootAnimation?.cancel();const shark=document.getElementById("welcomeShark");shark.onload=null;shark.src="rep-harbor-512.png?v=12";}
 
 function enterWorkout(mode){
  if(!changeWorkoutMode(mode))return;
