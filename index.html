@@ -535,6 +535,12 @@ margin:0;
 .exercise-summary:focus-visible{outline:3px solid var(--blue);outline-offset:5px;border-radius:8px;}
 .remove-set{display:block;margin:6px auto 0;padding:0;width:28px;height:28px;border:0;border-radius:8px;background:var(--danger-bg);color:var(--danger);font-size:20px;cursor:pointer;}
 .remove-set:disabled{opacity:.35;cursor:default;}
+.set input[data-exercise]{font-size:21px;font-weight:650;padding:10px 7px;min-height:48px;text-align:center;font-variant-numeric:tabular-nums;}
+.entry-adjustments{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px;}
+.set .entry-adjustments button{height:36px;min-height:36px;padding:0;border:1px solid var(--blue-border);border-radius:9px;background:var(--blue-lighter);color:var(--blue-dark);font-size:14px;font-weight:750;touch-action:manipulation;}
+.set .entry-adjustments button:active{background:var(--blue-light);}
+.reuse-set{padding:5px 7px;border:1px solid var(--blue-border);border-radius:7px;background:#fff;color:var(--blue-dark);font:inherit;font-weight:650;cursor:pointer;}
+.set .check{align-self:center;}
 .set-comparison{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:6px 0 14px 37px;font-size:11px;color:var(--muted);}
 .progress-badge{padding:4px 7px;border-radius:7px;background:var(--green-bg);color:#22663b;font-weight:700;}
 .template-panel>p{font-size:12px;line-height:1.5;margin:10px 0;}
@@ -1099,6 +1105,7 @@ Sets completed
 <section id="settings" class="screen">
 <div class="card"><h2>Settings</h2>
 <label for="restSeconds">Rest timer</label><select id="restSeconds" onchange="updateSettings()"><option value="30">30 seconds</option><option value="45">45 seconds</option><option value="60">1 minute</option><option value="90">1 minute 30 seconds</option><option value="120">2 minutes</option><option value="180">3 minutes</option><option value="240">4 minutes</option><option value="300">5 minutes</option></select>
+<label for="weightStep" style="margin-top:15px">Quick weight adjustment (lb)</label><select id="weightStep" onchange="updateSettings()"><option value="2.5">2.5 lb</option><option value="5">5 lb</option><option value="10">10 lb</option></select>
 <label for="autoRest" style="margin-top:15px">Rest after completing a set</label><select id="autoRest" onchange="updateSettings()"><option value="on">Start automatically</option><option value="off">Start manually</option></select>
 <label for="timerAlert" style="margin-top:15px">Timer alert</label><select id="timerAlert" onchange="updateSettings()"><option value="both">Sound and vibration</option><option value="sound">Sound</option><option value="vibrate">Vibration</option><option value="none">Visual only</option></select>
 <div class="muted" style="margin-top:10px">Sound and vibration depend on your phone and browser settings. Keep the app open for reliable alerts.</div>
@@ -1224,7 +1231,7 @@ class="chart"
 <div id="toast">
 </div>
 
-<script src="weight.js?v=2"></script>
+<script src="weight.js?v=3"></script>
 <script>
 
 const BASE_MENU={
@@ -1408,7 +1415,7 @@ db.workoutMode=db.workoutMode==="split"?"split":"full";
 db.splitGroups=Array.isArray(db.splitGroups)?db.splitGroups.filter(g=>Object.hasOwn(BASE_MENU,g)):[];
 db.splitSelected=db.splitSelected&&typeof db.splitSelected==="object"?db.splitSelected:{};
 if(!db.settings){db.settings={};}
-db.settings={restSeconds:90,autoRest:true,timerAlert:"both",theme:"blue",font:"system",...db.settings};
+db.settings={restSeconds:90,autoRest:true,timerAlert:"both",theme:"blue",font:"system",weightStep:5,...db.settings};
 
 if(!("draftWorkout" in db)){
 db.draftWorkout=null;
@@ -1531,13 +1538,13 @@ themeChoices.querySelectorAll("[data-theme]").forEach(button=>button.onclick=()=
 ["--blue","--blue-dark","--blue-light","--blue-lighter","--blue-border","--navy"].forEach((key,i)=>document.documentElement.style.setProperty(key,colors[i]));
 document.body.style.fontFamily=FONTS[cfg.font]||FONTS.system;
 document.querySelector("header").style.background=colors[5];
-for(const [id,value] of Object.entries({restSeconds:cfg.restSeconds,restQuickSelect:cfg.restSeconds,timerAlert:cfg.timerAlert,autoRest:cfg.autoRest?"on":"off",theme:cfg.theme,font:cfg.font})){const el=document.getElementById(id);if(el){if((id==="restSeconds"||id==="restQuickSelect")&&!Array.from(el.options).some(option=>option.value===String(value))){const option=new Option(Math.floor(value/60)+":"+String(value%60).padStart(2,"0"),value);el.add(option);}el.value=value;}}
+for(const [id,value] of Object.entries({restSeconds:cfg.restSeconds,restQuickSelect:cfg.restSeconds,timerAlert:cfg.timerAlert,autoRest:cfg.autoRest?"on":"off",weightStep:cfg.weightStep,theme:cfg.theme,font:cfg.font})){const el=document.getElementById(id);if(el){if((id==="restSeconds"||id==="restQuickSelect")&&!Array.from(el.options).some(option=>option.value===String(value))){const option=new Option(Math.floor(value/60)+":"+String(value%60).padStart(2,"0"),value);el.add(option);}el.value=value;}}
 }
 function setRestFromTimer(value){document.getElementById("restSeconds").value=value;updateSettings();}
 function updateSettings(){
 const seconds=Number(document.getElementById("restSeconds").value);
 if(!Number.isInteger(seconds)||seconds<10||seconds>3600){toast("Choose 10 to 3600 seconds");applySettings();return;}
-db.settings={restSeconds:seconds,autoRest:document.getElementById("autoRest").value==="on",timerAlert:document.getElementById("timerAlert").value,theme:document.getElementById("theme").value,font:document.getElementById("font").value};saveDB();applySettings();
+db.settings={restSeconds:seconds,weightStep:Number(document.getElementById("weightStep").value),autoRest:document.getElementById("autoRest").value==="on",timerAlert:document.getElementById("timerAlert").value,theme:document.getElementById("theme").value,font:document.getElementById("font").value};saveDB();applySettings();
 }
 function refreshMenu(){
 
@@ -1658,10 +1665,11 @@ return null;
 
 function setComparisonHTML(ex,set,index){
  const previous=lastSessionForExercise(ex)?.sets?.[index];
+ const reuse=index>0&&!set.confirmed?`<button type="button" class="reuse-set" data-copy-exercise="${escapeHTML(ex)}" data-copy-set="${index}">Use set ${index}</button>`:"";
  const last=previous?`<span>Last time: ${escapeHTML(previous.weight)} lb × ${escapeHTML(previous.reps)}</span>`:"<span>No previous set</span>";
- if(!set.confirmed)return last;
+ if(!set.confirmed)return last+reuse;
  const weight=Number(set.weight),reps=Number(set.reps);
- if(!Number.isFinite(weight)||weight<0||!Number.isInteger(reps)||reps<1)return last;
+ if(!Number.isFinite(weight)||weight<0||!Number.isInteger(reps)||reps<1)return last+reuse;
  const history=db.sessions.flatMap(session=>(session.exercises||[]).filter(item=>item.name===ex).flatMap(item=>item.sets||[]));
  let badge="";
  if(history.length&&weight>Math.max(...history.map(item=>Number(item.weight))))badge="New weight best";
@@ -1780,6 +1788,21 @@ options.includes(x)
 
 }
 
+
+function adjustDraftValue(ex,index,field,direction){
+ const draft=getDraftExercise(ex),set=draft.sets[index];if(!set)return;
+ const step=field==="weight"?([2.5,5,10].includes(db.settings.weightStep)?db.settings.weightStep:5):1;
+ const current=Number(set[field]);
+ if(!Number.isFinite(current)){toast("Enter a number first");return;}
+ const value=Math.max(field==="weight"?0:1,Math.round((current+step*direction)*100)/100);
+ saveDraftField(ex,index,field,String(value));
+ const input=document.getElementById(`set-${safeId(ex)}-${index}`)?.querySelector(`[data-field="${field}"]`);if(input)input.value=value;
+}
+function copyPreviousDraftSet(ex,index){
+ const draft=getDraftExercise(ex),previous=draft.sets[index-1];
+ if(!previous||previous.weight===""||previous.reps===""){toast("Enter the previous set first");return;}
+ for(const field of ["weight","reps"]){saveDraftField(ex,index,field,String(previous[field]));const input=document.getElementById(`set-${safeId(ex)}-${index}`)?.querySelector(`[data-field="${field}"]`);if(input)input.value=previous[field];}
+}
 
 function saveDraftField(
 ex,
@@ -2549,17 +2572,18 @@ ${j+1}
 <div>
 
 <label>
-Weight
+${/\bDB\b/.test(current)?"Weight (lb each)":"Weight (lb)"}
 </label>
 
 <input
-inputmode="decimal"
+type="text" inputmode="decimal" enterkeyhint="next" autocomplete="off"
+aria-label="Weight in pounds for ${escapeHTML(current)}, set ${j+1}"
 data-exercise="${escapeHTML(current)}"
 data-set="${j}"
 data-field="weight"
 value="${escapeHTML(s.weight)}"
 >
-
+<div class="entry-adjustments"><button type="button" data-adjust-exercise="${escapeHTML(current)}" data-adjust-set="${j}" data-adjust-field="weight" data-direction="-1" aria-label="Decrease set ${j+1} weight">−${db.settings.weightStep}</button><button type="button" data-adjust-exercise="${escapeHTML(current)}" data-adjust-set="${j}" data-adjust-field="weight" data-direction="1" aria-label="Increase set ${j+1} weight">+${db.settings.weightStep}</button></div>
 </div>
 
 <div>
@@ -2569,14 +2593,15 @@ Reps
 </label>
 
 <input
-inputmode="numeric"
+type="text" inputmode="numeric" enterkeyhint="done" autocomplete="off"
+aria-label="Reps for ${escapeHTML(current)}, set ${j+1}"
 data-exercise="${escapeHTML(current)}"
 data-set="${j}"
 data-field="reps"
 value="${escapeHTML(s.reps)}"
 placeholder="${target(current).replace("–","-")}"
 >
-
+<div class="entry-adjustments"><button type="button" data-adjust-exercise="${escapeHTML(current)}" data-adjust-set="${j}" data-adjust-field="reps" data-direction="-1" aria-label="Decrease set ${j+1} reps">−1</button><button type="button" data-adjust-exercise="${escapeHTML(current)}" data-adjust-set="${j}" data-adjust-field="reps" data-direction="1" aria-label="Increase set ${j+1} reps">+1</button></div>
 </div>
 
 <button
@@ -2670,6 +2695,14 @@ updateDraftBanner();
 
 
 function bindWorkoutEvents(){
+document.querySelectorAll("[data-adjust-exercise]").forEach(button=>button.onclick=()=>adjustDraftValue(button.dataset.adjustExercise,Number(button.dataset.adjustSet),button.dataset.adjustField,Number(button.dataset.direction)));
+// Copy controls are delegated because comparisons refresh while entering numbers.
+const workout=document.getElementById("workout");
+workout.onclick=event=>{const button=event.target.closest("[data-copy-exercise]");if(button)copyPreviousDraftSet(button.dataset.copyExercise,Number(button.dataset.copySet));};
+document.querySelectorAll("input[data-exercise]").forEach(input=>{
+ input.addEventListener("focus",()=>input.select());
+ input.addEventListener("keydown",event=>{if(event.key!=="Enter")return;event.preventDefault();const row=input.closest(".set");if(input.dataset.field==="weight")row.querySelector('[data-field="reps"]').focus();else{confirmDraftSet(input.dataset.exercise,Number(input.dataset.set));if(getDraftExercise(input.dataset.exercise).sets[Number(input.dataset.set)].confirmed)input.blur();}});
+});
 document.querySelectorAll("[data-add-set]").forEach(button=>button.onclick=()=>addDraftSet(button.dataset.addSet));
 document.querySelectorAll("[data-remove-set]").forEach(button=>button.onclick=()=>removeDraftSet(button.dataset.removeExercise,Number(button.dataset.removeSet)));
 
@@ -3148,7 +3181,7 @@ const restored=JSON.parse(await file.text());
 if(!restored||!Array.isArray(restored.sessions)||!Array.isArray(restored.selected)||typeof restored.history!=="object"||!restored.history){throw Error("Invalid backup");}
 if(!confirm("Replace all current workouts and settings with this backup?"))return;
 db=restored;db.customExercises??={};db.deletedExercises??={};db.draftWorkout??=null;
-db.settings={restSeconds:90,autoRest:true,timerAlert:"both",theme:"blue",font:"system",...db.settings};
+db.settings={restSeconds:90,autoRest:true,timerAlert:"both",theme:"blue",font:"system",weightStep:5,...db.settings};
 rebuildHistory();saveDB();location.reload();
 }catch(e){toast("Could not read this backup file");}
 finally{input.value="";}

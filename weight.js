@@ -42,6 +42,7 @@ function renderWeightChart(id,series,horizon){
  svg+='</svg>';el.innerHTML=svg+`<div class="weight-legend">${series.map(s=>`<span><i style="background:${s.color}"></i>${escapeHTML(s.name)}${s.dashed?' (dashed)':''}</span>`).join('')}</div>`;
 }
 function renderWeightTracking(){
+ document.querySelectorAll('#weight input[type="number"]').forEach(input=>input.onfocus=()=>input.select());
  const tracking=db.weightTracking,plan=tracking.plan,locked=!!tracking.entries.length;
  document.getElementById('weightStartDate').value=plan?.startDate||weightToday();document.getElementById('weightStart').value=plan?.startWeight||'';
  document.getElementById('weightDirection').value=plan?.direction||'loss';document.getElementById('weightRate').value=plan?.rate||.5;
