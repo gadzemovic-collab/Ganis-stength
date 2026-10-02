@@ -109,7 +109,7 @@ opacity:.8;
 
 html.opening-screen,
 body.welcome-open,
-body.intro-open{background:#041c36;overscroll-behavior:none;}
+body.intro-open{background:var(--opening-bg,#041c36);overscroll-behavior:none;}
 body.welcome-open > header,
 body.welcome-open > nav,
 body.welcome-open > main,
@@ -128,7 +128,7 @@ body.intro-open > .rest-float,body:has(#weight.active) > .rest-float{display:non
  display:flex;
  align-items:center;
  justify-content:center;
- padding:max(28px,env(safe-area-inset-top)) 22px max(28px,env(safe-area-inset-bottom));
+ padding:max(28px,env(safe-area-inset-top)) 22px max(28px,calc(env(safe-area-inset-bottom) + 16px));
  color:#fff;
  text-align:center;
  background:radial-gradient(circle at 50% 30%,#195580 0%,#07345c 43%,#041c36 100%);
@@ -218,7 +218,7 @@ body[data-shark-style="female"] .choice-arrow{color:#ffb3df;}
 .weight-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:16px 0;}
 .weight-section-title{font-weight:750;font-size:17px;cursor:pointer;}
 .weight-help{font-size:12px;line-height:1.6;}.weight-goal{font-weight:700;color:var(--blue-dark);}
-.weight-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0;}.weight-stats>div{display:grid;gap:6px;background:#f1f6fa;border-radius:12px;padding:12px 8px;}.weight-stats strong{font-size:19px;}.weight-stats span{font-size:11px;color:var(--muted);line-height:1.4;}
+.weight-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0;}.weight-stats>div{display:grid;gap:6px;background:#f1f6fa;border-radius:12px;padding:12px 8px;}.weight-stats>div[hidden]{display:none;}.weight-stats strong{font-size:19px;}.weight-stats span{font-size:11px;color:var(--muted);line-height:1.4;}
 .weight-chart{margin-top:16px;}.weight-chart svg{display:block;width:100%;height:auto;}.weight-legend{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:10px;font-size:11px;color:var(--muted);}.weight-legend span{display:flex;align-items:center;gap:5px;}.weight-legend i{display:block;width:10px;height:10px;border-radius:50%;}
 .weekly-entry{border-top:1px solid var(--blue-border);padding:14px 0;}.weekly-entry strong{font-size:14px;}.weekly-entry p{font-size:13px;line-height:1.6;margin-bottom:0;}.weekly-entry .row{flex-wrap:wrap;}
 .weight-pagination{gap:10px;margin:12px 0;flex-wrap:wrap;}.weight-pagination span{flex:1;min-width:100px;}
@@ -1210,7 +1210,7 @@ class="chart"
 <p class="muted weight-help">Targets compound weekly; actual progress can vary. Once you log weigh-ins, the start stays fixed. Choose your end date. The updated projection automatically follows your latest weigh-in; the initial plan stays visible.</p><button class="primary" type="submit">Save plan</button>
 </form></details>
 <div id="weightDashboard" hidden>
-<div class="card"><h2>Actual vs plan</h2><p id="weightYearGoal" class="weight-goal"></p><div class="weight-stats"><div><strong id="weightCurrent">—</strong><span>Current weight (lb)</span></div><div id="weightAheadStat" hidden><strong id="weightGap"></strong><span>Ahead of initial plan (lb)</span></div></div><p class="weight-total">Total change <strong id="weightChange">—</strong></p><p id="weightPlanSummary" class="muted weight-help"></p><div class="weight-zoom"><label for="weightChartPeriod">Chart view</label><select id="weightChartPeriod" onchange="changeWeightChartPeriod()"><option value="4">4 weeks</option><option value="12">12 weeks</option><option value="26">26 weeks</option><option value="52">52 weeks</option><option value="all" selected>Full plan</option></select><button id="weightChartPrevious" type="button" class="secondary small" onclick="moveWeightChart(-1)" aria-label="Earlier chart period">‹</button><button id="weightChartNext" type="button" class="secondary small" onclick="moveWeightChart(1)" aria-label="Later chart period">›</button></div><p id="weightChartRangeLabel" class="muted weight-help"></p><div id="bodyWeightChart" class="weight-chart"></div><p id="weightRevisionSummary" class="muted weight-help"></p></div>
+<div class="card"><h2>Actual vs plan</h2><p id="weightYearGoal" class="weight-goal"></p><div class="weight-stats"><div><strong id="weightCurrent">—</strong><span>Current weight (lb)</span></div><div id="weightAheadStat" hidden><strong id="weightGap"></strong><span>Ahead of initial plan (lb)</span></div></div><p class="weight-total">Total change <strong id="weightChange">—</strong></p><p id="weightPlanSummary" class="muted weight-help"></p><div class="weight-zoom"><label for="weightChartPeriod">Chart view</label><select id="weightChartPeriod" onchange="changeWeightChartPeriod()"><option value="4">4 weeks</option><option value="12" selected>12 weeks</option><option value="26">26 weeks</option><option value="52">52 weeks</option><option value="all">Full plan</option></select><button id="weightChartPrevious" type="button" class="secondary small" onclick="moveWeightChart(-1)" aria-label="Earlier chart period">‹</button><button id="weightChartNext" type="button" class="secondary small" onclick="moveWeightChart(1)" aria-label="Later chart period">›</button></div><p id="weightChartRangeLabel" class="muted weight-help"></p><div id="bodyWeightChart" class="weight-chart"></div><p id="weightRevisionSummary" class="muted weight-help"></p></div>
 <div class="card"><h2>Weekly weigh-in</h2><p id="weeklyDue" class="muted"></p><form id="weeklyWeightForm" onsubmit="saveWeeklyWeight(event)"><div class="weekly-date"><div><label for="weeklyWeightDate">Weigh-in date</label><input id="weeklyWeightDate" type="date" required onchange="focusWeeklyField('weeklyWeight')"></div><button type="button" class="secondary small" onclick="useTodayForWeighIn()">Today</button></div><div class="weekly-entry-fields"><div><label for="weeklyWeight">Weight (lb)</label><input id="weeklyWeight" type="text" inputmode="decimal" enterkeyhint="next" required onkeydown="weeklyEntryNext(event,'weeklyBF')"><button type="button" class="entry-next" onclick="focusWeeklyField('weeklyBF')">Next: body fat % →</button></div><div><label for="weeklyBF">Body fat % <span class="weight-optional">Optional</span></label><input id="weeklyBF" type="text" inputmode="decimal" enterkeyhint="done" placeholder="Optional"></div></div><button type="submit" class="primary">Save weigh-in</button></form></div>
 <details class="card"><summary class="weight-section-title">Body composition <span class="weight-optional">Optional</span></summary><p class="muted weight-help">Estimates use the body-fat percentages you enter. Non-fat weight includes muscle, water, bone and organs.</p><div class="weight-stats"><div><strong id="fatChange">—</strong><span>Estimated fat change</span></div><div><strong id="nonFatChange">—</strong><span>Non-fat change</span></div></div><p id="compositionAsOf" class="muted weight-help"></p><div class="weight-zoom"><label for="compositionChartView">Show</label><select id="compositionChartView" onchange="renderWeightCharts()"><option value="both">Fat and non-fat</option><option value="fat">Estimated fat only</option><option value="nonFat">Non-fat weight only</option></select></div><div id="compositionWeightChart" class="weight-chart"></div></details>
 <div class="card"><h2>Your weigh-ins</h2><div id="weeklyWeightLog"></div></div>
@@ -1531,7 +1531,7 @@ saveDB();
 
 
 function applySettings(){
-const cfg=db.settings;document.body.dataset.sharkStyle=cfg.sharkStyle||"original";document.querySelector("header .brand img").src=cfg.sharkStyle==="female"?"female-shark.webp?v=1":"rep-harbor-192.png?v=12"; const colors=THEMES[cfg.theme]||THEMES.blue;
+const cfg=db.settings;document.documentElement.style.setProperty("--opening-bg",cfg.sharkStyle==="female"?"#61164d":"#041c36");document.body.dataset.sharkStyle=cfg.sharkStyle||"original";document.querySelector("header .brand img").src=cfg.sharkStyle==="female"?"female-shark.webp?v=1":"rep-harbor-192.png?v=12"; const colors=THEMES[cfg.theme]||THEMES.blue;
 const themeSelect=document.getElementById("theme");
 themeSelect.innerHTML=Object.entries(THEME_LABELS).map(([key,label])=>`<option value="${key}">${label}</option>`).join("");
 const themeChoices=document.getElementById("themeChoices");
