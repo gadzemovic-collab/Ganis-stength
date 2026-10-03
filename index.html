@@ -89,7 +89,7 @@ linear-gradient(
 color:#fff;
 
 padding:
-18px
+calc(18px + max(env(safe-area-inset-top,0px),var(--status-bar-fallback,0px)))
 16px
 14px;
 }
@@ -244,7 +244,7 @@ body[data-shark-style="female"] .choice-arrow{color:#ffb3df;}
 .history-sets{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px;}
 .history-set{display:grid;gap:4px;padding:9px 11px;border-radius:10px;background:#f4f7fb;}.history-set>span{color:var(--muted);font-size:10px;}.history-set>b{font-size:13px;}
 .history-empty{text-align:center;padding:30px 12px;color:var(--muted);}.history-empty strong{color:var(--text);}.history-empty p{font-size:14px;line-height:1.5;}
-#historyEditor{scroll-margin-top:160px;}
+#historyEditor{scroll-margin-top:var(--app-scroll-offset,160px);}
 .theme-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:9px;margin-top:12px;}
 .theme-choice{display:flex;flex-direction:column;align-items:flex-start;gap:9px;padding:12px;border:2px solid #e3eaf0;border-radius:14px;background:#fff;color:#26364a;font:inherit;font-size:13px;font-weight:700;cursor:pointer;}
 .theme-choice[aria-pressed="true"]{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-light);}
@@ -256,7 +256,7 @@ nav{
 display:flex;
 
 position:sticky;
-top:84px;
+top:var(--app-header-height,84px);
 z-index:4;
 
 background:#fff;
@@ -533,7 +533,7 @@ h3{
 margin:0;
 }
 
-.workout-part{scroll-margin-top:130px;}
+.workout-part{scroll-margin-top:var(--app-scroll-offset,146px);}
 .workout-part.exercise-complete{background:var(--blue-light);border-color:var(--blue);opacity:.88;}
 .workout-part.exercise-complete .exercise-progress{color:var(--blue-dark);font-weight:750;}
 .exercise-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;list-style:none;}
@@ -2319,6 +2319,13 @@ function changeWorkoutMode(mode){
  return true;
 }
 
+function initializeAppInsets(){
+ const root=document.documentElement,header=document.querySelector('header'),nav=document.querySelector('nav');
+ if(window.matchMedia('(display-mode: standalone)').matches||navigator.standalone)root.style.setProperty('--status-bar-fallback','48px');
+ function measure(){const h=header.getBoundingClientRect().height,n=nav.getBoundingClientRect().height;if(h>0){root.style.setProperty('--app-header-height',`${h}px`);root.style.setProperty('--app-scroll-offset',`${h+n+18}px`);}}
+ const observer=new ResizeObserver(measure);observer.observe(header);observer.observe(nav);window.addEventListener('resize',measure);measure();
+}
+
 function showIntro(){showWelcome();}
 
 function showWelcome(){
@@ -3844,6 +3851,7 @@ renderWorkout();
 renderHistory();
 
 populateChartExercises();
+initializeAppInsets();
 showIntro();
 
 
