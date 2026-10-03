@@ -533,6 +533,9 @@ h3{
 margin:0;
 }
 
+.workout-part{scroll-margin-top:130px;}
+.workout-part.exercise-complete{background:var(--blue-light);border-color:var(--blue);opacity:.88;}
+.workout-part.exercise-complete .exercise-progress{color:var(--blue-dark);font-weight:750;}
 .exercise-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;list-style:none;}
 .exercise-summary::-webkit-details-marker{display:none;}
 .exercise-summary-copy{display:grid;gap:5px;min-width:0;}
@@ -1970,6 +1973,25 @@ row.classList.add(
 }
 
 
+function organizeWorkoutProgress(){
+ const workout=document.getElementById('workout');if(!workout)return;
+ let justCompleted=false;
+ const nodes=Array.from(workout.children).filter(node=>node.dataset.workoutOrder!==undefined);
+ nodes.forEach(node=>{
+  const exercise=node.dataset.currentExercise||node.dataset.workoutExercise,sets=db.draftWorkout?.exercises?.[exercise]?.sets||[],count=sets.filter(set=>set.confirmed).length;
+  const complete=!!exercise&&count>=Math.max(3,sets.length);
+  if(node.matches('details')){
+   if(complete&&node.dataset.workoutComplete==='false'){node.open=false;justCompleted=true;}
+   node.classList.toggle('exercise-complete',complete);
+   const progress=node.querySelector('.exercise-progress');if(progress)progress.textContent=complete?`✓ Complete · ${count} sets saved`:`${count}/${sets.length} sets completed`;
+  }
+  node.dataset.workoutComplete=String(complete);
+ });
+ const sorted=nodes.slice().sort((a,b)=>Number(a.dataset.workoutComplete==='true')-Number(b.dataset.workoutComplete==='true')||Number(a.dataset.workoutOrder)-Number(b.dataset.workoutOrder));
+ if(sorted.some((node,i)=>node!==nodes[i]))sorted.forEach(node=>workout.appendChild(node));
+ if(justCompleted){const next=sorted.find(node=>node.matches('details')&&node.dataset.currentExercise&&node.dataset.workoutComplete==='false');if(next)next.scrollIntoView({behavior:'smooth',block:'start'});}
+}
+
 function updateDraftBanner(){
 
 document.querySelectorAll("details[data-current-exercise]").forEach(card=>{
@@ -1977,6 +1999,7 @@ document.querySelectorAll("details[data-current-exercise]").forEach(card=>{
  const progress=card.querySelector(".exercise-progress");
  if(progress)progress.textContent=`${sets.filter(set=>set.confirmed).length}/${sets.length} sets completed`;
 });
+organizeWorkoutProgress();
 const banner=
 document.getElementById(
 "draftBanner"
@@ -2424,7 +2447,7 @@ if(db.workoutMode==="split"&&!db.splitGroups.length){
  el.innerHTML='<div class="card muted">Choose one or more body parts above to build your split day.</div>';
 }
 
-displayed.forEach(([group,arr,slot])=>{
+displayed.forEach(([group,arr,slot],workoutOrder)=>{
 
 const current=selectedForGroup(group,slot);
 
@@ -2435,6 +2458,7 @@ card.className="workout-part";
 const cardKey=`${db.workoutMode}:${group}:${slot}`;
 card.open=expandedCards.has(cardKey);
 card.dataset.currentExercise=current;
+card.dataset.workoutOrder=workoutOrder;
 card.addEventListener("toggle",()=>{
  if(!card.isConnected)return;
  if(card.open)expandedCards.add(cardKey);else expandedCards.delete(cardKey);
@@ -2673,6 +2697,7 @@ el.appendChild(card);
 if(db.workoutMode==="split"&&current&&slot===(db.splitSelected[group]?.length||1)-1){
  const actions=document.createElement("div");
  actions.className="row split-add";
+ actions.dataset.workoutOrder=workoutOrder;actions.dataset.workoutExercise=current;
  actions.innerHTML=`<button class="secondary small" data-add-split="${escapeHTML(group)}">+ Add ${escapeHTML(groupLabel(group))} exercise</button>`;
  el.appendChild(actions);
 }
