@@ -1,4 +1,4 @@
-const CACHE='rep-harbor-v56';
+const CACHE='rep-harbor-v57';
 
 const ASSETS=[
 './',
@@ -7,7 +7,7 @@ const ASSETS=[
 './shark-frames.json?v=1',
 './female-shark-sheet.webp?v=1',
 './female-shark.webp?v=1',
-'./weight.js?v=9',
+'./weight.js?v=10',
 './manifest.webmanifest',
 './rep-harbor-180.png?v=12',
 './rep-harbor-192.png?v=12',
@@ -104,3 +104,4 @@ event.request
 
 }
 );
+

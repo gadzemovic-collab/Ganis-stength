@@ -4,7 +4,18 @@ function weightToday(){const d=new Date();return `${d.getFullYear()}-${String(d.
 function weightDay(date){if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return NaN;const [y,m,d]=date.split('-').map(Number);const time=Date.UTC(y,m-1,d);return new Date(time).toISOString().slice(0,10)===date?time/86400000:NaN;}
 function weightDate(start,week){return new Date((weightDay(start)+week*7)*86400000).toISOString().slice(0,10);}
 function weightDateLabel(date){return new Date(date+'T12:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});}
-function weightTarget(plan,week){return plan.startWeight*Math.pow(1+(plan.direction==='loss'?-1:1)*plan.rate/100,week);}
+function weightProjection(weight,plan,weeks){
+ const direction=plan.direction==='loss'?-1:1;
+ return plan.rateUnit==='pounds'?Math.max(0,weight+direction*plan.rate*weeks):weight*Math.pow(1+direction*plan.rate/100,weeks);
+}
+function weightTarget(plan,week){return weightProjection(plan.startWeight,plan,week);}
+function validWeightRate(plan){return ['percent','pounds'].includes(plan.rateUnit)&&Number.isFinite(plan.rate)&&plan.rate>0&&(plan.rateUnit==='pounds'||plan.rate<100);}
+function changeWeightRateUnit(){
+ const pounds=document.getElementById('weightRateUnit').value==='pounds',input=document.getElementById('weightRate');
+ document.getElementById('weightRateLabel').textContent=pounds?'Pounds per week (lb)':'Body weight per week (%)';
+ document.getElementById('weightRateHelp').textContent=pounds?'Use a fixed weekly change, such as 2 lb.':'Percentage goals adjust with body weight each week.';
+ if(pounds)input.removeAttribute('max');else input.max='99.99';
+}
 function weightComposition(weight,bf){return bf===null||bf===undefined?null:{fat:weight*bf/100,nonFat:weight*(1-bf/100)};}
 function weightWeek(plan,date){const days=weightDay(date)-weightDay(plan.startDate);return Number.isFinite(days)&&days>=4?Math.round(days/7):null;}
 function weightBF(value){return value===''?null:Number(value);}
@@ -17,11 +28,11 @@ function weightAheadLabel(plan,entry){
 function weightPlanComposition(plan,week){if(plan.startBF===null||plan.goalBF===null)return null;return weightComposition(weightTarget(plan,week),plan.startBF+(plan.goalBF-plan.startBF)*Math.min(1,week/plan.weeks));}
 function updatedWeightTarget(tracking,week){
  const updated=tracking.updatedPlan;
- return updated&&week>=updated.week?updated.weight*Math.pow(1+(updated.direction==='loss'?-1:1)*updated.rate/100,week-updated.week):weightTarget(tracking.initialPlan||tracking.plan,week);
+ return updated&&week>=updated.week?weightProjection(updated.weight,updated,week-updated.week):weightTarget(tracking.initialPlan||tracking.plan,week);
 }
 function syncWeightProjection(tracking){
  const entry=tracking.entries.at(-1);
- tracking.updatedPlan=entry?{week:(weightDay(entry.date)-weightDay(tracking.plan.startDate))/7,date:entry.date,weight:entry.weight,rate:tracking.plan.rate,direction:tracking.plan.direction}:null;
+ tracking.updatedPlan=entry?{week:(weightDay(entry.date)-weightDay(tracking.plan.startDate))/7,date:entry.date,weight:entry.weight,rate:tracking.plan.rate,rateUnit:tracking.plan.rateUnit||'percent',direction:tracking.plan.direction}:null;
 }
 function focusWeeklyField(id){const input=document.getElementById(id);input.focus();if(input.type!=='date')input.select();}
 function useTodayForWeighIn(){document.getElementById('weeklyWeightDate').value=weightToday();focusWeeklyField('weeklyWeight');}
@@ -51,9 +62,9 @@ function renderWeightCharts(){
 }
 function saveWeightPlan(event){
  event.preventDefault();
- const plan={startDate:document.getElementById('weightStartDate').value,startWeight:Number(document.getElementById('weightStart').value),direction:document.getElementById('weightDirection').value,rate:Number(document.getElementById('weightRate').value),endDate:document.getElementById('weightEndDate').value,startBF:weightBF(document.getElementById('weightStartBF').value),goalBF:weightBF(document.getElementById('weightGoalBF').value)};
+ const plan={startDate:document.getElementById('weightStartDate').value,startWeight:Number(document.getElementById('weightStart').value),direction:document.getElementById('weightDirection').value,rate:Number(document.getElementById('weightRate').value),rateUnit:document.getElementById('weightRateUnit').value,endDate:document.getElementById('weightEndDate').value,startBF:weightBF(document.getElementById('weightStartBF').value),goalBF:weightBF(document.getElementById('weightGoalBF').value)};
  plan.weeks=(weightDay(plan.endDate)-weightDay(plan.startDate))/7;
- if(!Number.isFinite(new Date((weightDay(plan.startDate)+plan.weeks*7)*86400000).getTime())||!Number.isFinite(weightDay(plan.startDate))||plan.startDate>weightToday()||!Number.isFinite(plan.startWeight)||plan.startWeight<=0||!['loss','gain'].includes(plan.direction)||![.25,.5,1].includes(plan.rate)||!Number.isFinite(plan.weeks)||plan.weeks<=0||!Number.isFinite(weightTarget(plan,plan.weeks))||weightTarget(plan,plan.weeks)<=0||!validWeightBF(plan.startBF)||!validWeightBF(plan.goalBF)){toast('Choose an end date after the start date, a valid weight and optional body-fat percentages');return;}
+ if(!Number.isFinite(new Date((weightDay(plan.startDate)+plan.weeks*7)*86400000).getTime())||!Number.isFinite(weightDay(plan.startDate))||plan.startDate>weightToday()||!Number.isFinite(plan.startWeight)||plan.startWeight<=0||!['loss','gain'].includes(plan.direction)||!validWeightRate(plan)||!Number.isFinite(plan.weeks)||plan.weeks<=0||!Number.isFinite(weightTarget(plan,plan.weeks))||weightTarget(plan,plan.weeks)<=0||!validWeightBF(plan.startBF)||!validWeightBF(plan.goalBF)){toast('Choose an end date after the start date, a valid weight, weekly rate and optional body-fat percentages');return;}
  const tracking=db.weightTracking;
  if(tracking.entries.length&&tracking.plan&&(plan.startDate!==tracking.plan.startDate||plan.startWeight!==tracking.plan.startWeight)){toast('Keep the original start date and weight so weigh-ins stay aligned');return;}
  if(!tracking.entries.length){tracking.initialPlan={...plan};}else{tracking.initialPlan??={...tracking.plan};}
@@ -86,7 +97,7 @@ function renderWeightTracking(){
  document.querySelectorAll('#weight input[inputmode="decimal"]').forEach(input=>input.onfocus=()=>input.select());
  const tracking=db.weightTracking,plan=tracking.plan,locked=!!tracking.entries.length;
  document.getElementById('weightStartDate').value=plan?.startDate||weightToday();document.getElementById('weightStart').value=plan?.startWeight||'';
- document.getElementById('weightDirection').value=plan?.direction||'loss';document.getElementById('weightRate').value=plan?.rate||.5;
+ document.getElementById('weightDirection').value=plan?.direction||'loss';document.getElementById('weightRateUnit').value=plan?.rateUnit||'percent';document.getElementById('weightRate').value=plan?.rate??.5;changeWeightRateUnit();
  document.getElementById('weightStartBF').value=plan?.startBF??'';document.getElementById('weightGoalBF').value=plan?.goalBF??'';document.getElementById('weightEndDate').value=plan?(plan.endDate||weightDate(plan.startDate,plan.weeks)):'';
  document.getElementById('weightStartDate').disabled=locked;document.getElementById('weightStart').disabled=locked;
  document.getElementById('weightDashboard').hidden=!plan;document.getElementById('weightPlanDetails').open=!plan;
@@ -119,3 +130,4 @@ function renderWeightPlanPage(){
  document.getElementById('weightPlanRows').innerHTML=Array.from({length:end-start+1},(_,i)=>{const week=start+i,value=weightTarget(db.weightTracking.initialPlan||plan,week),updated=db.weightTracking.updatedPlan&&week>=db.weightTracking.updatedPlan.week?updatedWeightTarget(db.weightTracking,week):null,e=entries.find(e=>e.week===week)||(week===0?{weight:plan.startWeight,bodyFat:plan.startBF}:null),c=e?weightComposition(e.weight,e.bodyFat):null;return `<tr><th scope="row">${week}</th><td>${escapeHTML(weightDateLabel(weightDate(plan.startDate,week)))}</td><td>${value.toFixed(1)}</td><td>${updated===null?'—':updated.toFixed(1)}</td><td>${e?e.weight.toFixed(1):'—'}</td><td>${e?weightAheadLabel(db.weightTracking.initialPlan||plan,{...e,week}).replace(' · ',''):''}</td><td>${c?c.fat.toFixed(1):'—'}</td><td>${c?c.nonFat.toFixed(1):'—'}</td></tr>`;}).join('');
 }
 function changeWeightPlanPage(direction){weightTablePage+=direction;renderWeightPlanPage();}
+
