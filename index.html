@@ -952,6 +952,7 @@ Charts
 </button>
 
 <button onclick="showScreen('weight',this)">Weight</button>
+<button onclick="showScreen('milestones',this)">Goals</button>
 </nav>
 
 <main>
@@ -1220,7 +1221,15 @@ class="chart"
 <details class="card"><summary class="weight-section-title">Full plan and weekly comparison</summary><p class="muted weight-help">Swipe the table sideways on smaller screens. Week 0 is your starting measurement.</p><div class="row between weight-pagination"><button id="weightPagePrevious" class="secondary small" type="button" onclick="changeWeightPlanPage(-1)">Previous</button><span id="weightPageLabel" class="muted weight-help"></span><button id="weightPageNext" class="secondary small" type="button" onclick="changeWeightPlanPage(1)">Next</button></div><div class="weight-table-wrap" tabindex="0" role="region" aria-label="Weekly planned and actual weights"><table class="weight-table"><thead><tr><th>Week</th><th>Planned date</th><th>Initial lb</th><th>Updated lb</th><th>Actual lb</th><th>Ahead of initial plan</th><th>Fat lb</th><th>Non-fat lb</th></tr></thead><tbody id="weightPlanRows"></tbody></table></div></details>
 </div></section>
 
-</main>
+<section id="milestones" class="screen">
+<div class="weight-heading"><h2>Weight milestones</h2><p class="muted">One goal at a time. Reassess when you get there.</p></div>
+<div class="card"><h2>Progress</h2><p id="rhGoalSummary"></p></div>
+<div class="card"><h2>Your milestones</h2><div id="rhGoalList"></div></div>
+<div class="card"><h2>Add milestone</h2><form onsubmit="rhGoalAdd(event)">
+<div class="weight-fields"><div><label for="rhGoalWeight">Target weight (lb)</label><input id="rhGoalWeight" type="number" min="1" step=".1" required></div>
+<div><label for="rhGoalNote">Name or note</label><input id="rhGoalNote" maxlength="80" placeholder="Reassess physique"></div></div>
+<button class="primary" type="submit">Add goal</button></form></div>
+</section></main>
 
 <div class="rest-float" aria-label="Rest timer controls">
 <button type="button" class="timer-drag" aria-label="Move rest timer. Drag or use arrow keys; Home resets position." title="Drag to move timer"><svg viewBox="0 0 16 24" aria-hidden="true"><circle cx="5" cy="5" r="1.5"/><circle cx="11" cy="5" r="1.5"/><circle cx="5" cy="12" r="1.5"/><circle cx="11" cy="12" r="1.5"/><circle cx="5" cy="19" r="1.5"/><circle cx="11" cy="19" r="1.5"/></svg></button>
@@ -1236,6 +1245,7 @@ class="chart"
 
 <script src="shark.js?v=3"></script>
 <script src="weight.js?v=10"></script>
+<script src="milestones.js?v=1"></script>
 <script>
 
 const BASE_MENU={
@@ -3310,6 +3320,7 @@ renderCharts();
 }
 
 if(id==="weight")renderWeightTracking();
+if(id==="milestones")rhGoalRender();
 
 }
 
