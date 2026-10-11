@@ -933,6 +933,9 @@ body:not(:has(#train.active))>.rest-float:not(.timer-running){display:none;}
 body:has(#weight.active)>.rest-float.timer-running{display:none;}
 @media(max-width:480px){nav button{font-size:13px;padding:12px 3px;}.workout-toolbar button{font-size:12px;}.exercise-summary strong{font-size:16px;}}
 
+
+.exercise-picker{width:min(94vw,480px);max-height:85dvh;border:1px solid var(--blue-border);border-radius:20px;padding:18px;color:var(--text);background:#fff;}
+.exercise-picker::backdrop{background:#17324d88;}.picker-results{max-height:48dvh;overflow:auto;margin:14px 0;display:grid;gap:8px;}.picker-result{display:grid;gap:5px;text-align:left;border:1px solid var(--blue-border);border-radius:12px;background:var(--blue-lighter);padding:12px;font:inherit;min-height:52px;color:var(--text);cursor:pointer;}.picker-result[aria-pressed="true"]{border:2px solid var(--blue);}.picker-result small{color:var(--muted);font-size:12px;}.picker-footer{flex-wrap:wrap;}.exercise-choice-button{width:100%;margin-top:10px;text-align:left;min-height:48px;}.goal-options summary{list-style:none;cursor:pointer;min-width:44px;min-height:44px;display:grid;place-items:center;border:1px solid var(--blue-border);border-radius:10px;color:var(--blue-dark);}.goal-options[open]{display:grid;gap:8px;}
 </style>
 </head>
 
@@ -1201,6 +1204,12 @@ class="chart"
 </section></main>
 
 
+<dialog id="exercisePicker" class="exercise-picker" aria-labelledby="exercisePickerTitle">
+<div class="row between"><h2 id="exercisePickerTitle">Choose exercise</h2><button type="button" class="secondary" onclick="document.getElementById('exercisePicker').close()" aria-label="Close exercise picker">Close</button></div>
+<label for="exerciseSearch">Search exercises</label><input id="exerciseSearch" type="search" placeholder="Search by exercise name" oninput="renderExercisePicker()" autocomplete="off">
+<div id="exercisePickerResults" class="picker-results" aria-live="polite"></div>
+<div class="row picker-footer"><button type="button" class="secondary" onclick="pickExercise('__add__')">+ Custom exercise</button><button type="button" class="secondary" onclick="pickExercise('')">None / remove</button></div>
+</dialog>
 <dialog id="restComic" class="rest-comic" aria-labelledby="restComicTitle">
  <div class="rest-comic-panel">
   <svg class="rest-comic-burst" viewBox="0 0 400 400" preserveAspectRatio="none" aria-hidden="true"><path d="M200 8 L227 68 L278 24 L280 91 L349 62 L326 127 L392 139 L346 187 L397 232 L328 244 L351 316 L281 301 L268 379 L220 327 L184 395 L159 324 L95 365 L102 293 L28 314 L62 249 L5 220 L64 183 L16 131 L90 130 L69 58 L140 87 L152 14 L184 73 Z" fill="#ff7043" stroke="#111" stroke-width="5"/></svg>
@@ -1228,7 +1237,7 @@ class="chart"
 
 <script src="shark.js?v=3"></script>
 <script src="weight.js?v=10"></script>
-<script src="milestones.js?v=1"></script>
+<script src="milestones.js?v=2"></script>
 <script>
 
 const BASE_MENU={
@@ -2070,6 +2079,18 @@ banner.textContent=
 }
 
 
+let exercisePickerContext=null;
+function openExercisePicker(group,slot=0){
+ exercisePickerContext={group,slot};document.getElementById('exercisePickerTitle').textContent='Choose '+groupLabel(group)+' exercise';document.getElementById('exerciseSearch').value='';renderExercisePicker();document.getElementById('exercisePicker').showModal();document.getElementById('exerciseSearch').focus();
+}
+function renderExercisePicker(){
+ if(!exercisePickerContext)return;
+ const {group,slot}=exercisePickerContext,query=document.getElementById('exerciseSearch').value.trim().toLowerCase(),current=selectedForGroup(group,slot),results=document.getElementById('exercisePickerResults');
+ const matches=(MENU[group]||[]).filter(name=>name.toLowerCase().includes(query));
+ results.innerHTML=matches.length?matches.map(name=>`<button type="button" class="picker-result" data-picker-exercise="${escapeHTML(name)}" aria-pressed="${name===current}"><strong>${escapeHTML(name)}</strong><small>${name===current?'Selected · ':''}Last logged: ${escapeHTML(lastLoggedLabel(name))}</small></button>`).join(''):'<p class="muted">No matching exercises. Try another name or add a custom exercise.</p>';
+ results.querySelectorAll('[data-picker-exercise]').forEach(button=>button.onclick=()=>pickExercise(button.dataset.pickerExercise));
+}
+function pickExercise(value){if(!exercisePickerContext)return;const {group,slot}=exercisePickerContext;document.getElementById('exercisePicker').close();chooseOrAdd(group,value,slot);}
 function chooseOrAdd(
 group,
 value,
@@ -2678,6 +2699,9 @@ ${logger}
 `;
 
 
+card.querySelectorAll('select[data-group]').forEach(select=>{
+ const button=document.createElement('button');button.type='button';button.className='secondary exercise-choice-button';button.textContent=current?`Change: ${current} ›`:'Choose exercise ›';button.setAttribute('aria-label',`Choose ${groupLabel(group)} exercise ${slot+1}`);button.setAttribute('aria-haspopup','dialog');button.onclick=()=>openExercisePicker(group,slot);select.replaceWith(button);
+});
 el.appendChild(card);
 
 if(workoutEditing&&db.workoutMode==="split"&&current&&slot===(db.splitSelected[group]?.length||1)-1){
@@ -3125,7 +3149,10 @@ sessions.forEach(({session,index})=>{
  <div class="row between"><span class="muted">${escapeHTML(parts||(session.mode==="split"?"Selected muscles":"Whole body"))}</span><button type="button" class="secondary small" data-edit-session="${index}">Edit workout</button></div>
  ${exercises.map(ex=>`<div class="history-exercise"><strong>${escapeHTML(ex.name)}</strong><div class="history-sets">${(ex.sets||[]).map((set,i)=>`<span class="history-set"><span>Set ${i+1}</span><b>${escapeHTML(set.weight)} lb × ${escapeHTML(set.reps)}</b></span>`).join("")}</div></div>`).join("")}
  </div>`;
- el.appendChild(card);
+ card.querySelectorAll('select[data-group]').forEach(select=>{
+ const button=document.createElement('button');button.type='button';button.className='secondary exercise-choice-button';button.textContent=current?`Change: ${current} ›`:'Choose exercise ›';button.setAttribute('aria-label',`Choose ${groupLabel(group)} exercise ${slot+1}`);button.setAttribute('aria-haspopup','dialog');button.onclick=()=>openExercisePicker(group,slot);select.replaceWith(button);
+});
+el.appendChild(card);
 });
 el.querySelectorAll("[data-edit-session]").forEach(button=>button.addEventListener("click",()=>editSession(Number(button.dataset.editSession))));
 }
