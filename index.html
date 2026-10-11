@@ -2513,7 +2513,7 @@ card.open=workoutEditing||expandedCards.has(cardKey);
 card.dataset.currentExercise=current;
 card.dataset.workoutOrder=workoutOrder;
 card.addEventListener("toggle",()=>{
- if(!card.isConnected)return;
+ if(!card.isConnected||workoutEditing)return;
  if(card.open)expandedCards.add(cardKey);else expandedCards.delete(cardKey);
 });
 
