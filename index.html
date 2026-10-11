@@ -890,6 +890,21 @@ white-space:nowrap;
 max-width:90%;
 }
 
+
+/* Comic rest countdown shown after a confirmed set. */
+.rest-comic{border:0;padding:0;background:transparent;color:#111;width:min(94vw,680px);max-width:94vw;max-height:92dvh;overflow:auto;}
+.rest-comic::backdrop{background:#071729b8;backdrop-filter:blur(5px);}
+.rest-comic-panel{position:relative;isolation:isolate;min-height:min(78dvh,700px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:40px 24px;background:#ffe351;border:5px solid #111;border-radius:24px;box-shadow:8px 8px 0 #111;background-image:radial-gradient(#1112 1.5px,transparent 1.5px);background-size:12px 12px;text-align:center;}
+.rest-comic-burst{position:absolute;inset:12% 1% 18%;z-index:-1;width:98%;height:70%;filter:drop-shadow(5px 7px 0 #111);}
+.rest-comic-title{font-family:Impact,"Arial Black",sans-serif;font-weight:900;font-style:italic;font-size:clamp(52px,15vw,100px);line-height:1;margin:0;transform:rotate(-6deg);color:#fff;-webkit-text-stroke:2px #111;text-shadow:4px 5px 0 #111;}
+.rest-comic-time{font-family:Impact,"Arial Black",sans-serif;font-size:clamp(72px,24vw,150px);font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-.03em;line-height:1.2;color:#fff;-webkit-text-stroke:2px #111;text-shadow:5px 6px 0 #111;}
+.rest-comic-caption{font-weight:800;background:#fff;border:3px solid #111;padding:8px 14px;transform:rotate(-2deg);}
+.rest-comic-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;}
+.rest-comic-actions button{min-height:48px;background:#fff;color:#111;border:3px solid #111;box-shadow:3px 4px 0 #111;border-radius:10px;font-weight:800;}
+.rest-comic-actions button:first-child{background:#111;color:#fff;}
+@media(max-height:500px){.rest-comic-panel{min-height:0;padding:18px;gap:10px;}.rest-comic-title{font-size:42px;}.rest-comic-time{font-size:70px;}}
+@media(prefers-reduced-motion:no-preference){.rest-comic[open] .rest-comic-panel{animation:comic-pop .25s ease-out;}@keyframes comic-pop{from{transform:scale(.85) rotate(-3deg);opacity:0;}to{transform:scale(1);opacity:1;}}}
+
 </style>
 </head>
 
@@ -1229,6 +1244,20 @@ class="chart"
 <div><label for="rhGoalNote">Name or note</label><input id="rhGoalNote" maxlength="80" placeholder="Reassess physique"></div></div>
 <button class="primary" type="submit">Add goal</button></form></div>
 </section></main>
+
+
+<dialog id="restComic" class="rest-comic" aria-labelledby="restComicTitle">
+ <div class="rest-comic-panel">
+  <svg class="rest-comic-burst" viewBox="0 0 400 400" preserveAspectRatio="none" aria-hidden="true"><path d="M200 8 L227 68 L278 24 L280 91 L349 62 L326 127 L392 139 L346 187 L397 232 L328 244 L351 316 L281 301 L268 379 L220 327 L184 395 L159 324 L95 365 L102 293 L28 314 L62 249 L5 220 L64 183 L16 131 L90 130 L69 58 L140 87 L152 14 L184 73 Z" fill="#ff7043" stroke="#111" stroke-width="5"/></svg>
+  <h2 id="restComicTitle" class="rest-comic-title">REST!</h2>
+  <div id="restComicTime" class="rest-comic-time" role="timer" aria-live="off">1:30</div>
+  <div class="rest-comic-caption">Set saved. Catch your breath.</div>
+  <div class="rest-comic-actions">
+   <button type="button" onclick="document.getElementById('restComic').close()">Minimize</button>
+   <button type="button" onclick="stopTimer()">End rest</button>
+  </div>
+ </div>
+</dialog>
 
 <div class="rest-float" aria-label="Rest timer controls">
 <button type="button" class="timer-drag" aria-label="Move rest timer. Drag or use arrow keys; Home resets position." title="Drag to move timer"><svg viewBox="0 0 16 24" aria-hidden="true"><circle cx="5" cy="5" r="1.5"/><circle cx="11" cy="5" r="1.5"/><circle cx="5" cy="12" r="1.5"/><circle cx="11" cy="12" r="1.5"/><circle cx="5" cy="19" r="1.5"/><circle cx="11" cy="19" r="1.5"/></svg></button>
@@ -1905,7 +1934,7 @@ toast(
 );
 
 
-if(db.settings.autoRest)startTimer(Number(db.settings.restSeconds));
+if(db.settings.autoRest)startTimer(Number(db.settings.restSeconds),true);
 
 }
 
@@ -3394,17 +3423,18 @@ button.textContent=collapsed?"Show":"Hide";
 button.setAttribute("aria-expanded",String(!collapsed));
 button.setAttribute("aria-label",collapsed?"Show rest timer controls":"Hide rest timer controls");
 }
-function stopTimer(){clearInterval(timer);timer=null;timerEnd=0;updateTimerDisplay();}
-function updateTimerDisplay(){const left=Math.max(0,Math.ceil((timerEnd-Date.now())/1000));const el=document.getElementById("timerDisplay");if(el)el.textContent=timerEnd?"Rest: "+Math.floor(left/60)+":"+String(left%60).padStart(2,"0"):"Rest timer ready";}
+function stopTimer(){clearInterval(timer);timer=null;timerEnd=0;document.getElementById("restComic").close();updateTimerDisplay();}
+function updateTimerDisplay(){const left=Math.max(0,Math.ceil((timerEnd-Date.now())/1000));const el=document.getElementById("timerDisplay");document.getElementById("restComicTime").textContent=Math.floor(left/60)+":"+String(left%60).padStart(2,"0");if(el)el.textContent=timerEnd?"Rest: "+Math.floor(left/60)+":"+String(left%60).padStart(2,"0"):"Rest timer ready";}
 function timerFinished(){stopTimer();document.getElementById("timerDisplay").textContent="Rest complete";toast("Rest complete");const mode=db.settings.timerAlert;if((mode==="both"||mode==="vibrate")&&navigator.vibrate)navigator.vibrate([200,100,200]);if((mode==="both"||mode==="sound")&&audioContext){try{audioContext.resume();const osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.frequency.value=880;gain.gain.value=0.12;osc.connect(gain);gain.connect(audioContext.destination);osc.start();osc.stop(audioContext.currentTime+0.3);}catch(e){}}}
 
 let remaining=0;
 
 
-function startTimer(sec){
+function startTimer(sec,expand=false){
 if(!Number.isFinite(sec)||sec<10){toast("Set a rest time in Settings");return;}
 try{audioContext??=new (window.AudioContext||window.webkitAudioContext)();audioContext.resume();}catch(e){}
 clearInterval(timer);timerEnd=Date.now()+sec*1000;updateTimerDisplay();toast("Rest timer started");
+if(expand){const focused=document.activeElement;if(focused?.matches("input,select,textarea"))focused.blur();const comic=document.getElementById("restComic");if(!comic.open)comic.showModal();}
 timer=setInterval(()=>{if(Date.now()>=timerEnd)timerFinished();else updateTimerDisplay();},500);
 }
 
