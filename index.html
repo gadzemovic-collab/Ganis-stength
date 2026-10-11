@@ -936,6 +936,21 @@ body:has(#weight.active)>.rest-float.timer-running{display:none;}
 
 .exercise-picker{width:min(94vw,480px);max-height:85dvh;border:1px solid var(--blue-border);border-radius:20px;padding:18px;color:var(--text);background:#fff;}
 .exercise-picker::backdrop{background:#17324d88;}.picker-results{max-height:48dvh;overflow:auto;margin:14px 0;display:grid;gap:8px;}.picker-result{display:grid;gap:5px;text-align:left;border:1px solid var(--blue-border);border-radius:12px;background:var(--blue-lighter);padding:12px;font:inherit;min-height:52px;color:var(--text);cursor:pointer;}.picker-result[aria-pressed="true"]{border:2px solid var(--blue);}.picker-result small{color:var(--muted);font-size:12px;}.picker-footer{flex-wrap:wrap;}.exercise-choice-button{width:100%;margin-top:10px;text-align:left;min-height:48px;}.goal-options summary{list-style:none;cursor:pointer;min-width:44px;min-height:44px;display:grid;place-items:center;border:1px solid var(--blue-border);border-radius:10px;color:var(--blue-dark);}.goal-options[open]{display:grid;gap:8px;}
+
+body{--dock-space:0px;}
+body:has(#train.active){--dock-space:var(--dock-height,50px);}
+body:has(.rest-float.timer-running):not(:has(#weight.active)){--dock-space:var(--dock-height,50px);}
+main{position:fixed;top:var(--app-header-height,60px);bottom:calc(var(--nav-height,56px) + var(--dock-space));left:50%;transform:translateX(-50%);width:100%;overflow-y:auto;overscroll-behavior:contain;padding-bottom:24px;scroll-padding-top:12px;}
+.workout-part{scroll-margin-top:12px;}
+.rest-float{left:0!important;right:0;top:auto!important;bottom:var(--nav-height,56px)!important;transform:none!important;width:100%;max-width:none;border-radius:0!important;box-shadow:0 -2px 10px #17324d10;padding:8px 14px;display:flex;justify-content:center;flex-wrap:wrap;gap:8px;}
+.rest-float.collapsed{padding:6px 14px;}.rest-float .timer-drag{display:none!important;}.rest-float.collapsed:not(.timer-running) #timerToggle{display:none;}.rest-float .timer-expand{min-width:100px;min-height:38px;}.rest-float .timer-expand:disabled span{display:none;}
+.set .entry-adjustments{display:none;}.set>div:focus-within .entry-adjustments{display:grid;}.set .remove-set{display:none;}.set:focus-within .remove-set{display:block;}.set-comparison{font-size:11px;}.complete-cue{position:absolute;right:-3px;bottom:-3px;background:#fff;color:var(--blue-dark);border-radius:50%;font-size:13px;font-weight:900;width:18px;height:18px;}.set.completed .complete-cue{display:none;}
+body.editing-workout .exercise-logger,body.editing-workout .prefill-note,body.editing-workout .exercise-tools,body.editing-workout .exercise-summary-meta{display:none;}
+body.editing-workout #train button[onclick="saveWorkout()"]{display:none;}
+body.editing-workout .exercise-summary{padding-bottom:8px;}
+.welcome-choice[hidden]{display:none;}
+@media(max-height:800px){#welcome:has(#continueWorkoutButton:not([hidden])) .welcome-art{width:170px;}#welcome:has(#continueWorkoutButton:not([hidden])) h2{margin-top:8px;}}
+
 </style>
 </head>
 
@@ -946,6 +961,7 @@ body:has(#weight.active)>.rest-float.timer-running{display:none;}
   <div class="welcome-art"><img id="welcomeShark" src="rep-harbor-512.png?v=12" alt="RepHarbor shark squatting in a squat rack" width="360" height="360"><canvas id="sharkCanvas" width="320" height="320" aria-label="Shark squatting with feet planted" role="img" hidden></canvas><svg class="squat-rack" viewBox="0 0 400 400" aria-hidden="true"><defs><linearGradient id="rackSteel" x1="0" x2="1"><stop stop-color="#283e54"/><stop offset=".45" stop-color="#88a6bb"/><stop offset=".62" stop-color="#47667e"/><stop offset="1" stop-color="#1b3147"/></linearGradient></defs><path d="M32 370V25H368V370" fill="none" stroke="#071d30" stroke-width="24" stroke-linejoin="round"/><path d="M32 370V25H368V370" fill="none" stroke="url(#rackSteel)" stroke-width="16" stroke-linejoin="round"/><path d="M57 27H343" stroke="#a6deed" stroke-width="3"/><g fill="#081e32" stroke="#8fb2c6" stroke-width="1"><circle cx="32" cy="95" r="3"/><circle cx="32" cy="125" r="3"/><circle cx="32" cy="155" r="3"/><circle cx="32" cy="185" r="3"/><circle cx="32" cy="215" r="3"/><circle cx="32" cy="245" r="3"/><circle cx="32" cy="275" r="3"/><circle cx="32" cy="305" r="3"/><circle cx="368" cy="95" r="3"/><circle cx="368" cy="125" r="3"/><circle cx="368" cy="155" r="3"/><circle cx="368" cy="185" r="3"/><circle cx="368" cy="215" r="3"/><circle cx="368" cy="245" r="3"/><circle cx="368" cy="275" r="3"/><circle cx="368" cy="305" r="3"/></g><path d="M20 362H61M339 362H380" stroke="#142c42" stroke-width="18" stroke-linecap="round"/><path d="M20 358H61M339 358H380" stroke="#7899ad" stroke-width="4" stroke-linecap="round"/><path d="M33 250H51V242M367 250H349V242" fill="none" stroke="#7ca9bb" stroke-width="7" stroke-linejoin="round"/></svg></div>
   <h2 id="welcomeTitle">Let’s get stronger</h2>
   <p>Train your way. Track your progress.</p>
+  <button id="continueWorkoutButton" type="button" class="welcome-choice" onclick="continueWorkout()" hidden><span class="choice-icon">↪</span><span class="choice-copy"><strong>Continue workout</strong><small id="continueWorkoutSummary"></small></span><span class="choice-arrow">›</span></button>
   <button type="button" class="welcome-choice" onclick="enterWorkout('full')">
    <span class="choice-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 12v8m4-11v14m14-14v14m4-11v8M9 16h14"/></svg></span>
    <span class="choice-copy"><strong>Full Body</strong><small>A complete session for your whole body</small></span><span class="choice-arrow" aria-hidden="true">›</span>
@@ -1180,16 +1196,16 @@ class="chart"
 
 <section id="weight" class="screen"><div class="progress-tabs" role="group" aria-label="Progress section"><button type="button" class="secondary" onclick="showProgress('charts')" aria-pressed="false">Strength</button><button type="button" class="secondary selected" onclick="showProgress('weight')" aria-pressed="true">Weight</button><button type="button" class="secondary" onclick="showProgress('milestones')" aria-pressed="false">Goals</button></div>
 <div class="weight-heading"><h2>Weight progress</h2><p class="muted">Your plan, weekly check-ins and progress in one place.</p></div>
-<details id="weightPlanDetails" class="card" open><summary class="weight-section-title">Your plan <span class="weight-optional">Edit targets</span></summary>
+<div class="card"><h2>Log weight</h2><p id="weeklyDue" class="muted"></p><form id="weeklyWeightForm" onsubmit="saveWeeklyWeight(event)"><div class="weekly-date"><div><label for="weeklyWeightDate">Weigh-in date</label><input id="weeklyWeightDate" type="date" required onchange="focusWeeklyField('weeklyWeight')"></div><button type="button" class="secondary small" onclick="useTodayForWeighIn()">Today</button></div><div class="weekly-entry-fields"><div><label for="weeklyWeight">Weight (lb)</label><input id="weeklyWeight" type="text" inputmode="decimal" enterkeyhint="next" required onkeydown="weeklyEntryNext(event,'weeklyBF')"><button type="button" class="entry-next" onclick="focusWeeklyField('weeklyBF')">Next: body fat % →</button></div><div><label for="weeklyBF">Body fat % <span class="weight-optional">Optional</span></label><input id="weeklyBF" type="text" inputmode="decimal" enterkeyhint="done" placeholder="Optional"></div></div><button type="submit" class="primary">Save weigh-in</button></form></div>
+<div class="card"><h2>Your weigh-ins</h2><div id="weeklyWeightLog"></div></div><details id="weightPlanDetails" class="card" open><summary class="weight-section-title">Your plan <span class="weight-optional">Optional targets</span></summary>
 <form id="weightPlanForm" onsubmit="saveWeightPlan(event)">
-<div class="weight-fields"><div><label for="weightStartDate">Start date</label><input id="weightStartDate" type="date" required></div><div><label for="weightStart">Starting weight (lb)</label><input id="weightStart" type="number" inputmode="decimal" min="0.1" step="0.1" required></div><div><label for="weightDirection">Direction</label><select id="weightDirection"><option value="loss">Lose weight</option><option value="gain">Gain weight</option></select></div><div><label for="weightRateUnit">Weekly goal based on</label><select id="weightRateUnit" onchange="changeWeightRateUnit()"><option value="percent">Percentage of body weight</option><option value="pounds">Pounds per week</option></select></div><div><label id="weightRateLabel" for="weightRate">Body weight per week (%)</label><input id="weightRate" type="number" inputmode="decimal" min="0.01" max="99.99" step="0.01" value="0.5" required><p id="weightRateHelp" class="muted weight-help">Percentage goals adjust with body weight each week.</p></div><div><label for="weightEndDate">End date</label><input id="weightEndDate" type="date" required></div></div><details class="weight-option-details"><summary>Body-fat targets (optional)</summary><div class="weight-fields"><div><label for="weightStartBF">Starting body fat %</label><input id="weightStartBF" type="number" inputmode="decimal" min="0.1" max="99.9" step="0.1"></div><div><label for="weightGoalBF">End-of-plan body fat %</label><input id="weightGoalBF" type="number" inputmode="decimal" min="0.1" max="99.9" step="0.1"></div></div></details>
+<div class="weight-fields"><div><label for="weightStartDate">Start date</label><input id="weightStartDate" type="date" required></div><div><label for="weightStart">Starting weight (lb)</label><input id="weightStart" type="number" inputmode="decimal" min="0.1" step="0.1" required></div><div><label for="weightDirection">Direction</label><select id="weightDirection"><option value="loss">Lose weight</option><option value="gain">Gain weight</option></select></div><div><label for="weightRateUnit">Weekly goal based on</label><select id="weightRateUnit" onchange="changeWeightRateUnit()"><option value="percent">Percentage of body weight</option><option value="pounds">Pounds per week</option></select></div><div><label id="weightRateLabel" for="weightRate">Body weight per week (%)</label><input id="weightRate" type="number" inputmode="decimal" min="0.01" max="99.99" step="0.01" value="0.5" required><p id="weightRateHelp" class="muted weight-help">Percentage goals adjust with body weight each week.</p></div><div><label for="weightEndDate">End date</label><input id="weightEndDate" type="date" required><button type="button" class="secondary small" style="margin-top:8px" onclick="useTwelveWeekPlan()">Use 12 weeks</button></div></div><details class="weight-option-details"><summary>Body-fat targets (optional)</summary><div class="weight-fields"><div><label for="weightStartBF">Starting body fat %</label><input id="weightStartBF" type="number" inputmode="decimal" min="0.1" max="99.9" step="0.1"></div><div><label for="weightGoalBF">End-of-plan body fat %</label><input id="weightGoalBF" type="number" inputmode="decimal" min="0.1" max="99.9" step="0.1"></div></div></details>
 <p class="muted weight-help">Percentage targets compound weekly; pounds targets change by a fixed amount each week. Actual progress can vary. Once you log weigh-ins, the start stays fixed. Choose your end date. The updated projection automatically follows your latest weigh-in; the initial plan stays visible.</p><button class="primary" type="submit">Save plan</button>
 </form></details>
 <div id="weightDashboard" hidden>
 <div class="card"><h2>Actual vs plan</h2><p id="weightYearGoal" class="weight-goal"></p><div class="weight-stats"><div><strong id="weightCurrent">—</strong><span>Current weight (lb)</span></div><div id="weightAheadStat" hidden><strong id="weightGap"></strong><span>Ahead of initial plan (lb)</span></div></div><p class="weight-total">Total change <strong id="weightChange">—</strong></p><p id="weightPlanSummary" class="muted weight-help"></p><div class="weight-zoom"><label for="weightChartPeriod">Chart view</label><select id="weightChartPeriod" onchange="changeWeightChartPeriod()"><option value="4">4 weeks</option><option value="12" selected>12 weeks</option><option value="26">26 weeks</option><option value="52">52 weeks</option><option value="all">Full plan</option></select><button id="weightChartPrevious" type="button" class="secondary small" onclick="moveWeightChart(-1)" aria-label="Earlier chart period">‹</button><button id="weightChartNext" type="button" class="secondary small" onclick="moveWeightChart(1)" aria-label="Later chart period">›</button></div><p id="weightChartRangeLabel" class="muted weight-help"></p><div id="bodyWeightChart" class="weight-chart"></div><p id="weightRevisionSummary" class="muted weight-help"></p></div>
-<div class="card"><h2>Weekly weigh-in</h2><p id="weeklyDue" class="muted"></p><form id="weeklyWeightForm" onsubmit="saveWeeklyWeight(event)"><div class="weekly-date"><div><label for="weeklyWeightDate">Weigh-in date</label><input id="weeklyWeightDate" type="date" required onchange="focusWeeklyField('weeklyWeight')"></div><button type="button" class="secondary small" onclick="useTodayForWeighIn()">Today</button></div><div class="weekly-entry-fields"><div><label for="weeklyWeight">Weight (lb)</label><input id="weeklyWeight" type="text" inputmode="decimal" enterkeyhint="next" required onkeydown="weeklyEntryNext(event,'weeklyBF')"><button type="button" class="entry-next" onclick="focusWeeklyField('weeklyBF')">Next: body fat % →</button></div><div><label for="weeklyBF">Body fat % <span class="weight-optional">Optional</span></label><input id="weeklyBF" type="text" inputmode="decimal" enterkeyhint="done" placeholder="Optional"></div></div><button type="submit" class="primary">Save weigh-in</button></form></div>
 <details class="card"><summary class="weight-section-title">Body composition <span class="weight-optional">Optional</span></summary><p class="muted weight-help">Estimates use the body-fat percentages you enter. Non-fat weight includes muscle, water, bone and organs.</p><div class="weight-stats"><div><strong id="fatChange">—</strong><span>Estimated fat change</span></div><div><strong id="nonFatChange">—</strong><span>Non-fat change</span></div></div><p id="compositionAsOf" class="muted weight-help"></p><div class="weight-zoom"><label for="compositionChartView">Show</label><select id="compositionChartView" onchange="renderWeightCharts()"><option value="both">Fat and non-fat</option><option value="fat">Estimated fat only</option><option value="nonFat">Non-fat weight only</option></select></div><div id="compositionWeightChart" class="weight-chart"></div></details>
-<div class="card"><h2>Your weigh-ins</h2><div id="weeklyWeightLog"></div></div>
+
 <details class="card"><summary class="weight-section-title">Full plan and weekly comparison</summary><p class="muted weight-help">Swipe the table sideways on smaller screens. Week 0 is your starting measurement.</p><div class="row between weight-pagination"><button id="weightPagePrevious" class="secondary small" type="button" onclick="changeWeightPlanPage(-1)">Previous</button><span id="weightPageLabel" class="muted weight-help"></span><button id="weightPageNext" class="secondary small" type="button" onclick="changeWeightPlanPage(1)">Next</button></div><div class="weight-table-wrap" tabindex="0" role="region" aria-label="Weekly planned and actual weights"><table class="weight-table"><thead><tr><th>Week</th><th>Planned date</th><th>Initial lb</th><th>Updated lb</th><th>Actual lb</th><th>Ahead of initial plan</th><th>Fat lb</th><th>Non-fat lb</th></tr></thead><tbody id="weightPlanRows"></tbody></table></div></details>
 </div></section>
 
@@ -1204,6 +1220,7 @@ class="chart"
 </section></main>
 
 
+<dialog id="finishReview" class="exercise-picker" aria-labelledby="finishReviewTitle"><h2 id="finishReviewTitle">Review unfinished sets</h2><p id="finishReviewMessage"></p><div class="picker-results"><button type="button" class="primary" onclick="reviewPendingSets()">Review sets</button><button id="finishCompletedOnly" type="button" class="secondary" onclick="document.getElementById('finishReview').close();saveWorkout(true)">Save completed sets only</button><button type="button" class="secondary" onclick="document.getElementById('finishReview').close()">Keep working out</button></div></dialog>
 <dialog id="exercisePicker" class="exercise-picker" aria-labelledby="exercisePickerTitle">
 <div class="row between"><h2 id="exercisePickerTitle">Choose exercise</h2><button type="button" class="secondary" onclick="document.getElementById('exercisePicker').close()" aria-label="Close exercise picker">Close</button></div>
 <label for="exerciseSearch">Search exercises</label><input id="exerciseSearch" type="search" placeholder="Search by exercise name" oninput="renderExercisePicker()" autocomplete="off">
@@ -1224,8 +1241,8 @@ class="chart"
 </dialog>
 
 <div class="rest-float collapsed" aria-label="Rest timer controls">
-<button type="button" class="timer-drag" aria-label="Move rest timer. Drag or use arrow keys; Home resets position." title="Drag to move timer"><svg viewBox="0 0 16 24" aria-hidden="true"><circle cx="5" cy="5" r="1.5"/><circle cx="11" cy="5" r="1.5"/><circle cx="5" cy="12" r="1.5"/><circle cx="11" cy="12" r="1.5"/><circle cx="5" cy="19" r="1.5"/><circle cx="11" cy="19" r="1.5"/></svg></button>
-<button type="button" id="timerExpand" class="timer-expand" onclick="maximizeRestTimer()" aria-label="Maximize rest countdown" aria-haspopup="dialog" aria-controls="restComic" title="Maximize rest countdown" disabled><strong id="timerDisplay" role="timer" aria-live="off">Rest timer ready</strong><span aria-hidden="true"> ↗</span></button>
+<button hidden type="button" class="timer-drag" aria-label="Move rest timer. Drag or use arrow keys; Home resets position." title="Drag to move timer"><svg viewBox="0 0 16 24" aria-hidden="true"><circle cx="5" cy="5" r="1.5"/><circle cx="11" cy="5" r="1.5"/><circle cx="5" cy="12" r="1.5"/><circle cx="11" cy="12" r="1.5"/><circle cx="5" cy="19" r="1.5"/><circle cx="11" cy="19" r="1.5"/></svg></button>
+<button type="button" id="timerExpand" class="timer-expand" onclick="timerEnd?maximizeRestTimer():startTimer(Number(db.settings.restSeconds),true)" aria-label="Open rest timer" aria-haspopup="dialog" aria-controls="restComic" title="Open rest timer"><strong id="timerDisplay" role="timer" aria-live="off">Rest</strong><span aria-hidden="true"> ↗</span></button>
 <select id="restQuickSelect" aria-label="Rest duration" onchange="setRestFromTimer(this.value)"><option value="30">0:30</option><option value="45">0:45</option><option value="60">1:00</option><option value="90">1:30</option><option value="120">2:00</option><option value="180">3:00</option><option value="240">4:00</option><option value="300">5:00</option></select>
 <button class="secondary small timer-action" onclick="startTimer(Number(db.settings.restSeconds))">Start</button>
 <button class="secondary small timer-action" onclick="stopTimer()">Stop</button>
@@ -1236,7 +1253,7 @@ class="chart"
 </div>
 
 <script src="shark.js?v=3"></script>
-<script src="weight.js?v=10"></script>
+<script src="weight.js?v=11"></script>
 <script src="milestones.js?v=2"></script>
 <script>
 
@@ -1768,7 +1785,7 @@ return db.draftWorkout.exercises[ex];
 
 
 let workoutEditing=false;
-function toggleWorkoutEditor(){workoutEditing=!workoutEditing;renderWorkout();}
+function toggleWorkoutEditor(){workoutEditing=!workoutEditing;document.body.classList.toggle("editing-workout",workoutEditing);renderWorkout();}
 const expandedCards=new Set();
 function addDraftSet(ex){
  const draft=getDraftExercise(ex);
@@ -2338,18 +2355,27 @@ function changeWorkoutMode(mode){
 function initializeAppInsets(){
  const root=document.documentElement,header=document.querySelector('header'),nav=document.querySelector('nav');
  if(window.matchMedia('(display-mode: standalone)').matches||navigator.standalone)root.style.setProperty('--status-bar-fallback','48px');
- function measure(){const h=header.getBoundingClientRect().height,n=nav.getBoundingClientRect().height;if(h>0){root.style.setProperty('--app-header-height',`${h}px`);root.style.setProperty('--app-scroll-offset',`${h+18}px`);}}
+ function measure(){const h=header.getBoundingClientRect().height,n=nav.getBoundingClientRect().height;if(h>0){root.style.setProperty('--app-header-height',`${h}px`);root.style.setProperty('--nav-height',`${n||56}px`);root.style.setProperty('--app-scroll-offset',`${h+18}px`);}}
  const observer=new ResizeObserver(measure);observer.observe(header);observer.observe(nav);window.addEventListener('resize',measure);measure();
 }
 
 function showIntro(){showWelcome();}
 
+function continueWorkout(){
+ workoutEditing=false;enterWorkout(db.workoutMode);
+ const next=activeExercises().find(ex=>{const sets=getDraftExercise(ex).sets;return sets.some(set=>!set.confirmed);});
+ const card=Array.from(document.querySelectorAll('#workout>details')).find(card=>card.dataset.currentExercise===next);
+ if(card){card.open=true;requestAnimationFrame(()=>card.scrollIntoView({block:'start'}));}
+}
 function showWelcome(){
+ const resume=document.getElementById('continueWorkoutButton');resume.hidden=!draftHasChanges();
+ if(!resume.hidden){const exercises=activeExercises(),completed=exercises.reduce((n,ex)=>n+(db.draftWorkout?.exercises?.[ex]?.sets||[]).filter(set=>set.confirmed).length,0),next=exercises.find(ex=>(db.draftWorkout?.exercises?.[ex]?.sets||[]).some(set=>!set.confirmed));document.getElementById('continueWorkoutSummary').textContent=`${completed} sets completed${next?' · Next: '+next:''}`;}
+
  startSharkAnimation();
  document.getElementById("welcome").hidden=false;
  document.body.classList.add("welcome-open");
  document.documentElement.classList.add("opening-screen");
- window.scrollTo(0,0);
+ window.scrollTo(0,0);document.querySelector("main").scrollTop=0;
 }
 
 function enterWorkout(mode){
@@ -2359,7 +2385,7 @@ function enterWorkout(mode){
  document.body.classList.remove("welcome-open");
  document.documentElement.classList.remove("opening-screen");
  showScreen("train",document.querySelector("nav button"));
- window.scrollTo(0,0);
+ window.scrollTo(0,0);document.querySelector("main").scrollTop=0;
 }
 
 function enterWeightTracker(){
@@ -2368,7 +2394,7 @@ function enterWeightTracker(){
  document.body.classList.remove("welcome-open");
  document.documentElement.classList.remove("opening-screen");
  showProgress("weight");
- window.scrollTo(0,0);
+ window.scrollTo(0,0);document.querySelector("main").scrollTop=0;
 }
 
 function toggleSplitGroup(group){
@@ -2439,7 +2465,7 @@ function chooseForGroup(group,ex,slot=0){
 function renderWorkout(){
 
 refreshMenu();
-renderWorkoutTemplates();
+renderWorkoutTemplates();document.body.classList.toggle("editing-workout",workoutEditing);
 
 document.getElementById("modeLabel").textContent=db.workoutMode==="split"?"Body Part Split":"Full Body";
 const picker=document.getElementById("splitPicker");
@@ -2483,7 +2509,7 @@ const card=
 document.createElement("details");
 card.className="workout-part";
 const cardKey=`${db.workoutMode}:${group}:${slot}`;
-card.open=expandedCards.has(cardKey)||(!current&&workoutEditing);
+card.open=workoutEditing||expandedCards.has(cardKey);
 card.dataset.currentExercise=current;
 card.dataset.workoutOrder=workoutOrder;
 card.addEventListener("toggle",()=>{
@@ -2645,7 +2671,7 @@ data-confirm-set="${j}"
 aria-label="${s.confirmed?"Set completed":"Complete set"} ${j+1} for ${escapeHTML(current)}"
 aria-pressed="${s.confirmed}"
 >
-<img src="${db.settings.sharkStyle==='female'?'female-shark.webp?v=1':'rep-harbor-192.png?v=12'}" alt="" width="34" height="34">
+<img src="${db.settings.sharkStyle==='female'?'female-shark.webp?v=1':'rep-harbor-192.png?v=12'}" alt="" width="34" height="34"><span class="complete-cue">✓</span>
 </button>
 
 </div>
@@ -2702,6 +2728,7 @@ ${logger}
 card.querySelectorAll('select[data-group]').forEach(select=>{
  const button=document.createElement('button');button.type='button';button.className='secondary exercise-choice-button';button.textContent=current?`Change: ${current} ›`:'Choose exercise ›';button.setAttribute('aria-label',`Choose ${groupLabel(group)} exercise ${slot+1}`);button.setAttribute('aria-haspopup','dialog');button.onclick=()=>openExercisePicker(group,slot);select.replaceWith(button);
 });
+if(workoutEditing){const summary=card.querySelector('.exercise-summary');summary.setAttribute('aria-label',`Change ${groupLabel(group)} exercise ${slot+1}`);summary.onclick=event=>{event.preventDefault();openExercisePicker(group,slot);};}
 el.appendChild(card);
 
 if(workoutEditing&&db.workoutMode==="split"&&current&&slot===(db.splitSelected[group]?.length||1)-1){
@@ -2946,7 +2973,12 @@ toast(
 }
 
 
-function saveWorkout(){
+function pendingWorkoutSets(){return activeExercises().flatMap(ex=>(db.draftWorkout?.exercises?.[ex]?.sets||[]).map((set,index)=>({ex,index,set}))).filter(({set})=>!set.confirmed&&(set.touched||(!set.prefilled&&set.reps!==""))&&(set.weight!==""||set.reps!==""));}
+function reviewPendingSets(){document.getElementById('finishReview').close();if(workoutEditing)toggleWorkoutEditor();const first=pendingWorkoutSets()[0];if(!first)return;const card=Array.from(document.querySelectorAll('#workout>details')).find(card=>card.dataset.currentExercise===first.ex);if(card){card.open=true;requestAnimationFrame(()=>{const row=document.getElementById(`set-${safeId(first.ex)}-${first.index}`);row?.scrollIntoView({block:'center'});row?.querySelector('[data-field="reps"]')?.focus();});}}
+function saveWorkout(acknowledged=false){
+ const pending=pendingWorkoutSets();
+ if(pending.length&&!acknowledged){document.getElementById('finishReviewMessage').textContent=`${pending.length} set${pending.length===1?' has':'s have'} numbers but ${pending.length===1?"isn't":"aren't"} completed. Review them before finishing, or save only the completed sets.`;document.getElementById('finishCompletedOnly').disabled=!activeExercises().some(ex=>(db.draftWorkout?.exercises?.[ex]?.sets||[]).some(set=>set.confirmed));document.getElementById('finishReview').showModal();return;}
+
 
 if(
 !db.draftWorkout
@@ -3149,10 +3181,7 @@ sessions.forEach(({session,index})=>{
  <div class="row between"><span class="muted">${escapeHTML(parts||(session.mode==="split"?"Selected muscles":"Whole body"))}</span><button type="button" class="secondary small" data-edit-session="${index}">Edit workout</button></div>
  ${exercises.map(ex=>`<div class="history-exercise"><strong>${escapeHTML(ex.name)}</strong><div class="history-sets">${(ex.sets||[]).map((set,i)=>`<span class="history-set"><span>Set ${i+1}</span><b>${escapeHTML(set.weight)} lb × ${escapeHTML(set.reps)}</b></span>`).join("")}</div></div>`).join("")}
  </div>`;
- card.querySelectorAll('select[data-group]').forEach(select=>{
- const button=document.createElement('button');button.type='button';button.className='secondary exercise-choice-button';button.textContent=current?`Change: ${current} ›`:'Choose exercise ›';button.setAttribute('aria-label',`Choose ${groupLabel(group)} exercise ${slot+1}`);button.setAttribute('aria-haspopup','dialog');button.onclick=()=>openExercisePicker(group,slot);select.replaceWith(button);
-});
-el.appendChild(card);
+ el.appendChild(card);
 });
 el.querySelectorAll("[data-edit-session]").forEach(button=>button.addEventListener("click",()=>editSession(Number(button.dataset.editSession))));
 }
@@ -3289,7 +3318,7 @@ const primary=["charts","weight","milestones"].includes(id)?"progress":id;
 const navButton=document.querySelector(`nav button[data-screen="${primary}"]`);
 navButton?.classList.add("active");
 document.querySelectorAll("nav button").forEach(button=>button.setAttribute("aria-current",button===navButton?"page":"false"));
-window.scrollTo(0,0);
+window.scrollTo(0,0);document.querySelector("main").scrollTop=0;
 
 
 if(
@@ -3339,56 +3368,9 @@ function timerBounds(panel){
 }
 function clampTimerPoint(bounds,x,y){return {x:Math.max(bounds.left,Math.min(bounds.right,x)),y:Math.max(bounds.top,Math.min(bounds.bottom,y))};}
 function initMovableRestTimer(){
- const panel=document.querySelector(".rest-float"),handle=panel.querySelector(".timer-drag");
- let drag=null,lastFocused=null;
- function place(x,y){panel.style.left=`${x}px`;panel.style.top=`${y}px`;panel.style.bottom="auto";panel.style.transform="none";}
- function reposition(){
-  if(drag||!panel.offsetWidth)return;
-  const keyboardOpen=!!window.visualViewport&&window.innerHeight-window.visualViewport.height>120;
-  panel.classList.toggle("keyboard-open",keyboardOpen);
-  const bounds=timerBounds(panel),position=db.timerPosition||{x:.5,y:1};
-  place(bounds.left+(bounds.right-bounds.left)*Math.max(0,Math.min(1,Number(position.x)||0)),bounds.top+(bounds.bottom-bounds.top)*Math.max(0,Math.min(1,Number(position.y)||0)));
-  const focused=document.activeElement;
-  if(!keyboardOpen)lastFocused=null;
-  else if(focused&&focused!==lastFocused&&!panel.contains(focused)&&focused.matches("input,select,textarea")){
-   const field=focused.getBoundingClientRect(),timerRect=panel.getBoundingClientRect();
-   if(field.bottom>timerRect.top&&field.top<timerRect.bottom&&field.right>timerRect.left&&field.left<timerRect.right){lastFocused=focused;focused.scrollIntoView({block:"center",behavior:"smooth"});}
-  }
- }
- function remember(){
-  const bounds=timerBounds(panel),rect=panel.getBoundingClientRect();
-  db.timerPosition={x:bounds.right===bounds.left ? .5 :Math.max(0,Math.min(1,(rect.left-bounds.left)/(bounds.right-bounds.left))),y:bounds.bottom===bounds.top?1:Math.max(0,Math.min(1,(rect.top-bounds.top)/(bounds.bottom-bounds.top)))};
-  saveDB();
- }
- handle.addEventListener("pointerdown",event=>{
-  if(event.button!==0)return;
-  const rect=panel.getBoundingClientRect();drag={id:event.pointerId,x:event.clientX,y:event.clientY,left:rect.left,top:rect.top};
-  handle.setPointerCapture(event.pointerId);panel.classList.add("dragging");event.preventDefault();
- });
- handle.addEventListener("pointermove",event=>{
-  if(!drag||event.pointerId!==drag.id)return;
-  const point=clampTimerPoint(timerBounds(panel),drag.left+event.clientX-drag.x,drag.top+event.clientY-drag.y);place(point.x,point.y);
- });
- function end(event){
-  if(!drag||event.pointerId!==drag.id)return;
-  const canceled=event.type==="pointercancel";drag=null;panel.classList.remove("dragging");
-  if(!canceled)remember();reposition();
- }
- handle.addEventListener("pointerup",end);handle.addEventListener("pointercancel",end);
- handle.addEventListener("keydown",event=>{
-  const moves={ArrowLeft:[-20,0],ArrowRight:[20,0],ArrowUp:[0,-20],ArrowDown:[0,20]};
-  if(event.key==="Home"){event.preventDefault();db.timerPosition={x:.5,y:1};saveDB();reposition();return;}
-  if(!moves[event.key])return;event.preventDefault();const rect=panel.getBoundingClientRect(),move=moves[event.key];
-  const point=clampTimerPoint(timerBounds(panel),rect.left+move[0],rect.top+move[1]);place(point.x,point.y);remember();
- });
- window.addEventListener("resize",reposition);
- window.visualViewport?.addEventListener("resize",reposition);window.visualViewport?.addEventListener("scroll",reposition);
- document.addEventListener("focusin",()=>requestAnimationFrame(reposition));
- document.addEventListener("focusout",()=>{lastFocused=null;requestAnimationFrame(reposition);});
- new ResizeObserver(reposition).observe(panel);
- reposition();
+ const dock=document.querySelector('.rest-float');function measure(){document.documentElement.style.setProperty('--dock-height',`${dock.getBoundingClientRect().height||50}px`);}
+ new ResizeObserver(measure).observe(dock);window.addEventListener('resize',measure);measure();
 }
-
 function toggleRestTimer(){
 const panel=document.querySelector(".rest-float"),button=document.getElementById("timerToggle");
 const collapsed=panel.classList.toggle("collapsed");
@@ -3406,7 +3388,7 @@ function maximizeRestTimer(){
  if(!comic.open)comic.showModal();
 }
 function stopTimer(){clearInterval(timer);timer=null;timerEnd=0;document.getElementById("restComic").close();updateTimerDisplay();}
-function updateTimerDisplay(){document.querySelector(".rest-float").classList.toggle("timer-running",!!timerEnd);const left=Math.max(0,Math.ceil((timerEnd-Date.now())/1000));const el=document.getElementById("timerDisplay");document.getElementById("timerExpand").disabled=!timerEnd;document.getElementById("restComicTime").textContent=Math.floor(left/60)+":"+String(left%60).padStart(2,"0");if(el)el.textContent=timerEnd?"Rest: "+Math.floor(left/60)+":"+String(left%60).padStart(2,"0"):"Rest timer ready";}
+function updateTimerDisplay(){document.querySelector(".rest-float").classList.toggle("timer-running",!!timerEnd);const left=Math.max(0,Math.ceil((timerEnd-Date.now())/1000));const el=document.getElementById("timerDisplay");document.getElementById("timerExpand").disabled=false;document.getElementById("timerExpand").setAttribute("aria-label",timerEnd?"Maximize rest countdown":"Start rest timer");document.getElementById("restComicTime").textContent=Math.floor(left/60)+":"+String(left%60).padStart(2,"0");if(el)el.textContent=timerEnd?"Rest: "+Math.floor(left/60)+":"+String(left%60).padStart(2,"0"):"Rest";}
 function timerFinished(){stopTimer();document.getElementById("timerDisplay").textContent="Rest complete";toast("Rest complete");const mode=db.settings.timerAlert;if((mode==="both"||mode==="vibrate")&&navigator.vibrate)navigator.vibrate([200,100,200]);if((mode==="both"||mode==="sound")&&audioContext){try{audioContext.resume();const osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.frequency.value=880;gain.gain.value=0.12;osc.connect(gain);gain.connect(audioContext.destination);osc.start();osc.stop(audioContext.currentTime+0.3);}catch(e){}}}
 
 let remaining=0;
@@ -3415,7 +3397,7 @@ let remaining=0;
 function startTimer(sec,expand=false){
 if(!Number.isFinite(sec)||sec<10){toast("Set a rest time in Settings");return;}
 try{audioContext??=new (window.AudioContext||window.webkitAudioContext)();audioContext.resume();}catch(e){}
-clearInterval(timer);timerEnd=Date.now()+sec*1000;updateTimerDisplay();toast("Rest timer started");
+document.querySelector(".rest-comic-caption").textContent=expand?"Catch your breath.":"Rest timer running.";clearInterval(timer);timerEnd=Date.now()+sec*1000;updateTimerDisplay();toast("Rest timer started");
 if(expand)maximizeRestTimer();
 timer=setInterval(()=>{if(Date.now()>=timerEnd)timerFinished();else updateTimerDisplay();},500);
 }
