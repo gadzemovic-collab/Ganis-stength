@@ -910,6 +910,29 @@ max-width:90%;
 @media(max-height:500px){.rest-comic-panel{min-height:0;padding:18px;gap:10px;}.rest-comic-title{font-size:42px;}.rest-comic-time{font-size:70px;}}
 @media(prefers-reduced-motion:no-preference){.rest-comic[open] .rest-comic-panel{animation:comic-pop .25s ease-out;}@keyframes comic-pop{from{transform:scale(.85) rotate(-3deg);opacity:0;}to{transform:scale(1);opacity:1;}}}
 
+
+/* Simplified workout and navigation layout */
+nav{position:fixed;top:auto;bottom:0;left:0;right:0;z-index:10;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -2px 14px #17324d10;}
+nav button{min-height:56px;font-size:14px;}
+nav button.active{border-bottom:0;border-top:3px solid var(--blue);background:var(--blue-lighter);}
+header{padding-top:calc(10px + max(env(safe-area-inset-top,0px),var(--status-bar-fallback,0px)));padding-bottom:10px;}
+.brand img{width:40px;height:40px;}h1{font-size:22px;}.sub{font-size:11px;}
+main{padding-bottom:calc(170px + env(safe-area-inset-bottom));}
+.workout-header .draft-status{color:var(--muted);font-size:12px;margin:10px 0;}
+.workout-toolbar{flex-wrap:wrap;}.workout-toolbar button{min-height:44px;}
+.workout-help{position:relative;margin-left:auto;}.workout-help summary{width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--blue-border);border-radius:50%;cursor:pointer;font-weight:700;color:var(--blue-dark);}
+.workout-help[open]{flex-basis:100%;}.workout-help p{font-size:12px;line-height:1.5;}
+.template-panel>summary{font-size:15px;}.template-panel .row{flex-wrap:wrap;}
+.progress-tabs{display:flex;gap:8px;margin-bottom:16px;}.progress-tabs button{flex:1;min-height:44px;}.progress-tabs .selected{background:var(--blue);color:#fff;}
+.settings-content{padding-top:14px;}.switch-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:18px;font-size:14px;}.switch-row input{width:44px;height:24px;accent-color:var(--blue);}
+.section-divider{border:0;border-top:1px solid var(--blue-border);margin:22px 0;}
+.exercise-tools{margin-top:8px;align-items:flex-start;}.exercise-menu{min-width:44px;max-width:100%;}.exercise-menu summary{min-height:44px;cursor:pointer;color:var(--blue-dark);font-weight:700;}.exercise-menu>summary{list-style:none;display:grid;place-items:center;border:1px solid var(--blue-border);border-radius:10px;}
+.exercise-menu[open]{flex:1;margin-left:10px;}.exercise-menu-content{padding:12px 0;display:grid;gap:12px;}.exercise-menu-content select{margin-top:0;}.exercise-menu-content>details>summary{font-size:12px;}
+.rest-float{bottom:calc(68px + env(safe-area-inset-bottom));}.rest-float.collapsed{border-radius:30px;gap:4px;padding:5px;}.rest-float.collapsed .timer-drag{border-radius:20px;}.rest-float.collapsed #timerExpand,.rest-float.collapsed #timerToggle{border-radius:20px;}
+body:not(:has(#train.active))>.rest-float:not(.timer-running){display:none;}
+body:has(#weight.active)>.rest-float.timer-running{display:none;}
+@media(max-width:480px){nav button{font-size:13px;padding:12px 3px;}.workout-toolbar button{font-size:12px;}.exercise-summary strong{font-size:16px;}}
+
 </style>
 </head>
 
@@ -944,34 +967,11 @@ max-width:90%;
 
 </header>
 
-<nav>
-
-<button
-class="active"
-onclick="showScreen('train',this)"
->
-Train
-</button>
-
-<button
-onclick="showScreen('history',this)"
->
-History
-</button>
-
-<button
-onclick="showScreen('charts',this)"
->
-Charts
-</button>
-
-<button onclick="showScreen('weight',this)">Weight</button>
-<button onclick="showScreen('milestones',this)">Goals</button>
-<button
-onclick="showScreen('settings',this)"
->
-Settings
-</button>
+<nav aria-label="Main navigation">
+<button class="active" data-screen="train" onclick="showScreen('train',this)">Train</button>
+<button data-screen="history" onclick="showScreen('history',this)">History</button>
+<button data-screen="progress" onclick="showProgress(progressScreen)">Progress</button>
+<button data-screen="settings" onclick="showScreen('settings',this)">Settings</button>
 </nav>
 
 <main>
@@ -981,62 +981,14 @@ id="train"
 class="screen active"
 >
 
-<div class="card">
-
-<div class="row between">
-
-<div>
-
-<h2 style="margin:0">
-Today's Workout
-</h2>
-
-<div class="muted">
-Your workout is automatically saved while you enter it.
+<div class="card workout-header">
+<div class="row between"><div><h2 style="margin:0">Today's Workout</h2><div id="modeLabel" class="muted">Full Body</div></div><button class="secondary small" onclick="newWorkout()">New workout</button></div>
+<div id="draftBanner" class="draft-status" aria-live="polite">Draft saved automatically</div>
+<div class="row workout-toolbar"><button id="editWorkoutButton" type="button" class="secondary" onclick="toggleWorkoutEditor()">Add / edit exercises</button><button class="secondary small" onclick="showWelcome()">Workout style</button><details class="workout-help"><summary aria-label="Workout status help">?</summary><p>Draft saved automatically as you type. Complete each set, then finish the workout to add it to History.</p><p>Previous numbers are marked red, today's edits blue, and completed sets green.</p></details></div>
+<div id="splitPicker" hidden><p class="muted">Choose body parts for today. Up to 8 exercises total.</p><div id="splitGroups" class="split-groups"></div></div>
+<p id="fullBodyDateHint" class="muted" hidden>Choose exercises by body part. Dates show the last logged workout.</p>
 </div>
-
-</div>
-
-<button
-class="secondary small"
-onclick="newWorkout()"
->
-New
-</button>
-
-</div>
-
-<div class="workout-mode">
-<div class="row between"><strong id="modeLabel">Full Body</strong><button class="secondary small" type="button" onclick="showWelcome()">Change workout style</button></div>
-<p id="fullBodyDateHint" class="muted">Exercise dates show the last saved workout. New means you haven't logged it yet.</p>
-<div id="splitPicker" hidden>
-<p class="muted">Choose the body parts for today. Add up to 8 exercises across them.</p>
-<div id="splitGroups" class="split-groups"></div>
-</div>
-</div>
-
-<div
-id="draftBanner"
-class="draft-banner"
->
-Workout autosave is on.
-</div>
-
-<div class="note">
-
-<strong>Red</strong> = last workout's numbers<br>
-<strong>Blue</strong> = updated for today<br>
-<strong>Green</strong> = completed and ready to save
-
-</div>
-
-</div>
-
-<div class="card template-panel">
-<div class="row between"><h2 style="margin:0">Saved workouts</h2><button type="button" class="secondary small" onclick="saveWorkoutTemplate()">Save current</button></div>
-<p class="muted">Save your exercise choices and set counts for next time.</p>
-<div id="templateList"></div>
-</div>
+<details class="card template-panel"><summary class="weight-section-title">Saved workouts</summary><div class="row between"><p class="muted">Reuse your exercise choices and set counts.</p><button type="button" class="secondary small" onclick="saveWorkoutTemplate()">Save as template</button></div><div id="templateList"></div></details>
 <div id="workout">
 </div>
 
@@ -1049,7 +1001,7 @@ class="primary"
 style="flex:1"
 onclick="saveWorkout()"
 >
-Finish & Save Workout
+Finish workout
 </button>
 
 </div>
@@ -1125,27 +1077,25 @@ Sets completed
 
 
 <section id="settings" class="screen">
-<div class="card"><h2>Settings</h2>
+<div class="weight-heading"><h2>Settings</h2></div><details class="card" open><summary class="weight-section-title">Workout &amp; timer</summary><div class="settings-content">
 <label for="restSeconds">Rest timer</label><select id="restSeconds" onchange="updateSettings()"><option value="30">30 seconds</option><option value="45">45 seconds</option><option value="60">1 minute</option><option value="90">1 minute 30 seconds</option><option value="120">2 minutes</option><option value="180">3 minutes</option><option value="240">4 minutes</option><option value="300">5 minutes</option></select>
 <label for="weightStep" style="margin-top:15px">Quick weight adjustment (lb)</label><select id="weightStep" onchange="updateSettings()"><option value="2.5">2.5 lb</option><option value="5">5 lb</option><option value="10">10 lb</option></select>
-<label for="autoRest" style="margin-top:15px">Rest after completing a set</label><select id="autoRest" onchange="updateSettings()"><option value="on">Start automatically</option><option value="off">Start manually</option></select>
+<label class="switch-row" for="autoRest"><span>Start rest automatically after a set</span><input type="checkbox" role="switch" id="autoRest" onchange="updateSettings()"></label>
 <label for="timerAlert" style="margin-top:15px">Timer alert</label><select id="timerAlert" onchange="updateSettings()"><option value="both">Sound and vibration</option><option value="sound">Sound</option><option value="vibrate">Vibration</option><option value="none">Visual only</option></select>
 <div class="muted" style="margin-top:10px">Sound and vibration depend on your phone and browser settings. Keep the app open for reliable alerts.</div>
-<label for="sharkStyle" style="margin-top:15px">Shark style</label><select id="sharkStyle" onchange="changeSharkStyle(this.value)"><option value="original">Original shark</option><option value="female">Female shark · pink</option></select><p class="muted">The pink shark starts with the fuchsia theme. You can customize the colors below.</p>
-<label for="theme" style="margin-top:15px">Color theme</label><select id="theme" onchange="updateSettings()"><option value="blue">Blue</option><option value="green">Green</option><option value="purple">Purple</option><option value="dark">Dark</option></select>
-<div id="themeChoices" class="theme-choices" role="group" aria-label="Choose a color theme"></div>
-<label for="font" style="margin-top:15px">Font</label><select id="font" onchange="updateSettings()"><option value="system">System</option><option value="arial">Arial</option><option value="georgia">Georgia</option><option value="verdana">Verdana</option></select></div>
-<div class="card"><h2>Workout data</h2><button class="danger" onclick="clearWorkoutData()">Delete all workout data</button><p class="muted">Keeps your exercise choices and Settings.</p></div>
-<div class="card"><h2>Backup</h2><p class="muted">Save a copy before removing the app from your Home Screen or changing phones.</p>
+</div></details><details class="card"><summary class="weight-section-title">Appearance</summary><div class="settings-content"><label for="sharkStyle" style="margin-top:15px">Shark style</label><select id="sharkStyle" onchange="changeSharkStyle(this.value)"><option value="original">Original shark</option><option value="female">Female shark · pink</option></select><p class="muted">The pink shark starts with the fuchsia theme. You can customize the colors below.</p>
+<label>Color theme</label><select id="theme" hidden aria-hidden="true" tabindex="-1"></select><div id="themeChoices" class="theme-choices" role="group" aria-label="Choose a color theme"></div>
+<label for="font" style="margin-top:15px">Font</label><select id="font" onchange="updateSettings()"><option value="system">System</option><option value="arial">Arial</option><option value="georgia">Georgia</option><option value="verdana">Verdana</option></select></div></details>
+<details class="card"><summary class="weight-section-title">Backup &amp; data</summary><div class="settings-content"><p class="muted">Save a copy before removing the app from your Home Screen or changing phones.</p>
 <div class="row"><button class="secondary" onclick="exportData()">Download backup</button><button class="secondary" onclick="document.getElementById('backupFile').click()">Restore backup</button></div>
 <input id="backupFile" type="file" accept="application/json,.json" style="display:none" onchange="importData(this)">
-</div>
+<hr class="section-divider"><details><summary class="muted">Delete workout data</summary><p class="muted">Keeps your exercise choices and settings.</p><button class="danger" onclick="clearWorkoutData()">Delete all workout data</button></details></div></details>
 </section>
 
 <section
 id="charts"
 class="screen"
->
+><div class="progress-tabs" role="group" aria-label="Progress section"><button type="button" class="secondary selected" onclick="showProgress('charts')" aria-pressed="true">Strength</button><button type="button" class="secondary" onclick="showProgress('weight')" aria-pressed="false">Weight</button><button type="button" class="secondary" onclick="showProgress('milestones')" aria-pressed="false">Goals</button></div>
 
 <div class="card">
 
@@ -1176,7 +1126,7 @@ onchange="renderCharts()"
 <div class="card">
 
 <h2>
-Weight Progress
+Weight lifted
 </h2>
 
 <div
@@ -1225,7 +1175,7 @@ class="chart"
 
 </section>
 
-<section id="weight" class="screen">
+<section id="weight" class="screen"><div class="progress-tabs" role="group" aria-label="Progress section"><button type="button" class="secondary" onclick="showProgress('charts')" aria-pressed="false">Strength</button><button type="button" class="secondary selected" onclick="showProgress('weight')" aria-pressed="true">Weight</button><button type="button" class="secondary" onclick="showProgress('milestones')" aria-pressed="false">Goals</button></div>
 <div class="weight-heading"><h2>Weight progress</h2><p class="muted">Your plan, weekly check-ins and progress in one place.</p></div>
 <details id="weightPlanDetails" class="card" open><summary class="weight-section-title">Your plan <span class="weight-optional">Edit targets</span></summary>
 <form id="weightPlanForm" onsubmit="saveWeightPlan(event)">
@@ -1240,7 +1190,7 @@ class="chart"
 <details class="card"><summary class="weight-section-title">Full plan and weekly comparison</summary><p class="muted weight-help">Swipe the table sideways on smaller screens. Week 0 is your starting measurement.</p><div class="row between weight-pagination"><button id="weightPagePrevious" class="secondary small" type="button" onclick="changeWeightPlanPage(-1)">Previous</button><span id="weightPageLabel" class="muted weight-help"></span><button id="weightPageNext" class="secondary small" type="button" onclick="changeWeightPlanPage(1)">Next</button></div><div class="weight-table-wrap" tabindex="0" role="region" aria-label="Weekly planned and actual weights"><table class="weight-table"><thead><tr><th>Week</th><th>Planned date</th><th>Initial lb</th><th>Updated lb</th><th>Actual lb</th><th>Ahead of initial plan</th><th>Fat lb</th><th>Non-fat lb</th></tr></thead><tbody id="weightPlanRows"></tbody></table></div></details>
 </div></section>
 
-<section id="milestones" class="screen">
+<section id="milestones" class="screen"><div class="progress-tabs" role="group" aria-label="Progress section"><button type="button" class="secondary" onclick="showProgress('charts')" aria-pressed="false">Strength</button><button type="button" class="secondary" onclick="showProgress('weight')" aria-pressed="false">Weight</button><button type="button" class="secondary selected" onclick="showProgress('milestones')" aria-pressed="true">Goals</button></div>
 <div class="weight-heading"><h2>Weight milestones</h2><p class="muted">One goal at a time. Reassess when you get there.</p></div>
 <div class="card"><h2>Progress</h2><p id="rhGoalSummary"></p></div>
 <div class="card"><h2>Your milestones</h2><div id="rhGoalList"></div></div>
@@ -1256,7 +1206,7 @@ class="chart"
   <svg class="rest-comic-burst" viewBox="0 0 400 400" preserveAspectRatio="none" aria-hidden="true"><path d="M200 8 L227 68 L278 24 L280 91 L349 62 L326 127 L392 139 L346 187 L397 232 L328 244 L351 316 L281 301 L268 379 L220 327 L184 395 L159 324 L95 365 L102 293 L28 314 L62 249 L5 220 L64 183 L16 131 L90 130 L69 58 L140 87 L152 14 L184 73 Z" fill="#ff7043" stroke="#111" stroke-width="5"/></svg>
   <h2 id="restComicTitle" class="rest-comic-title">REST!</h2>
   <div id="restComicTime" class="rest-comic-time" role="timer" aria-live="off">1:30</div>
-  <div class="rest-comic-caption">Set saved. Catch your breath.</div>
+  <div class="rest-comic-caption">Set completed. Catch your breath.</div>
   <div class="rest-comic-actions">
    <button type="button" onclick="document.getElementById('restComic').close()">Minimize</button>
    <button type="button" onclick="stopTimer()">End rest</button>
@@ -1264,13 +1214,13 @@ class="chart"
  </div>
 </dialog>
 
-<div class="rest-float" aria-label="Rest timer controls">
+<div class="rest-float collapsed" aria-label="Rest timer controls">
 <button type="button" class="timer-drag" aria-label="Move rest timer. Drag or use arrow keys; Home resets position." title="Drag to move timer"><svg viewBox="0 0 16 24" aria-hidden="true"><circle cx="5" cy="5" r="1.5"/><circle cx="11" cy="5" r="1.5"/><circle cx="5" cy="12" r="1.5"/><circle cx="11" cy="12" r="1.5"/><circle cx="5" cy="19" r="1.5"/><circle cx="11" cy="19" r="1.5"/></svg></button>
 <button type="button" id="timerExpand" class="timer-expand" onclick="maximizeRestTimer()" aria-label="Maximize rest countdown" aria-haspopup="dialog" aria-controls="restComic" title="Maximize rest countdown" disabled><strong id="timerDisplay" role="timer" aria-live="off">Rest timer ready</strong><span aria-hidden="true"> ↗</span></button>
 <select id="restQuickSelect" aria-label="Rest duration" onchange="setRestFromTimer(this.value)"><option value="30">0:30</option><option value="45">0:45</option><option value="60">1:00</option><option value="90">1:30</option><option value="120">2:00</option><option value="180">3:00</option><option value="240">4:00</option><option value="300">5:00</option></select>
 <button class="secondary small timer-action" onclick="startTimer(Number(db.settings.restSeconds))">Start</button>
 <button class="secondary small timer-action" onclick="stopTimer()">Stop</button>
-<button id="timerToggle" class="secondary small" onclick="toggleRestTimer()" aria-expanded="true" aria-label="Hide rest timer controls">Hide</button>
+<button id="timerToggle" class="secondary small" onclick="toggleRestTimer()" aria-expanded="false" aria-label="Show rest timer controls">Controls</button>
 </div>
 
 <div id="toast">
@@ -1586,7 +1536,7 @@ themeChoices.querySelectorAll("[data-theme]").forEach(button=>button.onclick=()=
 ["--blue","--blue-dark","--blue-light","--blue-lighter","--blue-border","--navy"].forEach((key,i)=>document.documentElement.style.setProperty(key,colors[i]));
 document.body.style.fontFamily=FONTS[cfg.font]||FONTS.system;
 document.querySelector("header").style.background=colors[5];
-for(const [id,value] of Object.entries({restSeconds:cfg.restSeconds,restQuickSelect:cfg.restSeconds,timerAlert:cfg.timerAlert,autoRest:cfg.autoRest?"on":"off",weightStep:cfg.weightStep,theme:cfg.theme,font:cfg.font,sharkStyle:cfg.sharkStyle||"original"})){const el=document.getElementById(id);if(el){if((id==="restSeconds"||id==="restQuickSelect")&&!Array.from(el.options).some(option=>option.value===String(value))){const option=new Option(Math.floor(value/60)+":"+String(value%60).padStart(2,"0"),value);el.add(option);}el.value=value;}}
+for(const [id,value] of Object.entries({restSeconds:cfg.restSeconds,restQuickSelect:cfg.restSeconds,timerAlert:cfg.timerAlert,autoRest:cfg.autoRest,weightStep:cfg.weightStep,theme:cfg.theme,font:cfg.font,sharkStyle:cfg.sharkStyle||"original"})){const el=document.getElementById(id);if(el){if((id==="restSeconds"||id==="restQuickSelect")&&!Array.from(el.options).some(option=>option.value===String(value))){const option=new Option(Math.floor(value/60)+":"+String(value%60).padStart(2,"0"),value);el.add(option);}if(id==="autoRest")el.checked=!!value;else el.value=value;}}
 }
 function changeSharkStyle(style){
  if(!['original','female'].includes(style))return;
@@ -1598,7 +1548,7 @@ function setRestFromTimer(value){document.getElementById("restSeconds").value=va
 function updateSettings(){
 const seconds=Number(document.getElementById("restSeconds").value);
 if(!Number.isInteger(seconds)||seconds<10||seconds>3600){toast("Choose 10 to 3600 seconds");applySettings();return;}
-db.settings={...db.settings,restSeconds:seconds,weightStep:Number(document.getElementById("weightStep").value),autoRest:document.getElementById("autoRest").value==="on",timerAlert:document.getElementById("timerAlert").value,theme:document.getElementById("theme").value,font:document.getElementById("font").value};saveDB();applySettings();
+db.settings={...db.settings,restSeconds:seconds,weightStep:Number(document.getElementById("weightStep").value),autoRest:document.getElementById("autoRest").checked,timerAlert:document.getElementById("timerAlert").value,theme:document.getElementById("theme").value,font:document.getElementById("font").value};saveDB();applySettings();
 }
 function refreshMenu(){
 
@@ -1808,6 +1758,8 @@ return db.draftWorkout.exercises[ex];
 }
 
 
+let workoutEditing=false;
+function toggleWorkoutEditor(){workoutEditing=!workoutEditing;renderWorkout();}
 const expandedCards=new Set();
 function addDraftSet(ex){
  const draft=getDraftExercise(ex);
@@ -2022,7 +1974,7 @@ function organizeWorkoutProgress(){
  const nodes=Array.from(workout.children).filter(node=>node.dataset.workoutOrder!==undefined);
  nodes.forEach(node=>{
   const exercise=node.dataset.currentExercise||node.dataset.workoutExercise,sets=db.draftWorkout?.exercises?.[exercise]?.sets||[],count=sets.filter(set=>set.confirmed).length;
-  const complete=!!exercise&&count>=Math.max(3,sets.length);
+  const complete=!!exercise&&sets.length>0&&count>=sets.length;
   if(node.matches('details')){
    if(complete&&node.dataset.workoutComplete==='false'){node.open=false;justCompleted=true;}
    node.classList.toggle('exercise-complete',complete);
@@ -2061,7 +2013,7 @@ if(
 ){
 
 banner.textContent=
-"Workout autosave is on.";
+"Draft saved automatically";
 
 return;
 
@@ -2113,7 +2065,7 @@ completed++;
 
 banner.textContent=
 
-`Autosaved • ${entered} set${entered===1?"":"s"} entered • ${completed} completed`;
+`Draft saved automatically · ${completed} set${completed===1?"":"s"} completed`;
 
 }
 
@@ -2138,7 +2090,7 @@ return;
 chooseForGroup(
 group,
 value,
-slot=0
+slot
 );
 
 }
@@ -2365,7 +2317,7 @@ function changeWorkoutMode(mode){
 function initializeAppInsets(){
  const root=document.documentElement,header=document.querySelector('header'),nav=document.querySelector('nav');
  if(window.matchMedia('(display-mode: standalone)').matches||navigator.standalone)root.style.setProperty('--status-bar-fallback','48px');
- function measure(){const h=header.getBoundingClientRect().height,n=nav.getBoundingClientRect().height;if(h>0){root.style.setProperty('--app-header-height',`${h}px`);root.style.setProperty('--app-scroll-offset',`${h+n+18}px`);}}
+ function measure(){const h=header.getBoundingClientRect().height,n=nav.getBoundingClientRect().height;if(h>0){root.style.setProperty('--app-header-height',`${h}px`);root.style.setProperty('--app-scroll-offset',`${h+18}px`);}}
  const observer=new ResizeObserver(measure);observer.observe(header);observer.observe(nav);window.addEventListener('resize',measure);measure();
 }
 
@@ -2394,7 +2346,7 @@ function enterWeightTracker(){
  document.getElementById("welcome").hidden=true;
  document.body.classList.remove("welcome-open");
  document.documentElement.classList.remove("opening-screen");
- showScreen("weight",document.querySelector('nav button[onclick*="\'weight\'"]'));
+ showProgress("weight");
  window.scrollTo(0,0);
 }
 
@@ -2435,6 +2387,9 @@ function deleteCurrentExercise(group,slot=0){
 }
 
 function chooseForGroup(group,ex,slot=0){
+ const old=selectedForGroup(group,slot);
+ if(old&&old!==ex&&(db.draftWorkout?.exercises?.[old]?.sets||[]).some(set=>set.confirmed||set.touched)&&!confirm("Change this exercise? Its unfinished sets will be left out of today's workout.")){renderWorkout();return;}
+
  if(db.workoutMode==="split"){
   const slots=db.splitSelected[group]||[];
   if(ex&&slots.some((item,i)=>i!==slot&&item===ex)){
@@ -2467,8 +2422,9 @@ renderWorkoutTemplates();
 
 document.getElementById("modeLabel").textContent=db.workoutMode==="split"?"Body Part Split":"Full Body";
 const picker=document.getElementById("splitPicker");
-picker.hidden=db.workoutMode!=="split";
-document.getElementById("fullBodyDateHint").hidden=db.workoutMode!=="full";
+picker.hidden=db.workoutMode!=="split"||!workoutEditing;
+document.getElementById("fullBodyDateHint").hidden=db.workoutMode!=="full"||!workoutEditing;
+document.getElementById("editWorkoutButton").textContent=workoutEditing?"Done editing":"Add / edit exercises";
 if(db.workoutMode==="split"){
  document.getElementById("splitGroups").innerHTML=Object.keys(MENU).map(group=>
  `<button type="button" class="secondary small" data-split-group="${escapeHTML(group)}" aria-pressed="${db.splitGroups.includes(group)}">${escapeHTML(groupLabel(group))}</button>`
@@ -2491,10 +2447,10 @@ const displayed=db.workoutMode==="split"
    const slots=db.splitSelected[group]?.length?db.splitSelected[group]:[""];
    return slots.map((_,slot)=>[group,MENU[group]||[],slot]);
   })
- :Object.entries(MENU).map(([group,arr])=>[group,arr,0]);
+ :Object.entries(MENU).filter(([group])=>workoutEditing||selectedForGroup(group)).map(([group,arr])=>[group,arr,0]);
 
-if(db.workoutMode==="split"&&!db.splitGroups.length){
- el.innerHTML='<div class="card muted">Choose one or more body parts above to build your split day.</div>';
+if((db.workoutMode==="split"&&!db.splitGroups.length)||(db.workoutMode==="full"&&!db.selected.length&&!workoutEditing)){
+ el.innerHTML='<div class="card muted">Tap Add / edit exercises to choose today’s movements.</div>';
 }
 
 displayed.forEach(([group,arr,slot],workoutOrder)=>{
@@ -2506,7 +2462,7 @@ const card=
 document.createElement("details");
 card.className="workout-part";
 const cardKey=`${db.workoutMode}:${group}:${slot}`;
-card.open=expandedCards.has(cardKey);
+card.open=expandedCards.has(cardKey)||(!current&&workoutEditing);
 card.dataset.currentExercise=current;
 card.dataset.workoutOrder=workoutOrder;
 card.addEventListener("toggle",()=>{
@@ -2592,18 +2548,6 @@ Prefilled from ${date} workout — update or confirm each set
 
 
 logger=`
-
-<div class="exercise-actions">
-
-<button
-class="danger small"
-data-delete-group="${escapeHTML(group)}"
-data-slot="${slot}"
->
-Delete ${escapeHTML(current)}
-</button>
-
-</div>
 
 ${previousNote}
 
@@ -2727,15 +2671,7 @@ card.innerHTML=`
  ${current?`<span class="exercise-summary-meta">Last logged: ${escapeHTML(lastLoggedLabel(current))} · <span class="exercise-progress">${currentSets.filter(s=>s.confirmed).length}/${currentSets.length} sets completed</span></span>`:""}</span>
  <span class="exercise-chevron" aria-hidden="true">›</span>
 </summary>
-${current?`<div class="tag" style="margin-top:12px">Target ${target(current)} reps</div>`:""}
-<select
-data-group="${escapeHTML(group)}"
-data-slot="${slot}"
->
-
-${options}
-
-</select>
+${current?`<div class="row between exercise-tools"><span class="tag">Target ${target(current)} reps</span><details class="exercise-menu"><summary aria-label="Exercise options for ${escapeHTML(current)}">•••</summary><div class="exercise-menu-content"><label for="choose-${cardKey}">Change exercise</label><select id="choose-${cardKey}" data-group="${escapeHTML(group)}" data-slot="${slot}">${options}</select><button type="button" class="secondary small" data-remove-today="${escapeHTML(group)}" data-slot="${slot}">Remove from today</button><details><summary>Manage exercise library</summary><p class="muted">Remove this exercise from future choices. History stays.</p><button type="button" class="danger small" data-delete-group="${escapeHTML(group)}" data-slot="${slot}">Remove from exercise library</button></details></div></details></div>`:`<label for="choose-${cardKey}" style="margin-top:12px">Exercise</label><select id="choose-${cardKey}" data-group="${escapeHTML(group)}" data-slot="${slot}">${options}</select>`}
 
 ${logger}
 
@@ -2744,7 +2680,7 @@ ${logger}
 
 el.appendChild(card);
 
-if(db.workoutMode==="split"&&current&&slot===(db.splitSelected[group]?.length||1)-1){
+if(workoutEditing&&db.workoutMode==="split"&&current&&slot===(db.splitSelected[group]?.length||1)-1){
  const actions=document.createElement("div");
  actions.className="row split-add";
  actions.dataset.workoutOrder=workoutOrder;actions.dataset.workoutExercise=current;
@@ -2765,6 +2701,7 @@ updateDraftBanner();
 
 
 function bindWorkoutEvents(){
+document.querySelectorAll("[data-remove-today]").forEach(button=>button.onclick=()=>chooseForGroup(button.dataset.removeToday,"",Number(button.dataset.slot)));
 document.querySelectorAll("[data-adjust-exercise]").forEach(button=>button.onclick=()=>adjustDraftValue(button.dataset.adjustExercise,Number(button.dataset.adjustSet),button.dataset.adjustField,Number(button.dataset.direction)));
 // Copy controls are delegated because comparisons refresh while entering numbers.
 const workout=document.getElementById("workout");
@@ -3281,6 +3218,8 @@ location.reload();
 }
 
 
+let progressScreen="charts";
+function showProgress(id="charts"){progressScreen=id;showScreen(id);}
 function showScreen(
 id,
 btn
@@ -3319,9 +3258,11 @@ x.classList.remove(
 );
 
 
-btn.classList.add(
-"active"
-);
+const primary=["charts","weight","milestones"].includes(id)?"progress":id;
+const navButton=document.querySelector(`nav button[data-screen="${primary}"]`);
+navButton?.classList.add("active");
+document.querySelectorAll("nav button").forEach(button=>button.setAttribute("aria-current",button===navButton?"page":"false"));
+window.scrollTo(0,0);
 
 
 if(
@@ -3365,7 +3306,7 @@ function timerBounds(panel){
  const viewport=window.visualViewport;
  const style=getComputedStyle(document.documentElement);
  const topInset=parseFloat(style.getPropertyValue("--timer-safe-top"))||0;
- const bottomInset=parseFloat(style.getPropertyValue("--timer-safe-bottom"))||0;
+ const bottomInset=(parseFloat(style.getPropertyValue("--timer-safe-bottom"))||0)+(document.querySelector("nav")?.getBoundingClientRect().height||56);
  const left=(viewport?.offsetLeft||0)+8,top=(viewport?.offsetTop||0)+topInset+8;
  return {left,top,right:Math.max(left,(viewport?.offsetLeft||0)+(viewport?.width||window.innerWidth)-panel.offsetWidth-8),bottom:Math.max(top,(viewport?.offsetTop||0)+(viewport?.height||window.innerHeight)-panel.offsetHeight-bottomInset-8)};
 }
@@ -3424,7 +3365,7 @@ function initMovableRestTimer(){
 function toggleRestTimer(){
 const panel=document.querySelector(".rest-float"),button=document.getElementById("timerToggle");
 const collapsed=panel.classList.toggle("collapsed");
-button.textContent=collapsed?"Show":"Hide";
+button.textContent=collapsed?"Controls":"Hide";
 button.setAttribute("aria-expanded",String(!collapsed));
 button.setAttribute("aria-label",collapsed?"Show rest timer controls":"Hide rest timer controls");
 }
@@ -3438,7 +3379,7 @@ function maximizeRestTimer(){
  if(!comic.open)comic.showModal();
 }
 function stopTimer(){clearInterval(timer);timer=null;timerEnd=0;document.getElementById("restComic").close();updateTimerDisplay();}
-function updateTimerDisplay(){const left=Math.max(0,Math.ceil((timerEnd-Date.now())/1000));const el=document.getElementById("timerDisplay");document.getElementById("timerExpand").disabled=!timerEnd;document.getElementById("restComicTime").textContent=Math.floor(left/60)+":"+String(left%60).padStart(2,"0");if(el)el.textContent=timerEnd?"Rest: "+Math.floor(left/60)+":"+String(left%60).padStart(2,"0"):"Rest timer ready";}
+function updateTimerDisplay(){document.querySelector(".rest-float").classList.toggle("timer-running",!!timerEnd);const left=Math.max(0,Math.ceil((timerEnd-Date.now())/1000));const el=document.getElementById("timerDisplay");document.getElementById("timerExpand").disabled=!timerEnd;document.getElementById("restComicTime").textContent=Math.floor(left/60)+":"+String(left%60).padStart(2,"0");if(el)el.textContent=timerEnd?"Rest: "+Math.floor(left/60)+":"+String(left%60).padStart(2,"0"):"Rest timer ready";}
 function timerFinished(){stopTimer();document.getElementById("timerDisplay").textContent="Rest complete";toast("Rest complete");const mode=db.settings.timerAlert;if((mode==="both"||mode==="vibrate")&&navigator.vibrate)navigator.vibrate([200,100,200]);if((mode==="both"||mode==="sound")&&audioContext){try{audioContext.resume();const osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.frequency.value=880;gain.gain.value=0.12;osc.connect(gain);gain.connect(audioContext.destination);osc.start();osc.stop(audioContext.currentTime+0.3);}catch(e){}}}
 
 let remaining=0;
@@ -3990,4 +3931,5 @@ err
 
 </body>
 </html>
+
 
