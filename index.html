@@ -951,6 +951,15 @@ body.editing-workout .exercise-summary{padding-bottom:8px;}
 .welcome-choice[hidden]{display:none;}
 @media(max-height:800px){#welcome:has(#continueWorkoutButton:not([hidden])) .welcome-art{width:170px;}#welcome:has(#continueWorkoutButton:not([hidden])) h2{margin-top:8px;}}
 
+
+/* Keep targets stationary while adjustment controls are revealed. */
+.set .entry-adjustments{display:grid;visibility:hidden;}.set>div:focus-within .entry-adjustments{visibility:visible;}.set .remove-set{display:block;visibility:hidden;}.set:focus-within .remove-set{visibility:visible;}.complete-cue{display:none;}
+.rest-float .rest-duration-label{margin:0;font-size:11px;align-self:center;}
+.rest-float:not(.timer-running) #timerExpand,.rest-float:not(.timer-running) #timerStop,.rest-float:not(.timer-running) #timerToggle{display:none!important;}
+.rest-float:not(.timer-running) #restQuickSelect,.rest-float:not(.timer-running) #timerStart{display:block!important;}
+.rest-float.timer-running.collapsed .rest-duration-label{display:none;}
+#cancelWeighInEdit[hidden]{display:none;}
+
 </style>
 </head>
 
@@ -1196,7 +1205,7 @@ class="chart"
 
 <section id="weight" class="screen"><div class="progress-tabs" role="group" aria-label="Progress section"><button type="button" class="secondary" onclick="showProgress('charts')" aria-pressed="false">Strength</button><button type="button" class="secondary selected" onclick="showProgress('weight')" aria-pressed="true">Weight</button><button type="button" class="secondary" onclick="showProgress('milestones')" aria-pressed="false">Goals</button></div>
 <div class="weight-heading"><h2>Weight progress</h2><p class="muted">Your plan, weekly check-ins and progress in one place.</p></div>
-<div class="card"><h2>Log weight</h2><p id="weeklyDue" class="muted"></p><form id="weeklyWeightForm" onsubmit="saveWeeklyWeight(event)"><div class="weekly-date"><div><label for="weeklyWeightDate">Weigh-in date</label><input id="weeklyWeightDate" type="date" required onchange="focusWeeklyField('weeklyWeight')"></div><button type="button" class="secondary small" onclick="useTodayForWeighIn()">Today</button></div><div class="weekly-entry-fields"><div><label for="weeklyWeight">Weight (lb)</label><input id="weeklyWeight" type="text" inputmode="decimal" enterkeyhint="next" required onkeydown="weeklyEntryNext(event,'weeklyBF')"><button type="button" class="entry-next" onclick="focusWeeklyField('weeklyBF')">Next: body fat % →</button></div><div><label for="weeklyBF">Body fat % <span class="weight-optional">Optional</span></label><input id="weeklyBF" type="text" inputmode="decimal" enterkeyhint="done" placeholder="Optional"></div></div><button type="submit" class="primary">Save weigh-in</button></form></div>
+<div class="card"><h2>Log weight</h2><p id="weeklyDue" class="muted"></p><form id="weeklyWeightForm" onsubmit="saveWeeklyWeight(event)"><div class="weekly-date"><div><label for="weeklyWeightDate">Weigh-in date</label><input id="weeklyWeightDate" type="date" required onchange="focusWeeklyField('weeklyWeight')"></div><button type="button" class="secondary small" onclick="useTodayForWeighIn()">Today</button></div><div class="weekly-entry-fields"><div><label for="weeklyWeight">Weight (lb)</label><input id="weeklyWeight" type="text" inputmode="decimal" enterkeyhint="next" required onkeydown="weeklyEntryNext(event,'weeklyBF')"><button type="button" class="entry-next" onclick="focusWeeklyField('weeklyBF')">Next: body fat % →</button></div><div><label for="weeklyBF">Body fat % <span class="weight-optional">Optional</span></label><input id="weeklyBF" type="text" inputmode="decimal" enterkeyhint="done" placeholder="Optional"></div></div><div class="row"><button id="weighInSubmit" type="submit" class="primary">Save weigh-in</button><button id="cancelWeighInEdit" type="button" class="secondary" onclick="cancelWeighInEdit()" hidden>Cancel edit</button></div></form></div>
 <div class="card"><h2>Your weigh-ins</h2><div id="weeklyWeightLog"></div></div><details id="weightPlanDetails" class="card" open><summary class="weight-section-title">Your plan <span class="weight-optional">Optional targets</span></summary>
 <form id="weightPlanForm" onsubmit="saveWeightPlan(event)">
 <div class="weight-fields"><div><label for="weightStartDate">Start date</label><input id="weightStartDate" type="date" required></div><div><label for="weightStart">Starting weight (lb)</label><input id="weightStart" type="number" inputmode="decimal" min="0.1" step="0.1" required></div><div><label for="weightDirection">Direction</label><select id="weightDirection"><option value="loss">Lose weight</option><option value="gain">Gain weight</option></select></div><div><label for="weightRateUnit">Weekly goal based on</label><select id="weightRateUnit" onchange="changeWeightRateUnit()"><option value="percent">Percentage of body weight</option><option value="pounds">Pounds per week</option></select></div><div><label id="weightRateLabel" for="weightRate">Body weight per week (%)</label><input id="weightRate" type="number" inputmode="decimal" min="0.01" max="99.99" step="0.01" value="0.5" required><p id="weightRateHelp" class="muted weight-help">Percentage goals adjust with body weight each week.</p></div><div><label for="weightEndDate">End date</label><input id="weightEndDate" type="date" required><button type="button" class="secondary small" style="margin-top:8px" onclick="useTwelveWeekPlan()">Use 12 weeks</button></div></div><details class="weight-option-details"><summary>Body-fat targets (optional)</summary><div class="weight-fields"><div><label for="weightStartBF">Starting body fat %</label><input id="weightStartBF" type="number" inputmode="decimal" min="0.1" max="99.9" step="0.1"></div><div><label for="weightGoalBF">End-of-plan body fat %</label><input id="weightGoalBF" type="number" inputmode="decimal" min="0.1" max="99.9" step="0.1"></div></div></details>
@@ -1242,10 +1251,10 @@ class="chart"
 
 <div class="rest-float collapsed" aria-label="Rest timer controls">
 <button hidden type="button" class="timer-drag" aria-label="Move rest timer. Drag or use arrow keys; Home resets position." title="Drag to move timer"><svg viewBox="0 0 16 24" aria-hidden="true"><circle cx="5" cy="5" r="1.5"/><circle cx="11" cy="5" r="1.5"/><circle cx="5" cy="12" r="1.5"/><circle cx="11" cy="12" r="1.5"/><circle cx="5" cy="19" r="1.5"/><circle cx="11" cy="19" r="1.5"/></svg></button>
-<button type="button" id="timerExpand" class="timer-expand" onclick="timerEnd?maximizeRestTimer():startTimer(Number(db.settings.restSeconds),true)" aria-label="Open rest timer" aria-haspopup="dialog" aria-controls="restComic" title="Open rest timer"><strong id="timerDisplay" role="timer" aria-live="off">Rest</strong><span aria-hidden="true"> ↗</span></button>
-<select id="restQuickSelect" aria-label="Rest duration" onchange="setRestFromTimer(this.value)"><option value="30">0:30</option><option value="45">0:45</option><option value="60">1:00</option><option value="90">1:30</option><option value="120">2:00</option><option value="180">3:00</option><option value="240">4:00</option><option value="300">5:00</option></select>
-<button class="secondary small timer-action" onclick="startTimer(Number(db.settings.restSeconds))">Start</button>
-<button class="secondary small timer-action" onclick="stopTimer()">Stop</button>
+<button type="button" id="timerExpand" class="timer-expand" onclick="maximizeRestTimer()" aria-label="Maximize rest countdown" aria-haspopup="dialog" aria-controls="restComic" title="Maximize rest countdown" disabled><strong id="timerDisplay" role="timer" aria-live="off">Rest ready</strong><span aria-hidden="true"> ↗</span></button>
+<label id="restDurationLabel" class="rest-duration-label" for="restQuickSelect">Rest duration</label><select id="restQuickSelect" aria-label="Rest duration" onchange="setRestFromTimer(this.value)"><option value="30">0:30</option><option value="45">0:45</option><option value="60">1:00</option><option value="90">1:30</option><option value="120">2:00</option><option value="180">3:00</option><option value="240">4:00</option><option value="300">5:00</option></select>
+<button id="timerStart" class="secondary small timer-action" onclick="startTimer(Number(db.settings.restSeconds),true)">Start</button>
+<button id="timerStop" class="secondary small timer-action" onclick="stopTimer()">Stop</button>
 <button id="timerToggle" class="secondary small" onclick="toggleRestTimer()" aria-expanded="false" aria-label="Show rest timer controls">Controls</button>
 </div>
 
@@ -1253,7 +1262,7 @@ class="chart"
 </div>
 
 <script src="shark.js?v=3"></script>
-<script src="weight.js?v=11"></script>
+<script src="weight.js?v=12"></script>
 <script src="milestones.js?v=2"></script>
 <script>
 
@@ -2671,7 +2680,7 @@ data-confirm-set="${j}"
 aria-label="${s.confirmed?"Set completed":"Complete set"} ${j+1} for ${escapeHTML(current)}"
 aria-pressed="${s.confirmed}"
 >
-<img src="${db.settings.sharkStyle==='female'?'female-shark.webp?v=1':'rep-harbor-192.png?v=12'}" alt="" width="34" height="34"><span class="complete-cue">✓</span>
+<img src="${db.settings.sharkStyle==='female'?'female-shark.webp?v=1':'rep-harbor-192.png?v=12'}" alt="" width="34" height="34">
 </button>
 
 </div>
@@ -3388,7 +3397,7 @@ function maximizeRestTimer(){
  if(!comic.open)comic.showModal();
 }
 function stopTimer(){clearInterval(timer);timer=null;timerEnd=0;document.getElementById("restComic").close();updateTimerDisplay();}
-function updateTimerDisplay(){document.querySelector(".rest-float").classList.toggle("timer-running",!!timerEnd);const left=Math.max(0,Math.ceil((timerEnd-Date.now())/1000));const el=document.getElementById("timerDisplay");document.getElementById("timerExpand").disabled=false;document.getElementById("timerExpand").setAttribute("aria-label",timerEnd?"Maximize rest countdown":"Start rest timer");document.getElementById("restComicTime").textContent=Math.floor(left/60)+":"+String(left%60).padStart(2,"0");if(el)el.textContent=timerEnd?"Rest: "+Math.floor(left/60)+":"+String(left%60).padStart(2,"0"):"Rest";}
+function updateTimerDisplay(){document.querySelector(".rest-float").classList.toggle("timer-running",!!timerEnd);const left=Math.max(0,Math.ceil((timerEnd-Date.now())/1000));const el=document.getElementById("timerDisplay");document.getElementById("timerExpand").disabled=!timerEnd;document.getElementById("restDurationLabel").textContent=timerEnd?"Next rest":"Rest duration";document.getElementById("restQuickSelect").setAttribute("aria-label",timerEnd?"Next rest duration":"Rest duration");document.getElementById("timerStart").textContent=timerEnd?"Restart":"Start";document.getElementById("restComicTime").textContent=Math.floor(left/60)+":"+String(left%60).padStart(2,"0");if(el)el.textContent=timerEnd?"Rest: "+Math.floor(left/60)+":"+String(left%60).padStart(2,"0"):"Rest ready";}
 function timerFinished(){stopTimer();document.getElementById("timerDisplay").textContent="Rest complete";toast("Rest complete");const mode=db.settings.timerAlert;if((mode==="both"||mode==="vibrate")&&navigator.vibrate)navigator.vibrate([200,100,200]);if((mode==="both"||mode==="sound")&&audioContext){try{audioContext.resume();const osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.frequency.value=880;gain.gain.value=0.12;osc.connect(gain);gain.connect(audioContext.destination);osc.start();osc.stop(audioContext.currentTime+0.3);}catch(e){}}}
 
 let remaining=0;
