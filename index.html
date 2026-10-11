@@ -772,6 +772,11 @@ object-fit:cover;
 .rest-float.collapsed .timer-drag,.rest-float.keyboard-open .timer-drag{grid-row:auto;}
 .rest-float.keyboard-open #timerToggle{display:none;}
 .rest-float.keyboard-open{grid-template-columns:28px auto;}
+.rest-float .timer-expand{grid-column:2/-1;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--blue-light);color:var(--blue-dark);border:0;min-height:34px;cursor:pointer;}
+.rest-float .timer-expand strong{grid-column:auto;}
+.rest-float .timer-expand:disabled{cursor:default;opacity:.7;}
+.rest-float .timer-expand:disabled span{display:none;}
+.rest-float.collapsed .timer-expand,.rest-float.keyboard-open .timer-expand{grid-column:auto;}
 :root{--timer-safe-top:env(safe-area-inset-top,0px);--timer-safe-bottom:env(safe-area-inset-bottom,0px);}
 @media(max-width:360px){main{padding-left:10px;padding-right:10px;}.card,.workout-part{padding:12px;}.row.between{flex-wrap:wrap;}.template-panel .row{gap:8px;}}
 
@@ -1261,7 +1266,7 @@ class="chart"
 
 <div class="rest-float" aria-label="Rest timer controls">
 <button type="button" class="timer-drag" aria-label="Move rest timer. Drag or use arrow keys; Home resets position." title="Drag to move timer"><svg viewBox="0 0 16 24" aria-hidden="true"><circle cx="5" cy="5" r="1.5"/><circle cx="11" cy="5" r="1.5"/><circle cx="5" cy="12" r="1.5"/><circle cx="11" cy="12" r="1.5"/><circle cx="5" cy="19" r="1.5"/><circle cx="11" cy="19" r="1.5"/></svg></button>
-<strong id="timerDisplay" role="timer" aria-live="off">Rest timer ready</strong>
+<button type="button" id="timerExpand" class="timer-expand" onclick="maximizeRestTimer()" aria-label="Maximize rest countdown" aria-haspopup="dialog" aria-controls="restComic" title="Maximize rest countdown" disabled><strong id="timerDisplay" role="timer" aria-live="off">Rest timer ready</strong><span aria-hidden="true"> ↗</span></button>
 <select id="restQuickSelect" aria-label="Rest duration" onchange="setRestFromTimer(this.value)"><option value="30">0:30</option><option value="45">0:45</option><option value="60">1:00</option><option value="90">1:30</option><option value="120">2:00</option><option value="180">3:00</option><option value="240">4:00</option><option value="300">5:00</option></select>
 <button class="secondary small timer-action" onclick="startTimer(Number(db.settings.restSeconds))">Start</button>
 <button class="secondary small timer-action" onclick="stopTimer()">Stop</button>
@@ -3423,8 +3428,17 @@ button.textContent=collapsed?"Show":"Hide";
 button.setAttribute("aria-expanded",String(!collapsed));
 button.setAttribute("aria-label",collapsed?"Show rest timer controls":"Hide rest timer controls");
 }
+function maximizeRestTimer(){
+ if(!timerEnd)return;
+ if(Date.now()>=timerEnd){timerFinished();return;}
+ updateTimerDisplay();
+ const focused=document.activeElement;
+ if(focused?.matches("input,select,textarea"))focused.blur();
+ const comic=document.getElementById("restComic");
+ if(!comic.open)comic.showModal();
+}
 function stopTimer(){clearInterval(timer);timer=null;timerEnd=0;document.getElementById("restComic").close();updateTimerDisplay();}
-function updateTimerDisplay(){const left=Math.max(0,Math.ceil((timerEnd-Date.now())/1000));const el=document.getElementById("timerDisplay");document.getElementById("restComicTime").textContent=Math.floor(left/60)+":"+String(left%60).padStart(2,"0");if(el)el.textContent=timerEnd?"Rest: "+Math.floor(left/60)+":"+String(left%60).padStart(2,"0"):"Rest timer ready";}
+function updateTimerDisplay(){const left=Math.max(0,Math.ceil((timerEnd-Date.now())/1000));const el=document.getElementById("timerDisplay");document.getElementById("timerExpand").disabled=!timerEnd;document.getElementById("restComicTime").textContent=Math.floor(left/60)+":"+String(left%60).padStart(2,"0");if(el)el.textContent=timerEnd?"Rest: "+Math.floor(left/60)+":"+String(left%60).padStart(2,"0"):"Rest timer ready";}
 function timerFinished(){stopTimer();document.getElementById("timerDisplay").textContent="Rest complete";toast("Rest complete");const mode=db.settings.timerAlert;if((mode==="both"||mode==="vibrate")&&navigator.vibrate)navigator.vibrate([200,100,200]);if((mode==="both"||mode==="sound")&&audioContext){try{audioContext.resume();const osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.frequency.value=880;gain.gain.value=0.12;osc.connect(gain);gain.connect(audioContext.destination);osc.start();osc.stop(audioContext.currentTime+0.3);}catch(e){}}}
 
 let remaining=0;
@@ -3434,7 +3448,7 @@ function startTimer(sec,expand=false){
 if(!Number.isFinite(sec)||sec<10){toast("Set a rest time in Settings");return;}
 try{audioContext??=new (window.AudioContext||window.webkitAudioContext)();audioContext.resume();}catch(e){}
 clearInterval(timer);timerEnd=Date.now()+sec*1000;updateTimerDisplay();toast("Rest timer started");
-if(expand){const focused=document.activeElement;if(focused?.matches("input,select,textarea"))focused.blur();const comic=document.getElementById("restComic");if(!comic.open)comic.showModal();}
+if(expand)maximizeRestTimer();
 timer=setInterval(()=>{if(Date.now()>=timerEnd)timerFinished();else updateTimerDisplay();},500);
 }
 
