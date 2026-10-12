@@ -964,6 +964,7 @@ body.editing-workout .exercise-summary{padding-bottom:8px;}
 .set-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0 14px 37px;}.set-footer .set-comparison{margin:0;flex:1;min-width:0;}.set-options{position:relative;flex:none;}.set-options>summary{cursor:pointer;list-style:none;min-height:40px;padding:9px 10px;border:1px solid var(--blue-border);border-radius:9px;color:var(--blue-dark);font-size:12px;font-weight:650;}.set-options>div{position:absolute;right:0;top:100%;z-index:3;min-width:165px;padding:12px;background:#fff;border:1px solid var(--blue-border);border-radius:12px;box-shadow:0 5px 18px #17324d25;}.set-options>div button{width:100%;min-height:44px;}
 .summary-totals{font-weight:750;font-size:20px;color:var(--blue-dark);}.summary-actions{display:grid;gap:10px;margin-top:24px;}.summary-actions button{min-height:48px;}
 
+[data-undo-set][hidden]{display:none!important;}.set-options>div{display:grid;gap:8px;}
 </style>
 </head>
 
@@ -1937,6 +1938,14 @@ if(db.settings.autoRest)startTimer(Number(db.settings.restSeconds),true);
 }
 
 
+function undoDraftSet(ex,setIndex){
+ const draft=getDraftExercise(ex),set=draft.sets[setIndex];
+ if(!set?.confirmed)return;
+ set.confirmed=false;
+ saveDB();updateSetVisual(ex,setIndex);updateDraftBanner();
+ toast("Set marked unfinished. Weight and reps kept.");
+}
+
 function updateSetVisual(
 ex,
 setIndex
@@ -1971,6 +1980,7 @@ row.classList.remove(
 "completed"
 );
 
+const undoButton=document.getElementById(`undo-${safeId(ex)}-${setIndex}`);if(undoButton)undoButton.hidden=!s.confirmed;
 const comparison=document.getElementById(`comparison-${safeId(ex)}-${setIndex}`);
 if(comparison)comparison.innerHTML=setComparisonHTML(ex,s,setIndex);
 const button=row.querySelector(".check");
@@ -2690,7 +2700,7 @@ aria-pressed="${s.confirmed}"
 </button>
 
 </div>
-<div class="set-footer"><div class="set-comparison" id="comparison-${safeId(current)}-${j}">${setComparisonHTML(current,s,j)}</div><details class="set-options"><summary aria-label="Set ${j+1} options for ${escapeHTML(current)}">Set options</summary><div><button type="button" class="danger small" data-remove-set="${j}" data-remove-exercise="${escapeHTML(current)}" aria-label="Remove set ${j+1} for ${escapeHTML(current)}" ${draft.sets.length===1?"disabled":""}>Remove set</button>${draft.sets.length===1?'<p class="muted">Keep at least one set.</p>':''}</div></details></div>
+<div class="set-footer"><div class="set-comparison" id="comparison-${safeId(current)}-${j}">${setComparisonHTML(current,s,j)}</div><details class="set-options"><summary aria-label="Set ${j+1} options for ${escapeHTML(current)}">Set options</summary><div><button type="button" id="undo-${safeId(current)}-${j}" class="secondary small" data-undo-set="${j}" data-undo-exercise="${escapeHTML(current)}" aria-label="Undo completion of set ${j+1} for ${escapeHTML(current)}" ${s.confirmed?"":"hidden"}>Undo completion</button><button type="button" class="danger small" data-remove-set="${j}" data-remove-exercise="${escapeHTML(current)}" aria-label="Remove set ${j+1} for ${escapeHTML(current)}" ${draft.sets.length===1?"disabled":""}>Remove set</button>${draft.sets.length===1?'<p class="muted">Keep at least one set.</p>':''}</div></details></div>
 
 `;
 
@@ -2767,6 +2777,7 @@ updateDraftBanner();
 
 
 function bindWorkoutEvents(){
+document.querySelectorAll("[data-undo-set]").forEach(button=>button.onclick=()=>{const menu=button.closest(".set-options");if(menu)menu.open=false;undoDraftSet(button.dataset.undoExercise,Number(button.dataset.undoSet));menu?.querySelector("summary")?.focus();});
 document.querySelectorAll("[data-remove-today]").forEach(button=>button.onclick=()=>chooseForGroup(button.dataset.removeToday,"",Number(button.dataset.slot)));
 document.querySelectorAll("[data-adjust-exercise]").forEach(button=>button.onclick=()=>adjustDraftValue(button.dataset.adjustExercise,Number(button.dataset.adjustSet),button.dataset.adjustField,Number(button.dataset.direction)));
 // Copy controls are delegated because comparisons refresh while entering numbers.
