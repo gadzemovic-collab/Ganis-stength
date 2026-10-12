@@ -1004,7 +1004,7 @@ nav[aria-label="Main navigation"] button.active{
 
 /* One bottom row; the app shell follows the actual visible viewport. */
 html{height:100%;overflow:hidden;}
-body{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;}
+body{height:100vh;height:var(--app-viewport-height,100dvh);display:flex;flex-direction:column;overflow:hidden;}
 body>header{position:relative;top:auto;flex:none;}
 body>main{position:relative;top:auto;bottom:auto;left:auto;transform:none;flex:1;min-height:0;width:100%;margin:0 auto;overflow-y:auto;padding-bottom:16px;}
 .app-bottom{flex:none;display:flex;align-items:center;gap:0;background:#fff;border-top:1px solid var(--blue-border);padding:0 0 env(safe-area-inset-bottom,0px);}
@@ -2436,7 +2436,16 @@ function changeWorkoutMode(mode){
 
 function initializeAppInsets(){
  const root=document.documentElement,header=document.querySelector('header'),nav=document.querySelector('nav');
- if(window.matchMedia('(display-mode: standalone)').matches||navigator.standalone)root.style.setProperty('--status-bar-fallback','48px');
+ const installed=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+ if(installed)root.style.setProperty('--status-bar-fallback','48px');
+ // iOS standalone can exclude the status-bar region from dynamic viewport units.
+ // The installed app occupies the full screen; keep the shell's bottom at that edge.
+ function sizeAppScreen(){
+  const iosInstalled=!!navigator.standalone;
+  if(iosInstalled)root.style.setProperty('--app-viewport-height',`${window.screen.height}px`);
+  else root.style.removeProperty('--app-viewport-height');
+ }
+ sizeAppScreen();window.addEventListener('resize',sizeAppScreen);window.addEventListener('orientationchange',sizeAppScreen);window.addEventListener('pageshow',sizeAppScreen);
  function measure(){const h=header.getBoundingClientRect().height,n=nav.getBoundingClientRect().height;if(h>0){root.style.setProperty('--app-header-height',`${h}px`);root.style.setProperty('--nav-height',`${n||56}px`);root.style.setProperty('--app-scroll-offset',`${h+18}px`);}}
  const observer=new ResizeObserver(measure);observer.observe(header);observer.observe(nav);window.addEventListener('resize',measure);measure();
 }
