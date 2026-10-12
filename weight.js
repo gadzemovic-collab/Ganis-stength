@@ -90,7 +90,7 @@ function saveWeeklyWeight(event){
  editingWeighInDate=null;tracking.entryDraft=null;
  tracking.entries.sort((a,b)=>a.date.localeCompare(b.date));syncWeightProjection(tracking);saveDB();renderWeightTracking();toast("Weigh-in saved");
 }
-function editWeeklyWeight(date){const entry=db.weightTracking.entries.find(e=>e.date===date);if(!entry)return;editingWeighInDate=date;document.getElementById('weighInSubmit').textContent='Update weigh-in';document.getElementById('cancelWeighInEdit').hidden=false;document.getElementById('weeklyWeightDate').value=entry.date;document.getElementById('weeklyWeight').value=entry.weight;document.getElementById('weeklyBF').value=entry.bodyFat??'';captureWeighInDraft();document.getElementById('weeklyWeightForm').scrollIntoView({behavior:'smooth',block:'center'});}
+function editWeeklyWeight(date){const entry=db.weightTracking.entries.find(e=>e.date===date);if(!entry)return;editingWeighInDate=date;document.getElementById('weighInSubmit').textContent='Update weigh-in';document.getElementById('cancelWeighInButton').hidden=false;document.getElementById('weeklyWeightDate').value=entry.date;document.getElementById('weeklyWeight').value=entry.weight;document.getElementById('weeklyBF').value=entry.bodyFat??'';captureWeighInDraft();document.getElementById('weeklyWeightForm').scrollIntoView({behavior:'smooth',block:'center'});}
 function deleteWeeklyWeight(date){if(!confirm(`Delete the weigh-in from ${weightDateLabel(date)}?`))return;db.weightTracking.entries=db.weightTracking.entries.filter(e=>e.date!==date);if(db.weightTracking.entryDraft?.editingDate===date){db.weightTracking.entryDraft=null;editingWeighInDate=null;}syncWeightProjection(db.weightTracking);saveDB();renderWeightTracking();}
 function renderWeightChart(id,series,range){
  series=series.map(s=>({...s,points:s.points.filter(p=>p.week>=range.start&&p.week<=range.end)}));
@@ -116,7 +116,7 @@ function captureWeighInDraft(){
 }
 function updateWeighInDraftActions(){
  document.getElementById('weighInSubmit').textContent=editingWeighInDate===null?'Save weigh-in':'Update weigh-in';
- const cancel=document.getElementById('cancelWeighInEdit');cancel.hidden=!db.weightTracking.entryDraft;cancel.textContent=editingWeighInDate===null?'Cancel draft':'Cancel edit';
+ const cancel=document.getElementById('cancelWeighInButton');cancel.hidden=!db.weightTracking.entryDraft;cancel.textContent=editingWeighInDate===null?'Cancel draft':'Cancel edit';
 }
 function restoreWeighInDraft(){
  const draft=db.weightTracking.entryDraft;
