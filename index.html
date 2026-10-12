@@ -1001,6 +1001,24 @@ nav[aria-label="Main navigation"] button.active{
  box-shadow:inset 0 -2px 0 var(--blue);
 }
 
+
+/* One bottom row; the app shell follows the actual visible viewport. */
+html{height:100%;overflow:hidden;}
+body{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;}
+body>header{position:relative;top:auto;flex:none;}
+body>main{position:relative;top:auto;bottom:auto;left:auto;transform:none;flex:1;min-height:0;width:100%;margin:0 auto;overflow-y:auto;padding-bottom:16px;}
+.app-bottom{flex:none;display:flex;align-items:center;gap:0;background:#fff;border-top:1px solid var(--blue-border);padding:0 0 env(safe-area-inset-bottom,0px);}
+body.welcome-open>.app-bottom,body.intro-open>.app-bottom{display:none;}
+.app-bottom nav[aria-label="Main navigation"]{position:static;inset:auto;flex:1;min-width:0;border:0;padding:0;background:transparent;}
+.app-bottom nav[aria-label="Main navigation"] button{height:48px;min-height:48px;align-items:center;padding:0 2px;font-size:12px;}
+.app-bottom .rest-float,.app-bottom .rest-float.collapsed{position:static!important;inset:auto!important;transform:none!important;flex:0 0 auto;width:auto;min-height:48px;border:0!important;border-left:1px solid var(--blue-border)!important;box-shadow:none;padding:4px;gap:4px;background:transparent;}
+.app-bottom .rest-float:not(.timer-running) .rest-duration-label{display:none;}
+.app-bottom .rest-float select{width:56px;flex-basis:56px;}
+.app-bottom .rest-float:not(.timer-running) #timerStart{padding:6px;min-width:38px;font-size:12px;}
+body:not(:has(#train.active)) .app-bottom .rest-float:not(.timer-running),body:has(#weight.active) .app-bottom .rest-float{display:none;}
+.app-bottom:has(.rest-float.timer-running:not(.collapsed)){flex-wrap:wrap;}
+.app-bottom:has(.rest-float.timer-running:not(.collapsed)) .rest-float{order:-1;flex-basis:100%;border-left:0!important;border-bottom:1px solid var(--blue-border)!important;min-height:44px;}
+
 </style>
 </head>
 
@@ -1036,12 +1054,7 @@ nav[aria-label="Main navigation"] button.active{
 
 </header>
 
-<nav aria-label="Main navigation">
-<button class="active" data-screen="train" onclick="showScreen('train',this)">Train</button>
-<button data-screen="history" onclick="showScreen('history',this)">History</button>
-<button data-screen="progress" onclick="showProgress(progressScreen)">Progress</button>
-<button data-screen="settings" onclick="showScreen('settings',this)">Settings</button>
-</nav>
+
 
 <main>
 
@@ -1292,6 +1305,13 @@ class="chart"
  </div>
 </dialog>
 
+<footer class="app-bottom">
+<nav aria-label="Main navigation">
+<button class="active" data-screen="train" onclick="showScreen('train',this)">Train</button>
+<button data-screen="history" onclick="showScreen('history',this)">History</button>
+<button data-screen="progress" onclick="showProgress(progressScreen)">Progress</button>
+<button data-screen="settings" onclick="showScreen('settings',this)">Settings</button>
+</nav>
 <div class="rest-float collapsed" aria-label="Rest timer controls">
 <button hidden type="button" class="timer-drag" aria-label="Move rest timer. Drag or use arrow keys; Home resets position." title="Drag to move timer"><svg viewBox="0 0 16 24" aria-hidden="true"><circle cx="5" cy="5" r="1.5"/><circle cx="11" cy="5" r="1.5"/><circle cx="5" cy="12" r="1.5"/><circle cx="11" cy="12" r="1.5"/><circle cx="5" cy="19" r="1.5"/><circle cx="11" cy="19" r="1.5"/></svg></button>
 <button type="button" id="timerExpand" class="timer-expand" onclick="maximizeRestTimer()" aria-label="Maximize rest countdown" aria-haspopup="dialog" aria-controls="restComic" title="Maximize rest countdown" disabled><strong id="timerDisplay" role="timer" aria-live="off">Rest ready</strong><span aria-hidden="true"> ↗</span></button>
@@ -1300,6 +1320,7 @@ class="chart"
 <button id="timerStop" class="secondary small timer-action" onclick="stopTimer()">Stop</button>
 <button id="timerToggle" class="secondary small" onclick="toggleRestTimer()" aria-expanded="false" aria-label="Show rest timer controls" title="Show rest timer controls">•••</button>
 </div>
+</footer>
 
 <div id="toast">
 </div>
