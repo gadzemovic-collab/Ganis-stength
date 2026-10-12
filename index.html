@@ -960,6 +960,10 @@ body.editing-workout .exercise-summary{padding-bottom:8px;}
 .rest-float.timer-running.collapsed .rest-duration-label{display:none;}
 #cancelWeighInEdit[hidden]{display:none;}
 
+
+.set-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0 14px 37px;}.set-footer .set-comparison{margin:0;flex:1;min-width:0;}.set-options{position:relative;flex:none;}.set-options>summary{cursor:pointer;list-style:none;min-height:40px;padding:9px 10px;border:1px solid var(--blue-border);border-radius:9px;color:var(--blue-dark);font-size:12px;font-weight:650;}.set-options>div{position:absolute;right:0;top:100%;z-index:3;min-width:165px;padding:12px;background:#fff;border:1px solid var(--blue-border);border-radius:12px;box-shadow:0 5px 18px #17324d25;}.set-options>div button{width:100%;min-height:44px;}
+.summary-totals{font-weight:750;font-size:20px;color:var(--blue-dark);}.summary-actions{display:grid;gap:10px;margin-top:24px;}.summary-actions button{min-height:48px;}
+
 </style>
 </head>
 
@@ -1226,7 +1230,9 @@ class="chart"
 <div class="weight-fields"><div><label for="rhGoalWeight">Target weight (lb)</label><input id="rhGoalWeight" type="number" min="1" step=".1" required></div>
 <div><label for="rhGoalNote">Name or note</label><input id="rhGoalNote" maxlength="80" placeholder="Reassess physique"></div></div>
 <button class="primary" type="submit">Add goal</button></form></div>
-</section></main>
+</section>
+<section id="workoutSummary" class="screen" aria-labelledby="workoutSummaryTitle"><div class="card"><h2 id="workoutSummaryTitle">Workout saved</h2><p id="workoutSummaryDate" class="muted"></p><p id="workoutSummaryTotals" class="summary-totals"></p><div id="workoutSummaryExercises"></div><div class="summary-actions"><button type="button" class="primary" onclick="viewFinishedWorkout()">View in History</button><button type="button" class="secondary" onclick="startAnotherWorkout()">Start another workout</button></div></div></section>
+</main>
 
 
 <dialog id="finishReview" class="exercise-picker" aria-labelledby="finishReviewTitle"><h2 id="finishReviewTitle">Review unfinished sets</h2><p id="finishReviewMessage"></p><div class="picker-results"><button type="button" class="primary" onclick="reviewPendingSets()">Review sets</button><button id="finishCompletedOnly" type="button" class="secondary" onclick="document.getElementById('finishReview').close();saveWorkout(true)">Save completed sets only</button><button type="button" class="secondary" onclick="document.getElementById('finishReview').close()">Keep working out</button></div></dialog>
@@ -1262,7 +1268,7 @@ class="chart"
 </div>
 
 <script src="shark.js?v=3"></script>
-<script src="weight.js?v=12"></script>
+<script src="weight.js?v=13"></script>
 <script src="milestones.js?v=2"></script>
 <script>
 
@@ -2635,7 +2641,7 @@ id="${rowId}"
 
 <div class="setnum">
 ${j+1}
-<button type="button" class="remove-set" data-remove-set="${j}" data-remove-exercise="${escapeHTML(current)}" aria-label="Remove set ${j+1} for ${escapeHTML(current)}" ${draft.sets.length===1?"disabled":""}>×</button>
+
 </div>
 
 <div>
@@ -2684,7 +2690,7 @@ aria-pressed="${s.confirmed}"
 </button>
 
 </div>
-<div class="set-comparison" id="comparison-${safeId(current)}-${j}">${setComparisonHTML(current,s,j)}</div>
+<div class="set-footer"><div class="set-comparison" id="comparison-${safeId(current)}-${j}">${setComparisonHTML(current,s,j)}</div><details class="set-options"><summary aria-label="Set ${j+1} options for ${escapeHTML(current)}">Set options</summary><div><button type="button" class="danger small" data-remove-set="${j}" data-remove-exercise="${escapeHTML(current)}" aria-label="Remove set ${j+1} for ${escapeHTML(current)}" ${draft.sets.length===1?"disabled":""}>Remove set</button>${draft.sets.length===1?'<p class="muted">Keep at least one set.</p>':''}</div></details></div>
 
 `;
 
@@ -2984,6 +2990,19 @@ toast(
 
 function pendingWorkoutSets(){return activeExercises().flatMap(ex=>(db.draftWorkout?.exercises?.[ex]?.sets||[]).map((set,index)=>({ex,index,set}))).filter(({set})=>!set.confirmed&&(set.touched||(!set.prefilled&&set.reps!==""))&&(set.weight!==""||set.reps!==""));}
 function reviewPendingSets(){document.getElementById('finishReview').close();if(workoutEditing)toggleWorkoutEditor();const first=pendingWorkoutSets()[0];if(!first)return;const card=Array.from(document.querySelectorAll('#workout>details')).find(card=>card.dataset.currentExercise===first.ex);if(card){card.open=true;requestAnimationFrame(()=>{const row=document.getElementById(`set-${safeId(first.ex)}-${first.index}`);row?.scrollIntoView({block:'center'});row?.querySelector('[data-field="reps"]')?.focus();});}}
+let finishedSession=null;
+function showWorkoutSummary(session){
+ finishedSession=session;document.getElementById('workoutSummaryDate').textContent=new Date(session.date).toLocaleString();
+ const count=session.exercises.reduce((sum,exercise)=>sum+exercise.sets.length,0);
+ document.getElementById('workoutSummaryTotals').textContent=`${session.exercises.length} exercise${session.exercises.length===1?'':'s'} · ${count} set${count===1?'':'s'} saved`;
+ document.getElementById('workoutSummaryExercises').innerHTML=session.exercises.map(exercise=>`<div class="history-exercise"><strong>${escapeHTML(exercise.name)}</strong><div class="history-sets">${exercise.sets.map((set,index)=>`<span class="history-set"><span>Set ${index+1}</span><b>${escapeHTML(set.weight)} lb × ${escapeHTML(set.reps)}</b></span>`).join('')}</div></div>`).join('');
+ showScreen('workoutSummary');
+}
+function viewFinishedWorkout(){
+ document.getElementById('historySearch').value='';document.getElementById('historyMode').value='all';showScreen('history');
+ const index=db.sessions.indexOf(finishedSession),card=document.querySelector(`[data-edit-session="${index}"]`)?.closest('details');if(card){card.open=true;requestAnimationFrame(()=>card.scrollIntoView({block:'start'}));}
+}
+function startAnotherWorkout(){expandedCards.clear();workoutEditing=false;showScreen('train');}
 function saveWorkout(acknowledged=false){
  const pending=pendingWorkoutSets();
  if(pending.length&&!acknowledged){document.getElementById('finishReviewMessage').textContent=`${pending.length} set${pending.length===1?' has':'s have'} numbers but ${pending.length===1?"isn't":"aren't"} completed. Review them before finishing, or save only the completed sets.`;document.getElementById('finishCompletedOnly').disabled=!activeExercises().some(ex=>(db.draftWorkout?.exercises?.[ex]?.sets||[]).some(set=>set.confirmed));document.getElementById('finishReview').showModal();return;}
@@ -3131,13 +3150,8 @@ saveDB();
 renderHistory();
 
 populateChartExercises();
-
-renderWorkout();
-
-
-toast(
-"Workout saved"
-);
+stopTimer();
+showWorkoutSummary(session);
 
 }
 
@@ -3323,7 +3337,7 @@ x.classList.remove(
 );
 
 
-const primary=["charts","weight","milestones"].includes(id)?"progress":id;
+const primary=id==="workoutSummary"?"train":["charts","weight","milestones"].includes(id)?"progress":id;
 const navButton=document.querySelector(`nav button[data-screen="${primary}"]`);
 navButton?.classList.add("active");
 document.querySelectorAll("nav button").forEach(button=>button.setAttribute("aria-current",button===navButton?"page":"false"));
