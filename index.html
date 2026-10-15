@@ -1073,6 +1073,7 @@ class="screen active"
  <div id="cycleDays"></div>
 </div>
 <div id="splitPicker" hidden><p class="muted">Choose body parts for today. Up to 8 exercises total.</p><div id="splitGroups" class="split-groups"></div></div>
+<div id="fullBodyVisibility" hidden><button type="button" class="secondary small" onclick="toggleHiddenBodyParts()">Show / hide body parts</button><div id="hiddenBodyParts" hidden></div></div>
 <p id="fullBodyDateHint" class="muted" hidden>Scroll through each body part and choose one exercise from its dropdown. Dates show the last logged workout.</p>
 </div>
 <details class="card template-panel" id="savedWorkoutPanel" open><summary class="weight-section-title">Saved workouts by day &amp; body part</summary><div class="row between"><p class="muted">Reuse your exercise choices and set counts.</p><button type="button" class="secondary small" onclick="saveWorkoutTemplate()">Save as template</button></div><div id="templateList"></div></details>
@@ -1514,6 +1515,7 @@ db.weightTracking=db.weightTracking&&typeof db.weightTracking==="object"?db.weig
 db.weightTracking.entries=Array.isArray(db.weightTracking.entries)?db.weightTracking.entries:[];
 db.templates=(Array.isArray(db.templates)?db.templates:[]).filter(t=>t&&typeof t.name==="string"&&Array.isArray(t.choices));
 db.workoutMode=db.workoutMode==="split"?"split":"full";
+db.hiddenFullGroups=Array.isArray(db.hiddenFullGroups)?db.hiddenFullGroups:[];
 db.splitGroups=Array.isArray(db.splitGroups)?db.splitGroups.filter(g=>Object.hasOwn(BASE_MENU,g)):[];
 db.cycle=Array.isArray(db.cycle)&&db.cycle.length?db.cycle:null;
 db.cycleStart=typeof db.cycleStart==="string"?db.cycleStart:"2026-10-12";
@@ -2642,10 +2644,27 @@ function loadCycleDay(index){
  expandedCards.clear();
  saveDB();renderWorkout();toast("Loaded "+day.name);
 }
+function toggleHiddenBodyParts(){
+ const el=document.getElementById("hiddenBodyParts");
+ el.hidden=!el.hidden;
+}
+function renderHiddenBodyParts(){
+ const wrap=document.getElementById("fullBodyVisibility");
+ wrap.hidden=db.workoutMode!=="full";
+ if(wrap.hidden)return;
+ const el=document.getElementById("hiddenBodyParts");
+ el.innerHTML=Object.keys(MENU).map(g=>`<label style="display:flex;align-items:center;gap:12px;padding:8px 4px"><input type="checkbox" data-visible-group="${escapeHTML(g)}" ${db.hiddenFullGroups.includes(g)?"":"checked"}> Show ${escapeHTML(groupLabel(g))}</label>`).join("");
+ el.querySelectorAll("[data-visible-group]").forEach(input=>input.onchange=()=>{
+  const g=input.dataset.visibleGroup;
+  db.hiddenFullGroups=input.checked?db.hiddenFullGroups.filter(x=>x!==g):[...new Set([...db.hiddenFullGroups,g])];
+  saveDB();renderWorkout();
+  document.getElementById("hiddenBodyParts").hidden=false;
+ });
+}
 function renderWorkout(){
 
 refreshMenu();
-renderWorkoutTemplates();renderCycle();document.body.classList.toggle("editing-workout",workoutEditing);
+renderWorkoutTemplates();renderCycle();renderHiddenBodyParts();document.body.classList.toggle("editing-workout",workoutEditing);
 
 document.getElementById("modeLabel").textContent=db.workoutMode==="split"?"Body Part Split":"Full Body";
 document.getElementById("savedWorkoutPanel").open=db.workoutMode==="split";
@@ -2675,7 +2694,7 @@ const displayed=db.workoutMode==="split"
    const slots=db.splitSelected[group]?.length?db.splitSelected[group]:[""];
    return slots.map((_,slot)=>[group,MENU[group]||[],slot]);
   })
- :Object.entries(MENU).map(([group,arr])=>[group,arr,0]);
+ :Object.entries(MENU).filter(([group])=>!db.hiddenFullGroups.includes(group)).map(([group,arr])=>[group,arr,0]);
 
 if((db.workoutMode==="split"&&!db.splitGroups.length)||(db.workoutMode==="full"&&!db.selected.length&&!workoutEditing)){
  el.innerHTML='<div class="card muted">Tap Add / edit exercises to choose today’s movements.</div>';
