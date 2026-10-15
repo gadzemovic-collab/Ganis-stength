@@ -1068,7 +1068,7 @@ class="screen active"
 <div id="draftBanner" class="draft-status" aria-live="polite">Draft saved automatically</div>
 <div class="row workout-toolbar"><button id="editWorkoutButton" type="button" class="secondary" onclick="toggleWorkoutEditor()">Add / edit exercises</button><button class="secondary small" onclick="showWelcome()">Workout style</button><details class="workout-help"><summary aria-label="Workout status help">?</summary><p>Draft saved automatically as you type. Complete each set, then finish the workout to add it to History.</p><p>Previous numbers are marked red, today's edits blue, and completed sets green.</p></details></div>
 <div id="splitPicker" hidden><p class="muted">Choose body parts for today. Up to 8 exercises total.</p><div id="splitGroups" class="split-groups"></div></div>
-<p id="fullBodyDateHint" class="muted" hidden>Choose exercises by body part. Dates show the last logged workout.</p>
+<p id="fullBodyDateHint" class="muted" hidden>Expand a muscle group and choose exercises from its dropdowns. Add multiple movements per group, up to 8 total. Your Full Body selections are saved separately from Body Part Split.</p>
 </div>
 <details class="card template-panel"><summary class="weight-section-title">Saved workouts</summary><div class="row between"><p class="muted">Reuse your exercise choices and set counts.</p><button type="button" class="secondary small" onclick="saveWorkoutTemplate()">Save as template</button></div><div id="templateList"></div></details>
 <div id="workout">
@@ -1884,12 +1884,7 @@ const options=
 MENU[group]||[];
 
 
-return db.selected.find(
-
-x=>
-options.includes(x)
-
-) || "";
+return db.selected.filter(x=>options.includes(x))[slot] || "";
 
 }
 
@@ -2540,8 +2535,9 @@ function chooseForGroup(group,ex,slot=0){
   else slots.splice(slot,1);
   db.splitSelected[group]=slots;
  }else{
-  const previous=selectedForGroup(group);
+  const previous=selectedForGroup(group,slot);
   db.selected=db.selected.filter(x=>x!==previous);
+  if(ex&&db.selected.includes(ex)){toast("Exercise already selected");renderWorkout();return;}
   if(ex){
    if(db.selected.length>=8){
     if(previous)db.selected.push(previous);
@@ -2585,7 +2581,11 @@ const displayed=db.workoutMode==="split"
    const slots=db.splitSelected[group]?.length?db.splitSelected[group]:[""];
    return slots.map((_,slot)=>[group,MENU[group]||[],slot]);
   })
- :Object.entries(MENU).filter(([group])=>workoutEditing||selectedForGroup(group)).map(([group,arr])=>[group,arr,0]);
+ :Object.entries(MENU).flatMap(([group,arr])=>{
+   const chosen=db.selected.filter(ex=>arr.includes(ex));
+   if(!workoutEditing)return chosen.map((_,slot)=>[group,arr,slot]);
+   return Array.from({length:chosen.length+((chosen.length===0||db.selected.length<8)?1:0)},(_,slot)=>[group,arr,slot]);
+  });
 
 if((db.workoutMode==="split"&&!db.splitGroups.length)||(db.workoutMode==="full"&&!db.selected.length&&!workoutEditing)){
  el.innerHTML='<div class="card muted">Tap Add / edit exercises to choose today’s movements.</div>';
