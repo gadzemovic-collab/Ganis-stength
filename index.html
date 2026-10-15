@@ -1073,7 +1073,7 @@ class="screen active"
  <div id="cycleDays"></div>
 </div>
 <div id="splitPicker" hidden><p class="muted">Choose body parts for today. Up to 8 exercises total.</p><div id="splitGroups" class="split-groups"></div></div>
-<div id="fullBodyVisibility" hidden><button type="button" class="secondary small" onclick="toggleHiddenBodyParts()">Show / hide body parts</button><div id="hiddenBodyParts" hidden></div></div>
+<div id="fullBodyVisibility" hidden><button type="button" class="secondary small" id="toggleBodyVisibility" onclick="toggleHiddenBodyParts()">Show / hide body parts</button><div id="hiddenBodyParts" hidden></div></div>
 <p id="fullBodyDateHint" class="muted" hidden>Scroll through each body part and choose one exercise from its dropdown. Dates show the last logged workout.</p>
 </div>
 <details class="card template-panel" id="savedWorkoutPanel" open><summary class="weight-section-title">Saved workouts by day &amp; body part</summary><div class="row between"><p class="muted">Reuse your exercise choices and set counts.</p><button type="button" class="secondary small" onclick="saveWorkoutTemplate()">Save as template</button></div><div id="templateList"></div></details>
@@ -2190,7 +2190,8 @@ function renderExercisePicker(){
  if(!exercisePickerContext)return;
  const {group,slot}=exercisePickerContext,query=document.getElementById('exerciseSearch').value.trim().toLowerCase(),current=selectedForGroup(group,slot),results=document.getElementById('exercisePickerResults');
  const matches=(MENU[group]||[]).filter(name=>name.toLowerCase().includes(query));
- results.innerHTML=matches.length?matches.map(name=>`<button type="button" class="picker-result" data-picker-exercise="${escapeHTML(name)}" aria-pressed="${name===current}"><strong>${escapeHTML(name)}</strong><small>${name===current?'Selected · ':''}Last logged: ${escapeHTML(lastLoggedLabel(name))}</small></button>`).join(''):'<p class="muted">No matching exercises. Try another name or add a custom exercise.</p>';
+ results.innerHTML=matches.length?matches.map(name=>`<button type="button" class="picker-result" data-picker-exercise="${escapeHTML(name)}" aria-pressed="${name===current}"><strong>${escapeHTML(name)}</strong><small>${name===current?'Selected · ':''}Last logged: ${escapeHTML(lastLoggedLabel(name))}</small></button>`).join('') :'<p class="muted">No matching exercises. Add your own below.</p>';
+ const add=document.createElement('button');add.type='button';add.className='secondary';add.textContent='+ Add custom '+groupLabel(group)+' exercise';add.onclick=()=>{document.getElementById('exercisePicker').close();addCustomExercise(group,slot);};results.appendChild(add);
  results.querySelectorAll('[data-picker-exercise]').forEach(button=>button.onclick=()=>pickExercise(button.dataset.pickerExercise));
 }
 function pickExercise(value){if(!exercisePickerContext)return;const {group,slot}=exercisePickerContext;document.getElementById('exercisePicker').close();chooseOrAdd(group,value,slot);}
@@ -2647,6 +2648,7 @@ function loadCycleDay(index){
 function toggleHiddenBodyParts(){
  const el=document.getElementById("hiddenBodyParts");
  el.hidden=!el.hidden;
+ el.style.display=el.hidden?"none":"block";
 }
 function renderHiddenBodyParts(){
  const wrap=document.getElementById("fullBodyVisibility");
@@ -2654,11 +2656,13 @@ function renderHiddenBodyParts(){
  if(wrap.hidden)return;
  const el=document.getElementById("hiddenBodyParts");
  el.innerHTML=Object.keys(MENU).map(g=>`<label style="display:flex;align-items:center;gap:12px;padding:8px 4px"><input type="checkbox" data-visible-group="${escapeHTML(g)}" ${db.hiddenFullGroups.includes(g)?"":"checked"}> Show ${escapeHTML(groupLabel(g))}</label>`).join("");
+ el.style.display=el.hidden?"none":"block";
  el.querySelectorAll("[data-visible-group]").forEach(input=>input.onchange=()=>{
   const g=input.dataset.visibleGroup;
   db.hiddenFullGroups=input.checked?db.hiddenFullGroups.filter(x=>x!==g):[...new Set([...db.hiddenFullGroups,g])];
   saveDB();renderWorkout();
   document.getElementById("hiddenBodyParts").hidden=false;
+  document.getElementById("hiddenBodyParts").style.display="block";
  });
 }
 function renderWorkout(){
@@ -2929,7 +2933,7 @@ card.querySelectorAll('select[data-group]').forEach(select=>{
  const button=document.createElement('button');button.type='button';button.className='secondary exercise-choice-button';button.textContent=current?`Change: ${current} ›`:'Choose exercise ›';button.setAttribute('aria-label',`Choose ${groupLabel(group)} exercise ${slot+1}`);button.setAttribute('aria-haspopup','dialog');button.onclick=()=>openExercisePicker(group,slot);select.replaceWith(button);
 });
 // Direct exercise switching from the visible exercise title.
-if(!current||workoutEditing){const summary=card.querySelector('.exercise-summary');summary.setAttribute('aria-label',`Choose ${groupLabel(group)} exercise ${slot+1}`);summary.onclick=event=>{event.preventDefault();openExercisePicker(group,slot);};}
+if(!current){const summary=card.querySelector('.exercise-summary');summary.setAttribute('aria-label',`Expand ${groupLabel(group)} exercise choices`);}
 if(current){
  const switcher=document.createElement("button");
  switcher.type="button";
