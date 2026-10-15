@@ -1070,7 +1070,7 @@ class="screen active"
 <div id="splitPicker" hidden><p class="muted">Choose body parts for today. Up to 8 exercises total.</p><div id="splitGroups" class="split-groups"></div></div>
 <p id="fullBodyDateHint" class="muted" hidden>Scroll through each body part and choose one exercise from its dropdown. Dates show the last logged workout.</p>
 </div>
-<details class="card template-panel"><summary class="weight-section-title">Saved workouts</summary><div class="row between"><p class="muted">Reuse your exercise choices and set counts.</p><button type="button" class="secondary small" onclick="saveWorkoutTemplate()">Save as template</button></div><div id="templateList"></div></details>
+<details class="card template-panel" id="savedWorkoutPanel" open><summary class="weight-section-title">Saved workouts by day &amp; body part</summary><div class="row between"><p class="muted">Reuse your exercise choices and set counts.</p><button type="button" class="secondary small" onclick="saveWorkoutTemplate()">Save as template</button></div><div id="templateList"></div></details>
 <div id="workout">
 </div>
 
@@ -2371,7 +2371,15 @@ function saveWorkoutTemplate(){
  const name=entered.trim().slice(0,60);
  const index=db.templates.findIndex(t=>t.name.toLowerCase()===name.toLowerCase());
  if(index>=0&&!confirm(`Replace the saved workout "${name}"?`))return;
- const template={name,mode:db.workoutMode,choices};
+ let day="";
+ if(db.workoutMode==="split"){
+  const answer=prompt("Assign a day (optional): Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday",db.templates[index]?.day||"");
+  if(answer===null)return;
+  const days=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+  day=days.find(d=>d.toLowerCase()===answer.trim().toLowerCase())||"";
+  if(answer.trim()&&!day){toast("Use a weekday name, or leave blank");return;}
+ }
+ const template={name,mode:db.workoutMode,choices,day};
  if(index>=0)db.templates[index]=template;else db.templates.push(template);
  saveDB();renderWorkoutTemplates();toast("Workout template saved");
 }
@@ -2403,7 +2411,17 @@ function deleteWorkoutTemplate(index){
 }
 function renderWorkoutTemplates(){
  const el=document.getElementById("templateList");
- el.innerHTML=db.templates.length?db.templates.map((template,index)=>`<div class="template-row"><button type="button" class="template-load" data-load-template="${index}"><strong>${escapeHTML(template.name)}</strong><span>${template.mode==="split"?"Body Part Split":"Full Body"} · ${template.choices.length} exercises</span></button><button type="button" class="secondary small" data-delete-template="${index}" aria-label="Delete saved workout ${escapeHTML(template.name)}">Delete</button></div>`).join(""):'<div class="muted template-empty">Your saved workouts will appear here.</div>';
+ const templates=db.templates.map((template,index)=>({...template,index})).filter(t=>t.mode===db.workoutMode);
+ const dayNames=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+ const today=dayNames[(new Date().getDay()+6)%7];
+ const ordered=templates.sort((a,b)=>{
+  const score=t=>t.day===today?-1:t.day?dayNames.indexOf(t.day):7;
+  return score(a)-score(b);
+ });
+ el.innerHTML=ordered.length?ordered.map(t=>{
+  const parts=[...new Set(t.choices.map(c=>groupLabel(c.group)))].join(" + ");
+  return `<div class="template-row"><button type="button" class="template-load" data-load-template="${t.index}"><strong>${t.day?escapeHTML(t.day)+" — ":""}${escapeHTML(t.name)}${t.day===today?' · Today':''}</strong><span>${escapeHTML(parts)} · ${t.choices.length} exercises</span></button><button type="button" class="secondary small" data-delete-template="${t.index}" aria-label="Delete saved workout ${escapeHTML(t.name)}">Delete</button></div>`;
+ }).join(""):'<div class="muted template-empty">No saved workouts for this mode yet. Choose exercises and tap Save as template to create a day or body-part workout.</div>';
  el.querySelectorAll("[data-load-template]").forEach(button=>button.onclick=()=>loadWorkoutTemplate(Number(button.dataset.loadTemplate)));
  el.querySelectorAll("[data-delete-template]").forEach(button=>button.onclick=()=>deleteWorkoutTemplate(Number(button.dataset.deleteTemplate)));
 }
@@ -2554,6 +2572,7 @@ refreshMenu();
 renderWorkoutTemplates();document.body.classList.toggle("editing-workout",workoutEditing);
 
 document.getElementById("modeLabel").textContent=db.workoutMode==="split"?"Body Part Split":"Full Body";
+document.getElementById("savedWorkoutPanel").open=db.workoutMode==="split";
 const picker=document.getElementById("splitPicker");
 picker.hidden=db.workoutMode!=="split"||!workoutEditing;
 document.getElementById("fullBodyDateHint").hidden=db.workoutMode!=="full"||!workoutEditing;
