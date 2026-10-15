@@ -2930,9 +2930,9 @@ if(current){
  switcher.type="button";
  switcher.className="secondary small";
  switcher.textContent="Change exercise ▾";
- switcher.style.margin="8px 12px 12px";
+ switcher.style.cssText="display:block;width:calc(100% - 32px);min-height:52px;margin:16px;touch-action:manipulation";
  switcher.onclick=()=>openExercisePicker(group,slot);
- card.querySelector(".exercise-summary").appendChild(switcher);
+ card.querySelector(".exercise-summary").insertAdjacentElement("afterend",switcher);
 }
 el.appendChild(card);
 
