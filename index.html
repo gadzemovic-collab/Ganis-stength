@@ -2574,8 +2574,8 @@ renderWorkoutTemplates();document.body.classList.toggle("editing-workout",workou
 document.getElementById("modeLabel").textContent=db.workoutMode==="split"?"Body Part Split":"Full Body";
 document.getElementById("savedWorkoutPanel").open=db.workoutMode==="split";
 const picker=document.getElementById("splitPicker");
-picker.hidden=db.workoutMode!=="split"||!workoutEditing;
-document.getElementById("fullBodyDateHint").hidden=db.workoutMode!=="full"||!workoutEditing;
+picker.hidden=db.workoutMode!=="split";
+document.getElementById("fullBodyDateHint").hidden=db.workoutMode!=="full";
 document.getElementById("editWorkoutButton").textContent=workoutEditing?"Done editing":"Add / edit exercises";
 if(db.workoutMode==="split"){
  document.getElementById("splitGroups").innerHTML=Object.keys(MENU).map(group=>
@@ -2599,7 +2599,7 @@ const displayed=db.workoutMode==="split"
    const slots=db.splitSelected[group]?.length?db.splitSelected[group]:[""];
    return slots.map((_,slot)=>[group,MENU[group]||[],slot]);
   })
- :Object.entries(MENU).filter(([group])=>workoutEditing||selectedForGroup(group)).map(([group,arr])=>[group,arr,0]);
+ :Object.entries(MENU).map(([group,arr])=>[group,arr,0]);
 
 if((db.workoutMode==="split"&&!db.splitGroups.length)||(db.workoutMode==="full"&&!db.selected.length&&!workoutEditing)){
  el.innerHTML='<div class="card muted">Tap Add / edit exercises to choose today’s movements.</div>';
@@ -2614,7 +2614,7 @@ const card=
 document.createElement("details");
 card.className="workout-part";
 const cardKey=`${db.workoutMode}:${group}:${slot}`;
-card.open=workoutEditing||expandedCards.has(cardKey);
+card.open=workoutEditing||expandedCards.has(cardKey)||(db.workoutMode==="full"&&!current);
 card.dataset.currentExercise=current;
 card.dataset.workoutOrder=workoutOrder;
 card.addEventListener("toggle",()=>{
@@ -2848,7 +2848,7 @@ if(current){
  title.addEventListener('click',choose);
  title.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){choose(event);}});
 }
-if(workoutEditing){const summary=card.querySelector('.exercise-summary');summary.setAttribute('aria-label',`Change ${groupLabel(group)} exercise ${slot+1}`);summary.onclick=event=>{if(event.target.closest('strong[role="button"]'))return;event.preventDefault();openExercisePicker(group,slot);};}
+if(!current||workoutEditing){const summary=card.querySelector('.exercise-summary');summary.setAttribute('aria-label',`Choose ${groupLabel(group)} exercise ${slot+1}`);summary.onclick=event=>{if(event.target.closest('strong[role="button"]'))return;event.preventDefault();openExercisePicker(group,slot);};}
 el.appendChild(card);
 
 if(workoutEditing&&db.workoutMode==="split"&&current&&slot===(db.splitSelected[group]?.length||1)-1){
