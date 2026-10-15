@@ -2913,10 +2913,10 @@ Do not take deadlifts to failure.
 const currentSets=current?getDraftExercise(current).sets:[];
 card.innerHTML=`
 <summary class="exercise-summary">
+ <span class="exercise-chevron" aria-hidden="true">›</span>
  <span class="exercise-summary-copy"><span class="exercise-group">${escapeHTML(groupLabel(group))}${db.workoutMode==="split"?` · ${slot+1}`:""}</span>
  <strong>${escapeHTML(current||"Choose an exercise")}</strong>
  ${current?`<span class="exercise-summary-meta">Last logged: ${escapeHTML(lastLoggedLabel(current))} · <span class="exercise-progress">${currentSets.filter(s=>s.confirmed).length}/${currentSets.length} sets completed</span></span>`:""}</span>
- <span class="exercise-chevron" aria-hidden="true">›</span>
 </summary>
 ${current?`<div class="row between exercise-tools"><span class="tag">Target ${target(current)} reps</span><details class="exercise-menu"><summary aria-label="Exercise options for ${escapeHTML(current)}">•••</summary><div class="exercise-menu-content"><label for="choose-${cardKey}">Change exercise</label><select id="choose-${cardKey}" data-group="${escapeHTML(group)}" data-slot="${slot}">${options}</select><button type="button" class="secondary small" data-remove-today="${escapeHTML(group)}" data-slot="${slot}">Remove from today</button><details><summary>Manage exercise library</summary><p class="muted">Remove this exercise from future choices. History stays.</p><button type="button" class="danger small" data-delete-group="${escapeHTML(group)}" data-slot="${slot}">Remove from exercise library</button></details></div></details></div>`:`<label for="choose-${cardKey}" style="margin-top:12px">Exercise</label><select id="choose-${cardKey}" data-group="${escapeHTML(group)}" data-slot="${slot}">${options}</select>`}
 
