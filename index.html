@@ -1067,6 +1067,11 @@ class="screen active"
 <div class="row between"><div><h2 style="margin:0">Today's Workout</h2><div id="modeLabel" class="muted">Full Body</div></div><button class="secondary small" onclick="newWorkout()">New workout</button></div>
 <div id="draftBanner" class="draft-status" aria-live="polite">Draft saved automatically</div>
 <div class="row workout-toolbar"><button id="editWorkoutButton" type="button" class="secondary" onclick="toggleWorkoutEditor()">Add / edit exercises</button><button class="secondary small" onclick="showWelcome()">Workout style</button><details class="workout-help"><summary aria-label="Workout status help">?</summary><p>Draft saved automatically as you type. Complete each set, then finish the workout to add it to History.</p><p>Previous numbers are marked red, today's edits blue, and completed sets green.</p></details></div>
+<div id="cyclePlanner" class="card" hidden>
+ <div class="row between"><strong>Workout cycle</strong><button type="button" class="secondary small" onclick="changeCycleLength()">Change days</button></div>
+ <p class="muted">Starts on Monday by default. Customize any day as a workout or rest day. Tap Load day to train.</p>
+ <div id="cycleDays"></div>
+</div>
 <div id="splitPicker" hidden><p class="muted">Choose body parts for today. Up to 8 exercises total.</p><div id="splitGroups" class="split-groups"></div></div>
 <p id="fullBodyDateHint" class="muted" hidden>Scroll through each body part and choose one exercise from its dropdown. Dates show the last logged workout.</p>
 </div>
@@ -1510,6 +1515,8 @@ db.weightTracking.entries=Array.isArray(db.weightTracking.entries)?db.weightTrac
 db.templates=(Array.isArray(db.templates)?db.templates:[]).filter(t=>t&&typeof t.name==="string"&&Array.isArray(t.choices));
 db.workoutMode=db.workoutMode==="split"?"split":"full";
 db.splitGroups=Array.isArray(db.splitGroups)?db.splitGroups.filter(g=>Object.hasOwn(BASE_MENU,g)):[];
+db.cycle=Array.isArray(db.cycle)&&db.cycle.length?db.cycle:null;
+db.cycleStart=typeof db.cycleStart==="string"?db.cycleStart:"2026-10-12";
 db.splitSelected=db.splitSelected&&typeof db.splitSelected==="object"?db.splitSelected:{};
 if(!db.settings){db.settings={};}
 db.settings={restSeconds:90,autoRest:true,timerAlert:"both",theme:"blue",font:"system",weightStep:5,sharkStyle:"original",...db.settings};
@@ -2566,10 +2573,79 @@ function chooseForGroup(group,ex,slot=0){
  saveDB();renderWorkout();
 }
 
+const DEFAULT_CYCLE=[
+ {name:"Chest + Triceps",groups:["Chest","Triceps"]},
+ {name:"Back + Biceps",groups:["Back","Biceps"]},
+ {name:"Rest",groups:[]},
+ {name:"Legs",groups:["Quads","Hamstrings","Glutes","Calves"]},
+ {name:"Shoulders + Arms",groups:["Shoulders","RearDelts","Biceps","Triceps"]},
+ {name:"Rest",groups:[]},
+ {name:"Full Body",groups:["Chest","Back","Quads","Hamstrings"]}
+];
+function ensureCycle(){
+ if(!Array.isArray(db.cycle)||!db.cycle.length)db.cycle=DEFAULT_CYCLE.map(d=>({...d,groups:[...d.groups]}));
+}
+function cycleTodayIndex(){
+ const start=new Date(db.cycleStart+"T12:00:00");
+ const now=new Date();now.setHours(12,0,0,0);
+ const elapsed=Math.round((now-start)/86400000);
+ return ((elapsed%db.cycle.length)+db.cycle.length)%db.cycle.length;
+}
+function renderCycle(){
+ const panel=document.getElementById("cyclePlanner");
+ panel.hidden=db.workoutMode!=="split";
+ if(panel.hidden)return;
+ ensureCycle();
+ const groups=Object.keys(MENU);
+ const today=cycleTodayIndex();
+ const el=document.getElementById("cycleDays");
+ el.innerHTML=db.cycle.map((d,i)=>{
+  const rest=!d.groups.length;
+  return `<div class="template-row" style="display:block;padding:12px 0;border-bottom:1px solid #ddd">
+   <div class="row between"><strong>Day ${i+1}${i===today?" · Today":""}</strong><button type="button" class="secondary small" data-cycle-load="${i}" ${rest?"disabled":""}> ${rest?"Rest day":"Load day"} </button></div>
+   <input aria-label="Day ${i+1} name" data-cycle-name="${i}" value="${escapeHTML(d.name)}" placeholder="Workout name or Rest" style="width:100%;margin:6px 0">
+   <div class="row" style="flex-wrap:wrap;gap:6px">
+    ${groups.map(g=>`<label style="display:inline-flex;align-items:center;gap:4px;margin:3px 8px 3px 0;font-size:13px"><input type="checkbox" data-cycle-group="${i}" value="${escapeHTML(g)}" ${d.groups.includes(g)?"checked":""}> ${escapeHTML(groupLabel(g))}</label>`).join("")}
+   </div></div>`;
+ }).join("");
+ el.querySelectorAll("[data-cycle-name]").forEach(input=>input.onchange=()=>{
+  db.cycle[Number(input.dataset.cycleName)].name=input.value.trim().slice(0,60)||"Rest";
+  saveDB();renderCycle();
+ });
+ el.querySelectorAll("[data-cycle-group]").forEach(input=>input.onchange=()=>{
+  const d=db.cycle[Number(input.dataset.cycleGroup)];
+  d.groups=Object.keys(MENU).filter(g=>[...el.querySelectorAll('[data-cycle-group="'+input.dataset.cycleGroup+'"]:checked')].some(c=>c.value===g));
+  if(!d.groups.length)d.name="Rest";
+  else if(d.name==="Rest")d.name=d.groups.map(groupLabel).join(" + ");
+  saveDB();renderCycle();
+ });
+ el.querySelectorAll("[data-cycle-load]").forEach(button=>button.onclick=()=>loadCycleDay(Number(button.dataset.cycleLoad)));
+}
+function changeCycleLength(){
+ ensureCycle();
+ const value=prompt("How many days in your repeating workout cycle? (1–28)",String(db.cycle.length));
+ if(value===null)return;
+ const n=Number(value);
+ if(!Number.isInteger(n)||n<1||n>28){toast("Choose 1 to 28 days");return;}
+ if(n<db.cycle.length&&!confirm("Remove the last "+(db.cycle.length-n)+" cycle days?"))return;
+ while(db.cycle.length<n)db.cycle.push({name:"Rest",groups:[]});
+ db.cycle=db.cycle.slice(0,n);
+ saveDB();renderCycle();
+}
+function loadCycleDay(index){
+ const day=db.cycle[index];if(!day||!day.groups.length)return;
+ if(draftHasChanges()&&!confirm("Load this day and discard unfinished sets?"))return;
+ db.workoutMode="split";
+ db.splitGroups=day.groups.slice();
+ db.splitSelected=Object.fromEntries(day.groups.map(g=>[g,(db.splitSelected[g]||[]).filter(Boolean)]));
+ db.draftWorkout=null;
+ expandedCards.clear();
+ saveDB();renderWorkout();toast("Loaded "+day.name);
+}
 function renderWorkout(){
 
 refreshMenu();
-renderWorkoutTemplates();document.body.classList.toggle("editing-workout",workoutEditing);
+renderWorkoutTemplates();renderCycle();document.body.classList.toggle("editing-workout",workoutEditing);
 
 document.getElementById("modeLabel").textContent=db.workoutMode==="split"?"Body Part Split":"Full Body";
 document.getElementById("savedWorkoutPanel").open=db.workoutMode==="split";
@@ -2849,6 +2925,15 @@ if(current){
  title.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){choose(event);}});
 }
 if(!current||workoutEditing){const summary=card.querySelector('.exercise-summary');summary.setAttribute('aria-label',`Choose ${groupLabel(group)} exercise ${slot+1}`);summary.onclick=event=>{if(event.target.closest('strong[role="button"]'))return;event.preventDefault();openExercisePicker(group,slot);};}
+if(current){
+ const switcher=document.createElement("button");
+ switcher.type="button";
+ switcher.className="secondary small";
+ switcher.textContent="Change exercise ▾";
+ switcher.style.margin="8px 12px 12px";
+ switcher.onclick=()=>openExercisePicker(group,slot);
+ card.querySelector(".exercise-summary").appendChild(switcher);
+}
 el.appendChild(card);
 
 if(workoutEditing&&db.workoutMode==="split"&&current&&slot===(db.splitSelected[group]?.length||1)-1){
