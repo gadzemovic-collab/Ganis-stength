@@ -1049,7 +1049,7 @@ body:not(:has(#train.active)) .app-bottom .rest-float:not(.timer-running),body:h
 
 <div class="brand">
 <img src="rep-harbor-192.png?v=12" alt="RepHarbor shark logo" width="52" height="52">
-<div><h1>RepHarbor</h1><div class="sub">Train your way • max 8 exercises</div></div>
+<div><h1>RepHarbor</h1><div class="sub">Train your way • your workout, your rules</div></div>
 </div>
 
 </header>
@@ -1072,7 +1072,7 @@ class="screen active"
  <p class="muted">Starts on Monday by default. Customize any day as a workout or rest day. Tap Load day to train.</p>
  <div id="cycleDays"></div>
 </div>
-<div id="splitPicker" hidden><p class="muted">Choose body parts for today. Up to 8 exercises total.</p><div id="splitGroups" class="split-groups"></div></div>
+<div id="splitPicker" hidden><p class="muted">Choose any body parts and as many exercises as you want.</p><div id="splitGroups" class="split-groups"></div></div>
 <div id="fullBodyVisibility" hidden><button type="button" class="secondary small" id="toggleBodyVisibility" onclick="toggleHiddenBodyParts()">Show / hide body parts</button><div id="hiddenBodyParts" hidden></div></div>
 <p id="fullBodyDateHint" class="muted" hidden>Scroll through each body part and choose one exercise from its dropdown. Dates show the last logged workout.</p>
 </div>
@@ -1626,7 +1626,7 @@ Object.values(MENU)
 
 for(const group of Object.keys(BASE_MENU)){
 db.splitSelected[group]=Array.isArray(db.splitSelected[group])
-?db.splitSelected[group].filter(ex=>MENU[group]?.includes(ex)).slice(0,8)
+?db.splitSelected[group].filter(ex=>MENU[group]?.includes(ex))
 :[];
 }
 
@@ -2397,7 +2397,7 @@ function loadWorkoutTemplate(index){
  const template=db.templates[index];if(!template)return;
  refreshMenu();
  const choices=template.choices;
- if(!["full","split"].includes(template.mode)||!choices.length||choices.length>8||choices.some(c=>!c||!MENU[c.group]?.includes(c.exercise)||!Number.isInteger(c.setCount)||c.setCount<1)||new Set(choices.map(c=>c.exercise)).size!==choices.length||(template.mode==="full"&&new Set(choices.map(c=>c.group)).size!==choices.length)){
+ if(!["full","split"].includes(template.mode)||!choices.length||choices.some(c=>!c||!MENU[c.group]?.includes(c.exercise)||!Number.isInteger(c.setCount)||c.setCount<1)||new Set(choices.map(c=>c.exercise)).size!==choices.length||(template.mode==="full"&&new Set(choices.map(c=>c.group)).size!==choices.length)){
   toast("Some template exercises are unavailable. Save an updated template.");return;
  }
  if(draftHasChanges()&&!confirm("Load this saved workout and discard your unfinished sets?"))return;
@@ -2522,9 +2522,9 @@ function toggleSplitGroup(group){
 }
 
 function addSplitSlot(group){
- if(activeExercises().length>=8){toast("Maximum 8 exercises");return;}
+ 
  const slots=db.splitSelected[group]||[];
- if(slots.length>=8||slots.includes("")){toast("Choose the open exercise first");return;}
+ if(slots.includes("")){toast("Choose the open exercise first");return;}
  slots.push("");db.splitSelected[group]=slots;saveDB();renderWorkout();
 }
 
@@ -2556,9 +2556,7 @@ function chooseForGroup(group,ex,slot=0){
   if(ex&&slots.some((item,i)=>i!==slot&&item===ex)){
    toast("Exercise already chosen for this body part");renderWorkout();return;
   }
-  if(ex&&!slots[slot]&&activeExercises().length>=8){
-   toast("Maximum 8 exercises");renderWorkout();return;
-  }
+  
   if(ex){slots[slot]=ex;getDraftExercise(ex);}
   else slots.splice(slot,1);
   db.splitSelected[group]=slots;
@@ -2566,10 +2564,7 @@ function chooseForGroup(group,ex,slot=0){
   const previous=selectedForGroup(group);
   db.selected=db.selected.filter(x=>x!==previous);
   if(ex){
-   if(db.selected.length>=8){
-    if(previous)db.selected.push(previous);
-    toast("Maximum 8 exercises");renderWorkout();return;
-   }
+   
    db.selected.push(ex);getDraftExercise(ex);
   }
  }
