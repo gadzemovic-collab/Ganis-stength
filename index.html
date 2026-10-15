@@ -1019,6 +1019,12 @@ body:not(:has(#train.active)) .app-bottom .rest-float:not(.timer-running),body:h
 .app-bottom:has(.rest-float.timer-running:not(.collapsed)){flex-wrap:wrap;}
 .app-bottom:has(.rest-float.timer-running:not(.collapsed)) .rest-float{order:-1;flex-basis:100%;border-left:0!important;border-bottom:1px solid var(--blue-border)!important;min-height:44px;}
 
+.body-visibility-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0 4px;width:100%;}
+.body-visibility-option{display:flex;align-items:center;gap:9px;padding:10px 11px;border:1px solid #d6e4f5;border-radius:12px;background:#f2f7fd;font-size:14px;font-weight:650;color:#243c56;min-width:0;cursor:pointer;line-height:1.3;}
+.body-visibility-option input{width:21px;height:21px;min-width:21px;margin:0;accent-color:#1689f5;}
+#hiddenBodyParts{width:100%;max-width:100%;overflow:hidden;}
+.hide-body-part{display:block;margin:7px 0 0 auto;padding:7px 11px;border:1px solid #d9e5f1;border-radius:9px;background:#f5f8fc;color:#536a83;font-size:12px;font-weight:650;cursor:pointer;}
+@media(max-width:360px){.body-visibility-grid{grid-template-columns:1fr;}}
 </style>
 </head>
 
@@ -2650,7 +2656,7 @@ function renderHiddenBodyParts(){
  wrap.hidden=db.workoutMode!=="full";
  if(wrap.hidden)return;
  const el=document.getElementById("hiddenBodyParts");
- el.innerHTML=Object.keys(MENU).map(g=>`<label style="display:flex;align-items:center;gap:12px;padding:8px 4px"><input type="checkbox" data-visible-group="${escapeHTML(g)}" ${db.hiddenFullGroups.includes(g)?"":"checked"}> Show ${escapeHTML(groupLabel(g))}</label>`).join("");
+ el.innerHTML=`<p class="muted" style="margin:8px 0">Uncheck a body part to hide its card. Your workout history stays saved.</p><div class="body-visibility-grid">${Object.keys(MENU).map(g=>`<label class="body-visibility-option"><input type="checkbox" data-visible-group="${escapeHTML(g)}" ${db.hiddenFullGroups.includes(g)?"":"checked"}><span>${escapeHTML(groupLabel(g))}</span></label>`).join("")}</div>`;
  el.style.display=el.hidden?"none":"block";
  el.querySelectorAll("[data-visible-group]").forEach(input=>input.onchange=()=>{
   const g=input.dataset.visibleGroup;
@@ -2917,6 +2923,7 @@ card.innerHTML=`
  <strong>${escapeHTML(current||"Choose an exercise")}</strong>
  ${current?`<span class="exercise-summary-meta">Last logged: ${escapeHTML(lastLoggedLabel(current))} · <span class="exercise-progress">${currentSets.filter(s=>s.confirmed).length}/${currentSets.length} sets completed</span></span>`:""}</span>
 </summary>
+${db.workoutMode==="full"?`<button type="button" class="hide-body-part" data-hide-body-part="${escapeHTML(group)}" aria-label="Hide ${escapeHTML(groupLabel(group))} from Full Body">Hide ${escapeHTML(groupLabel(group))}</button>`:""}
 ${current?`<div class="row between exercise-tools"><span class="tag">Target ${target(current)} reps</span><details class="exercise-menu"><summary aria-label="Exercise options for ${escapeHTML(current)}">•••</summary><div class="exercise-menu-content"><label for="choose-${cardKey}">Change exercise</label><select id="choose-${cardKey}" data-group="${escapeHTML(group)}" data-slot="${slot}">${options}</select><button type="button" class="secondary small" data-remove-today="${escapeHTML(group)}" data-slot="${slot}">Remove from today</button><details><summary>Manage exercise library</summary><p class="muted">Remove this exercise from future choices. History stays.</p><button type="button" class="danger small" data-delete-group="${escapeHTML(group)}" data-slot="${slot}">Remove from exercise library</button></details></div></details></div>`:`<label for="choose-${cardKey}" style="margin-top:12px">Exercise</label><select id="choose-${cardKey}" data-group="${escapeHTML(group)}" data-slot="${slot}">${options}</select>`}
 
 ${logger}
@@ -2924,6 +2931,8 @@ ${logger}
 `;
 
 
+const hideButton=card.querySelector('[data-hide-body-part]');
+if(hideButton)hideButton.onclick=()=>{db.hiddenFullGroups=[...new Set([...db.hiddenFullGroups,group])];saveDB();renderWorkout();toast(groupLabel(group)+" hidden — use Show / hide body parts to restore");};
 card.querySelectorAll('select[data-group]').forEach(select=>{
  const button=document.createElement('button');button.type='button';button.className='secondary exercise-choice-button';button.textContent=current?`Change: ${current} ›`:'Choose exercise ›';button.setAttribute('aria-label',`Choose ${groupLabel(group)} exercise ${slot+1}`);button.setAttribute('aria-haspopup','dialog');button.onclick=()=>openExercisePicker(group,slot);select.replaceWith(button);
 });
