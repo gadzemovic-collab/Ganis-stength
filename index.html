@@ -2814,7 +2814,22 @@ ${logger}
 card.querySelectorAll('select[data-group]').forEach(select=>{
  const button=document.createElement('button');button.type='button';button.className='secondary exercise-choice-button';button.textContent=current?`Change: ${current} ›`:'Choose exercise ›';button.setAttribute('aria-label',`Choose ${groupLabel(group)} exercise ${slot+1}`);button.setAttribute('aria-haspopup','dialog');button.onclick=()=>openExercisePicker(group,slot);select.replaceWith(button);
 });
-if(workoutEditing){const summary=card.querySelector('.exercise-summary');summary.setAttribute('aria-label',`Change ${groupLabel(group)} exercise ${slot+1}`);summary.onclick=event=>{event.preventDefault();openExercisePicker(group,slot);};}
+// Direct exercise switching from the visible exercise title.
+if(current){
+ const summary=card.querySelector('.exercise-summary');
+ const title=summary.querySelector('strong');
+ title.setAttribute('role','button');
+ title.setAttribute('tabindex','0');
+ title.setAttribute('aria-label',`Change ${groupLabel(group)} exercise: ${current}`);
+ title.style.cursor='pointer';
+ title.style.textDecoration='underline';
+ title.style.textDecorationColor='var(--blue-border)';
+ title.style.textUnderlineOffset='5px';
+ const choose=event=>{event.preventDefault();event.stopPropagation();openExercisePicker(group,slot);};
+ title.addEventListener('click',choose);
+ title.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){choose(event);}});
+}
+if(workoutEditing){const summary=card.querySelector('.exercise-summary');summary.setAttribute('aria-label',`Change ${groupLabel(group)} exercise ${slot+1}`);summary.onclick=event=>{if(event.target.closest('strong[role="button"]'))return;event.preventDefault();openExercisePicker(group,slot);};}
 el.appendChild(card);
 
 if(workoutEditing&&db.workoutMode==="split"&&current&&slot===(db.splitSelected[group]?.length||1)-1){
