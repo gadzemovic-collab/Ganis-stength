@@ -1,4 +1,4 @@
-const CACHE='rep-harbor-v73';
+const CACHE='rep-harbor-v74';
 
 const ASSETS=[
 './',
@@ -22,11 +22,9 @@ event=>{
 
 event.waitUntil(
 
-caches
-.open(CACHE)
-.then(
-cache=>cache.addAll(ASSETS)
-)
+caches.open(CACHE).then(cache=>Promise.allSettled(
+ ASSETS.map(asset=>cache.add(new Request(asset,{cache:'reload'})))
+))
 
 );
 
