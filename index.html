@@ -911,6 +911,7 @@ max-width:90%;
 @media(prefers-reduced-motion:no-preference){.rest-comic[open] .rest-comic-panel{animation:comic-pop .25s ease-out;}@keyframes comic-pop{from{transform:scale(.85) rotate(-3deg);opacity:0;}to{transform:scale(1);opacity:1;}}}
 
 
+.rest-next-set{width:min(100%,480px);box-sizing:border-box;padding:12px;background:#fff;border:3px solid #111;border-radius:14px;box-shadow:3px 4px 0 #111;color:#111}.rest-next-set[hidden]{display:none}.rest-next-set>strong{display:block;font-size:15px;margin-bottom:9px}.rest-next-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}.rest-next-fields label{display:block;font-size:12px;font-weight:800;margin-bottom:5px}.rest-next-controls{display:flex;align-items:center;gap:3px}.rest-next-controls button{padding:4px;min-width:34px;height:42px;background:#111;color:#fff;border:2px solid #111;border-radius:8px;font-weight:800}.rest-next-controls input{width:100%;min-width:0;height:42px;box-sizing:border-box;text-align:center;font-size:17px;font-weight:800;border:2px solid #111;border-radius:8px;background:#fff;color:#111}.rest-comic-panel{gap:12px;padding:22px 14px;max-height:calc(100dvh - 30px);overflow-y:auto}.rest-comic-time{font-size:clamp(64px,20vw,130px)}
 /* Simplified workout and navigation layout */
 nav{position:fixed;top:auto;bottom:0;left:0;right:0;z-index:10;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -2px 14px #17324d10;}
 nav button{min-height:56px;font-size:14px;}
@@ -1320,6 +1321,7 @@ class="chart"
   <h2 id="restComicTitle" class="rest-comic-title">REST!</h2>
   <div id="restComicTime" class="rest-comic-time" role="timer" aria-live="off">1:30</div>
   <div class="rest-comic-caption">Set completed. Catch your breath.</div>
+  <section id="restNextSet" class="rest-next-set" hidden aria-label="Prepare next set"><strong id="restNextTitle">Next set</strong><div class="rest-next-fields"><div><label for="restNextWeight">Weight (lb)</label><div class="rest-next-controls"><button type="button" onclick="adjustRestNextSet('weight',-1)">−5</button><input id="restNextWeight" type="number" min="0" step="any" inputmode="decimal" onchange="editRestNextSet('weight',this.value)"><button type="button" onclick="adjustRestNextSet('weight',1)">+5</button></div></div><div><label for="restNextReps">Reps</label><div class="rest-next-controls"><button type="button" onclick="adjustRestNextSet('reps',-1)">−1</button><input id="restNextReps" type="number" min="1" step="1" inputmode="numeric" onchange="editRestNextSet('reps',this.value)"><button type="button" onclick="adjustRestNextSet('reps',1)">+1</button></div></div></div></section>
   <div class="rest-comic-actions">
    <button type="button" onclick="document.getElementById('restComic').close()">Minimize</button>
    <button type="button" onclick="stopTimer()">End rest</button>
@@ -2011,7 +2013,7 @@ toast(
 );
 
 
-if(db.settings.autoRest)startTimer(Number(db.settings.restSeconds),true);
+if(db.settings.autoRest){restNextContext={ex,index:setIndex};startTimer(Number(db.settings.restSeconds),true);}
 
 }
 
@@ -3612,6 +3614,12 @@ if(id==="milestones")rhGoalRender();
 
 let timer=null;
 let timerEnd=0;
+let restNextContext=null;
+function nextRestTarget(){const ctx=restNextContext;if(!ctx)return null;const draft=getDraftExercise(ctx.ex);const index=draft.sets.findIndex((set,i)=>i>ctx.index&&!set.confirmed);return index<0?null:{ex:ctx.ex,index,set:draft.sets[index]};}
+function refreshRestNextSet(){const target=nextRestTarget(),panel=document.getElementById("restNextSet");panel.hidden=!target;if(!target)return;document.getElementById("restNextTitle").textContent=target.ex+" · Set "+(target.index+1);for(const field of ["weight","reps"]){const input=document.getElementById(field==="weight"?"restNextWeight":"restNextReps");input.value=target.set[field]??"";}const step=[2.5,5,10].includes(db.settings.weightStep)?db.settings.weightStep:5;panel.querySelectorAll(".rest-next-controls")[0].querySelectorAll("button").forEach((button,i)=>button.textContent=(i?"＋":"−")+step);}
+function editRestNextSet(field,value){const target=nextRestTarget();if(!target)return;const num=Number(value);if(value===""||!Number.isFinite(num)||num<(field==="weight"?0:1)||(field==="reps"&&!Number.isInteger(num))){refreshRestNextSet();return;}saveDraftField(target.ex,target.index,field,String(num));const input=document.getElementById("set-"+safeId(target.ex)+"-"+target.index)?.querySelector('[data-field="'+field+'"]');if(input)input.value=String(num);refreshRestNextSet();}
+function adjustRestNextSet(field,direction){const target=nextRestTarget();if(!target)return;const step=field==="weight"?([2.5,5,10].includes(db.settings.weightStep)?db.settings.weightStep:5):1;const current=Number(target.set[field]);editRestNextSet(field,String(Math.max(field==="weight"?0:1,Math.round((current+direction*step)*100)/100)));}
+
 let audioContext=null;
 function timerBounds(panel){
  const viewport=window.visualViewport;
@@ -3640,9 +3648,10 @@ function maximizeRestTimer(){
  const focused=document.activeElement;
  if(focused?.matches("input,select,textarea"))focused.blur();
  const comic=document.getElementById("restComic");
+ refreshRestNextSet();
  if(!comic.open)comic.showModal();
 }
-function stopTimer(){clearInterval(timer);timer=null;timerEnd=0;document.getElementById("restComic").close();updateTimerDisplay();}
+function stopTimer(){clearInterval(timer);timer=null;timerEnd=0;restNextContext=null;document.getElementById("restComic").close();updateTimerDisplay();}
 function updateTimerDisplay(){document.querySelector(".rest-float").classList.toggle("timer-running",!!timerEnd);const left=Math.max(0,Math.ceil((timerEnd-Date.now())/1000));const el=document.getElementById("timerDisplay");document.getElementById("timerExpand").disabled=!timerEnd;document.getElementById("restDurationLabel").textContent=timerEnd?"Next":"Rest";document.getElementById("restQuickSelect").setAttribute("aria-label",timerEnd?"Next rest duration":"Rest duration");document.getElementById("timerStart").textContent=timerEnd?"↻":"Start";document.getElementById("timerStart").setAttribute("aria-label",timerEnd?"Restart rest timer":"Start rest timer");document.getElementById("timerStart").title=timerEnd?"Restart rest timer":"Start rest timer";document.getElementById("restComicTime").textContent=Math.floor(left/60)+":"+String(left%60).padStart(2,"0");if(el)el.textContent=timerEnd?Math.floor(left/60)+":"+String(left%60).padStart(2,"0"):"Rest ready";}
 function timerFinished(){stopTimer();document.getElementById("timerDisplay").textContent="Rest complete";toast("Rest complete");const mode=db.settings.timerAlert;if((mode==="both"||mode==="vibrate")&&navigator.vibrate)navigator.vibrate([200,100,200]);if((mode==="both"||mode==="sound")&&audioContext){try{audioContext.resume();const osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.frequency.value=880;gain.gain.value=0.12;osc.connect(gain);gain.connect(audioContext.destination);osc.start();osc.stop(audioContext.currentTime+0.3);}catch(e){}}}
 
