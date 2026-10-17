@@ -1034,6 +1034,7 @@ body:not(:has(#train.active)) .app-bottom .rest-float:not(.timer-running),body:h
 
 /* Compact weekly split planner; full-body mode remains unchanged */
 .cycle-preset-row{display:flex;gap:8px;margin:12px 0}.cycle-preset-row select{flex:1;min-width:0}.cycle-preset-row button{white-space:nowrap}.cycle-day{border-top:1px solid var(--blue-border);padding:10px 0}.cycle-day-main{display:grid;grid-template-columns:minmax(78px,1fr) minmax(85px,1.4fr) auto auto;align-items:center;gap:7px}.cycle-weekday{font-size:13px;font-weight:750}.cycle-title{font-size:13px;color:var(--muted);overflow-wrap:anywhere}.cycle-day-main button{padding:8px;font-size:12px}.cycle-editor{padding:12px 0 4px}.cycle-editor[hidden]{display:none}.cycle-group-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}.cycle-group-option{display:flex;align-items:center;gap:8px;min-width:0;padding:9px;border:1px solid var(--blue-border);border-radius:9px;font-size:13px;line-height:1.3}.cycle-group-option input{width:19px;height:19px;flex:none;margin:0;accent-color:var(--blue)}.cycle-group-option span{overflow-wrap:anywhere}@media(max-width:390px){.cycle-day-main{grid-template-columns:74px minmax(65px,1fr) auto auto;gap:4px}.cycle-day-main button{padding:7px 5px;font-size:11px}.cycle-weekday,.cycle-title{font-size:12px}}
+.rh-photo-controls,.rh-compare-selects{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0}.rh-upload-label{display:inline-block;padding:10px 15px;border-radius:10px;cursor:pointer}.rh-photo-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:12px;margin:14px 0}.rh-photo-tile{min-width:0;display:flex;flex-direction:column;gap:6px;font-size:12px}.rh-photo-tile img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px}.rh-compare-selects select{flex:1;min-width:120px}.rh-compare-images{display:grid;grid-template-columns:1fr 1fr;gap:10px}.rh-compare-images img{width:100%;aspect-ratio:3/4;object-fit:contain;background:#111;border-radius:10px}
 </style>
 </head>
 
@@ -1349,6 +1350,7 @@ class="chart"
 <script src="shark.js?v=3"></script>
 <script src="weight.js?v=14"></script>
 <script src="milestones.js?v=2"></script>
+<script src="progress-photos.js?v=1"></script>
 <script>
 
 const BASE_MENU={
