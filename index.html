@@ -1192,7 +1192,7 @@ Sets completed
 <label>Color theme</label><select id="theme" hidden aria-hidden="true" tabindex="-1"></select><div id="themeChoices" class="theme-choices" role="group" aria-label="Choose a color theme"></div>
 <label for="font" style="margin-top:15px">Font</label><select id="font" onchange="updateSettings()"><option value="system">System</option><option value="arial">Arial</option><option value="georgia">Georgia</option><option value="verdana">Verdana</option></select></div></details>
 <details class="card"><summary class="weight-section-title">Backup &amp; data</summary><div class="settings-content"><p class="muted">Save a copy before removing the app from your Home Screen or changing phones.</p>
-<div class="row"><button class="secondary" onclick="exportData()">Download backup</button><button class="secondary" onclick="document.getElementById('backupFile').click()">Restore backup</button></div>
+<p id="backupReminder" class="muted" role="status"></p><div class="row"><button class="secondary" onclick="exportData()">Download backup</button><button class="secondary" onclick="document.getElementById('backupFile').click()">Restore backup</button></div>
 <input id="backupFile" type="file" accept="application/json,.json" style="display:none" onchange="importData(this)">
 <hr class="section-divider"><details><summary class="muted">Delete workout data</summary><p class="muted">Keeps your exercise choices and settings.</p><button class="danger" onclick="clearWorkoutData()">Delete all workout data</button></details></div></details>
 </section>
@@ -1547,13 +1547,30 @@ db.draftWorkout=null;
 }
 
 
+let storageWarningShown=false;
+function showStorageWarning(){
+ let banner=document.getElementById("storageWarning");
+ if(!banner){
+  banner=document.createElement("div");
+  banner.id="storageWarning";
+  banner.setAttribute("role","alert");
+  banner.style.cssText="position:fixed;z-index:99999;top:env(safe-area-inset-top,0px);left:8px;right:8px;padding:14px;border-radius:10px;background:#7f1d1d;color:white;font-size:15px;box-shadow:0 4px 16px #0005";
+  banner.innerHTML='<strong>Changes may not be saved.</strong> Phone storage is unavailable or full. Download a backup from Settings before closing this app. <button type="button" id="storageWarningDismiss" style="margin-left:8px;padding:6px;color:#111;background:white;border-radius:6px">Dismiss</button>';
+  document.body.appendChild(banner);
+  banner.querySelector("button").addEventListener("click",()=>banner.remove());
+ }
+}
 function saveDB(){
-
-localStorage.setItem(
-STORAGE_KEY,
-JSON.stringify(db)
-);
-
+ try{
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(db));
+  storageWarningShown=false;
+  document.getElementById("storageWarning")?.remove();
+  return true;
+ }catch(err){
+  console.error("Rep Harbor: failed to save workout data",err);
+  if(!storageWarningShown){storageWarningShown=true;showStorageWarning();}
+  return false;
+ }
 }
 
 
@@ -3481,18 +3498,26 @@ const row=document.createElement("div");row.className="row edit-set";row.style.m
 row.innerHTML='<input class="edit-weight" aria-label="Weight in pounds" inputmode="decimal" type="number" min="0" step="any" value="'+escapeHTML(set.weight)+'"><input class="edit-reps" aria-label="Reps" inputmode="numeric" type="number" min="1" step="1" value="'+escapeHTML(set.reps)+'"><button class="danger small" aria-label="Remove set">×</button>';
 row.querySelector("button").onclick=()=>row.remove();container.appendChild(row);
 }
+function updateBackupReminder(){
+ const el=document.getElementById("backupReminder");if(!el)return;
+ let last=null;try{last=localStorage.getItem("repHarborLastBackup");}catch(e){}
+ const days=last?Math.floor((Date.now()-Date.parse(last))/86400000):null;
+ el.textContent=days!==null&&Number.isFinite(days)&&days<30?"Last backup started "+days+" day"+(days===1?"":"s")+" ago. Keep a copy somewhere safe.":"No recent backup recorded on this device. Download a backup to protect your workout history.";
+}
 function clearWorkoutData(){
 if(!confirm("Delete all saved workouts and the unfinished workout? This cannot be undone."))return;
 db.sessions=[];db.history={};db.draftWorkout=null;saveDB();renderWorkout();renderHistory();populateChartExercises();renderCharts();toast("Workout data deleted");
 }
 
 function exportData(){
-saveDB();
+// Export the in-memory data even when browser storage is unavailable.
 const blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"});
 const url=URL.createObjectURL(blob);const link=document.createElement("a");
 link.href=url;link.download="repharbor-backup-"+new Date().toISOString().slice(0,10)+".json";
 document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
-toast("Backup downloaded");
+try{localStorage.setItem("repHarborLastBackup",new Date().toISOString());}catch(e){}
+updateBackupReminder();
+toast("Backup download started");
 }
 async function importData(input){
 const file=input.files?.[0];if(!file)return;
@@ -3606,6 +3631,7 @@ renderCharts();
 
 }
 
+if(id==="settings")updateBackupReminder();
 if(id==="weight")renderWeightTracking();
 if(id==="milestones")rhGoalRender();
 
@@ -3614,6 +3640,10 @@ if(id==="milestones")rhGoalRender();
 
 let timer=null;
 let timerEnd=0;
+function reconcileRestTimer(){if(!timerEnd)return;if(Date.now()>=timerEnd)timerFinished();else updateTimerDisplay();}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")reconcileRestTimer();});
+window.addEventListener("pageshow",reconcileRestTimer);
+window.addEventListener("focus",reconcileRestTimer);
 let restNextContext=null;
 function nextRestTarget(){const ctx=restNextContext;if(!ctx)return null;const draft=getDraftExercise(ctx.ex);const index=draft.sets.findIndex((set,i)=>i>ctx.index&&!set.confirmed);return index<0?null:{ex:ctx.ex,index,set:draft.sets[index]};}
 function refreshRestNextSet(){const target=nextRestTarget(),panel=document.getElementById("restNextSet");panel.hidden=!target;if(!target)return;document.getElementById("restNextTitle").textContent=target.ex+" · Set "+(target.index+1);for(const field of ["weight","reps"]){const input=document.getElementById(field==="weight"?"restNextWeight":"restNextReps");input.value=target.set[field]??"";}const step=[2.5,5,10].includes(db.settings.weightStep)?db.settings.weightStep:5;panel.querySelectorAll(".rest-next-controls")[0].querySelectorAll("button").forEach((button,i)=>button.textContent=(i?"＋":"−")+step);}
