@@ -1,262 +1,338 @@
 {
   "Leg Press": {
     "file": "exercise-images/leg-press.webp",
-    "source": "Leg_Press",
-    "label": "Leg Press"
+    "label": "Leg Press",
+    "start": "Set both feet flat on the plate.",
+    "finish": "Press without snapping your knees straight."
   },
   "Leg Extension": {
     "file": "exercise-images/leg-extension.webp",
-    "source": "Leg_Extensions",
-    "label": "Leg Extensions"
+    "label": "Leg Extension",
+    "start": "Line up your knees with the pivot.",
+    "finish": "Straighten your knees and keep your hips seated."
   },
   "Squat": {
     "file": "exercise-images/squat.webp",
-    "source": "Barbell_Full_Squat",
-    "label": "Barbell Full Squat"
+    "label": "Squat",
+    "start": "Set the bar on your upper back.",
+    "finish": "Bend at the hips and knees; keep feet planted."
   },
   "Goblet Squat": {
     "file": "exercise-images/goblet-squat.webp",
-    "source": "Goblet_Squat",
-    "label": "Goblet Squat"
+    "label": "Goblet Squat",
+    "start": "Hold the weight in front of your chest.",
+    "finish": "Sit down between your hips with heels planted."
   },
   "Hack Squat": {
     "file": "exercise-images/hack-squat.webp",
-    "source": "Hack_Squat",
-    "label": "Hack Squat"
+    "label": "Hack Squat",
+    "start": "Set your shoulders under the pads.",
+    "finish": "Lower on the rails, keeping feet on the platform."
   },
   "Bulgarian Split Squat": {
     "file": "exercise-images/bulgarian-split-squat.webp",
-    "source": "Split_Squat_with_Dumbbells",
-    "label": "Split Squat with Dumbbells"
+    "label": "Bulgarian Split Squat",
+    "start": "Rest your rear foot on the bench.",
+    "finish": "Lower your back knee while the front foot stays flat."
   },
   "Walking Lunge": {
     "file": "exercise-images/walking-lunge.webp",
-    "source": "Bodyweight_Walking_Lunge",
-    "label": "Bodyweight Walking Lunge"
+    "label": "Walking Lunge",
+    "start": "Take a step forward and plant the whole foot.",
+    "finish": "Lower into the lunge, then step through."
   },
   "Seated Leg Curl": {
     "file": "exercise-images/seated-leg-curl.webp",
-    "source": "Seated_Leg_Curl",
-    "label": "Seated Leg Curl"
+    "label": "Seated Leg Curl",
+    "start": "Start with legs extended under the pads.",
+    "finish": "Curl your heels down and back; keep thighs seated."
   },
   "Deadlift": {
     "file": "exercise-images/deadlift.webp",
-    "source": "Barbell_Deadlift",
-    "label": "Barbell Deadlift"
+    "label": "Deadlift",
+    "start": "Start over the bar with it close to your shins.",
+    "finish": "Stand tall with the bar close to your legs."
   },
   "Standing Leg Curl": {
     "file": "exercise-images/standing-leg-curl.webp",
-    "source": "Standing_Leg_Curl",
-    "label": "Standing Leg Curl"
+    "label": "Standing Leg Curl",
+    "start": "Brace on the machine with one leg supporting you.",
+    "finish": "Bend the working knee to bring your heel back."
   },
   "Romanian Deadlift": {
     "file": "exercise-images/romanian-deadlift.webp",
-    "source": "Romanian_Deadlift",
-    "label": "Romanian Deadlift"
+    "label": "Romanian Deadlift",
+    "start": "Start standing with the bar against your thighs.",
+    "finish": "Hinge at the hips; keep a soft bend in your knees."
   },
   "Lying Leg Curl": {
     "file": "exercise-images/lying-leg-curl.webp",
-    "source": "Lying_Leg_Curls",
-    "label": "Lying Leg Curls"
+    "label": "Lying Leg Curl",
+    "start": "Lie face down with the roller above your heels.",
+    "finish": "Curl your heels toward your hips."
   },
   "Hip Thrust": {
     "file": "exercise-images/hip-thrust.webp",
-    "source": "Barbell_Hip_Thrust",
-    "label": "Barbell Hip Thrust"
+    "label": "Hip Thrust",
+    "start": "Support your upper back and plant your feet.",
+    "finish": "Lift your hips until your torso is level."
   },
   "Glute Bridge": {
     "file": "exercise-images/glute-bridge.webp",
-    "source": "Butt_Lift_Bridge",
-    "label": "Butt Lift (Bridge)"
+    "label": "Glute Bridge",
+    "start": "Lie back with knees bent and feet flat.",
+    "finish": "Lift your hips while your shoulders stay down."
   },
   "Cable Kickback": {
     "file": "exercise-images/cable-kickback.webp",
-    "source": "One-Legged_Cable_Kickback",
-    "label": "One-Legged Cable Kickback"
+    "label": "Cable Kickback",
+    "start": "Attach the low cable to your working ankle.",
+    "finish": "Move that leg back while keeping your hips square."
   },
   "Step-Up": {
     "file": "exercise-images/step-up.webp",
-    "source": "Dumbbell_Step_Ups",
-    "label": "Dumbbell Step Ups"
+    "label": "Step-Up",
+    "start": "Place your whole lead foot on the box.",
+    "finish": "Drive through that foot to stand on the box."
   },
   "DB Bench Press": {
     "file": "exercise-images/db-bench-press.webp",
-    "source": "Dumbbell_Bench_Press",
-    "label": "Dumbbell Bench Press"
+    "label": "DB Bench Press",
+    "start": "Lower the dumbbells beside your chest.",
+    "finish": "Press above the chest with wrists over elbows."
   },
   "Incline Chest Press": {
     "file": "exercise-images/incline-chest-press.webp",
-    "source": "Leverage_Incline_Chest_Press",
-    "label": "Leverage Incline Chest Press"
+    "label": "Incline Chest Press",
+    "start": "Set the handles near your upper chest.",
+    "finish": "Press up and forward along the machine's path."
   },
   "Pec Deck": {
     "file": "exercise-images/pec-deck.webp",
-    "source": "Butterfly",
-    "label": "Butterfly"
+    "label": "Pec Deck",
+    "start": "Open your arms with a slight elbow bend.",
+    "finish": "Bring the handles together without shrugging."
   },
   "Barbell Bench Press": {
     "file": "exercise-images/barbell-bench-press.webp",
-    "source": "Barbell_Bench_Press_-_Medium_Grip",
-    "label": "Barbell Bench Press - Medium Grip"
+    "label": "Barbell Bench Press",
+    "start": "Lower the bar toward your mid-to-lower chest.",
+    "finish": "Press upward until your arms are extended."
   },
   "Incline DB Bench Press": {
     "file": "exercise-images/incline-db-bench-press.webp",
-    "source": "Incline_Dumbbell_Press",
-    "label": "Incline Dumbbell Press"
+    "label": "Incline DB Bench Press",
+    "start": "Lower the dumbbells beside your upper chest.",
+    "finish": "Press up while keeping your back on the bench."
   },
   "Push-Up": {
     "file": "exercise-images/push-up.webp",
-    "source": "Pushups",
-    "label": "Pushups"
+    "label": "Push-Up",
+    "start": "Start with a straight line from shoulders to heels.",
+    "finish": "Lower your chest while maintaining that line."
   },
-  "Cable Fly": null,
+  "Cable Fly": {
+    "file": "exercise-images/cable-fly.webp",
+    "label": "Cable Fly",
+    "start": "Start with arms open and elbows slightly bent.",
+    "finish": "Sweep the handles together in front of your chest."
+  },
   "Lat Pulldown": {
     "file": "exercise-images/lat-pulldown.webp",
-    "source": "Wide-Grip_Lat_Pulldown",
-    "label": "Wide-Grip Lat Pulldown"
+    "label": "Lat Pulldown",
+    "start": "Reach for the bar with a wide grip.",
+    "finish": "Pull toward your upper chest, elbows down."
   },
-  "Chest-Supported Row": null,
+  "Chest-Supported Row": {
+    "file": "exercise-images/chest-supported-row.webp",
+    "label": "Chest-Supported Row",
+    "start": "Support your chest and let the weights hang.",
+    "finish": "Pull your elbows back and keep your chest on the pad."
+  },
   "Machine High Row": {
     "file": "exercise-images/machine-high-row.webp",
-    "source": "Leverage_High_Row",
-    "label": "Leverage High Row"
+    "label": "Machine High Row",
+    "start": "Start with your arms reaching up and forward.",
+    "finish": "Drive your elbows down and back toward your ribs."
   },
   "Seated Cable Row": {
     "file": "exercise-images/seated-cable-row.webp",
-    "source": "Seated_Cable_Rows",
-    "label": "Seated Cable Rows"
+    "label": "Seated Cable Row",
+    "start": "Reach forward without rounding your back.",
+    "finish": "Pull toward your lower ribs without rocking."
   },
   "Pull-Up": {
     "file": "exercise-images/pull-up.webp",
-    "source": "Pullups",
-    "label": "Pullups"
+    "label": "Pull-Up",
+    "start": "Hang with your arms extended.",
+    "finish": "Pull until your chin clears the bar."
   },
   "One-Arm DB Row": {
     "file": "exercise-images/one-arm-db-row.webp",
-    "source": "One-Arm_Dumbbell_Row",
-    "label": "One-Arm Dumbbell Row"
+    "label": "One-Arm DB Row",
+    "start": "Brace on the bench and let the dumbbell hang.",
+    "finish": "Pull the dumbbell toward your hip, torso steady."
   },
   "Lateral Raise": {
     "file": "exercise-images/lateral-raise.webp",
-    "source": "Side_Lateral_Raise",
-    "label": "Side Lateral Raise"
+    "label": "Lateral Raise",
+    "start": "Start with dumbbells at your sides.",
+    "finish": "Raise out to the sides to about shoulder height."
   },
   "DB Shoulder Press": {
     "file": "exercise-images/db-shoulder-press.webp",
-    "source": "Dumbbell_Shoulder_Press",
-    "label": "Dumbbell Shoulder Press"
+    "label": "DB Shoulder Press",
+    "start": "Start with dumbbells at shoulder height.",
+    "finish": "Press up without leaning back."
   },
   "Machine Shoulder Press": {
     "file": "exercise-images/machine-shoulder-press.webp",
-    "source": "Machine_Shoulder_Military_Press",
-    "label": "Machine Shoulder (Military) Press"
+    "label": "Machine Shoulder Press",
+    "start": "Set the handles slightly above shoulder level.",
+    "finish": "Press overhead while staying against the pad."
   },
   "Barbell Overhead Press": {
     "file": "exercise-images/barbell-overhead-press.webp",
-    "source": "Barbell_Shoulder_Press",
-    "label": "Barbell Shoulder Press"
+    "label": "Barbell Overhead Press",
+    "start": "Start with the bar at the front of your shoulders.",
+    "finish": "Press overhead and finish over your midfoot."
   },
   "Front Raise": {
     "file": "exercise-images/front-raise.webp",
-    "source": "Front_Dumbbell_Raise",
-    "label": "Front Dumbbell Raise"
+    "label": "Front Raise",
+    "start": "Start with the weight in front of your thighs.",
+    "finish": "Raise it in front of you to shoulder height."
   },
   "Reverse Pec Deck": {
     "file": "exercise-images/reverse-pec-deck.webp",
-    "source": "Reverse_Machine_Flyes",
-    "label": "Reverse Machine Flyes"
+    "label": "Reverse Pec Deck",
+    "start": "Face the pad and start with handles in front.",
+    "finish": "Move your arms outward while keeping your chest supported."
   },
   "Face Pull": {
     "file": "exercise-images/face-pull.webp",
-    "source": "Face_Pull",
-    "label": "Face Pull"
+    "label": "Face Pull",
+    "start": "Reach toward the rope at face height.",
+    "finish": "Pull toward your face, hands beside your head."
   },
   "Bent-Over Rear Delt Fly": {
     "file": "exercise-images/bent-over-rear-delt-fly.webp",
-    "source": "Seated_Bent-Over_Rear_Delt_Raise",
-    "label": "Seated Bent-Over Rear Delt Raise"
+    "label": "Bent-Over Rear Delt Fly",
+    "start": "Hinge forward and let the weights hang.",
+    "finish": "Raise both arms out, keeping your torso steady."
   },
   "DB Curl": {
     "file": "exercise-images/db-curl.webp",
-    "source": "Dumbbell_Bicep_Curl",
-    "label": "Dumbbell Bicep Curl"
+    "label": "DB Curl",
+    "start": "Let the dumbbell hang with palm facing forward.",
+    "finish": "Curl by bending the elbow; keep your upper arm still."
   },
   "Hammer Curl": {
     "file": "exercise-images/hammer-curl.webp",
-    "source": "Hammer_Curls",
-    "label": "Hammer Curls"
+    "label": "Hammer Curl",
+    "start": "Hold the dumbbell with your thumb pointing forward.",
+    "finish": "Curl with the thumb up and keep the elbow still."
   },
   "Preacher Curl": {
     "file": "exercise-images/preacher-curl.webp",
-    "source": "Preacher_Curl",
-    "label": "Preacher Curl"
+    "label": "Preacher Curl",
+    "start": "Rest your upper arm on the angled pad.",
+    "finish": "Curl while maintaining contact with the pad."
   },
   "EZ-Bar Curl": {
     "file": "exercise-images/ez-bar-curl.webp",
-    "source": "EZ-Bar_Curl",
-    "label": "EZ-Bar Curl"
+    "label": "EZ-Bar Curl",
+    "start": "Stand tall with the EZ bar in front of your thighs.",
+    "finish": "Curl the bar without swinging your shoulders."
   },
   "Cable Curl": {
     "file": "exercise-images/cable-curl.webp",
-    "source": "Standing_Biceps_Cable_Curl",
-    "label": "Standing Biceps Cable Curl"
+    "label": "Cable Curl",
+    "start": "Face the low pulley with elbows by your sides.",
+    "finish": "Curl the handle while keeping your elbows steady."
   },
   "Incline DB Curl": {
     "file": "exercise-images/incline-db-curl.webp",
-    "source": "Incline_Dumbbell_Curl",
-    "label": "Incline Dumbbell Curl"
+    "label": "Incline DB Curl",
+    "start": "Sit against the incline bench and let your arms hang.",
+    "finish": "Curl without bringing your upper arm forward."
   },
   "Triceps Pushdown": {
     "file": "exercise-images/triceps-pushdown.webp",
-    "source": "Triceps_Pushdown",
-    "label": "Triceps Pushdown"
+    "label": "Triceps Pushdown",
+    "start": "Keep your elbows by your sides and grip the handle.",
+    "finish": "Straighten your elbows toward the floor."
   },
   "Triceps Dip Machine": {
     "file": "exercise-images/triceps-dip-machine.webp",
-    "source": "Dip_Machine",
-    "label": "Dip Machine"
+    "label": "Triceps Dip Machine",
+    "start": "Sit tall with the handles near your hips.",
+    "finish": "Press the handles down while keeping your shoulders steady."
   },
-  "Overhead Cable Extension": null,
+  "Overhead Cable Extension": {
+    "file": "exercise-images/overhead-cable-extension.webp",
+    "label": "Overhead Cable Extension",
+    "start": "Face away from the pulley with hands behind your head.",
+    "finish": "Straighten your elbows overhead without flaring them."
+  },
   "Skull Crusher": {
     "file": "exercise-images/skull-crusher.webp",
-    "source": "EZ-Bar_Skullcrusher",
-    "label": "EZ-Bar Skullcrusher"
+    "label": "Skull Crusher",
+    "start": "Hold the EZ bar above your shoulders while lying down.",
+    "finish": "Bend at the elbows to lower the bar behind your forehead."
   },
   "Close-Grip Bench Press": {
     "file": "exercise-images/close-grip-bench-press.webp",
-    "source": "Close-Grip_Barbell_Bench_Press",
-    "label": "Close-Grip Barbell Bench Press"
+    "label": "Close-Grip Bench Press",
+    "start": "Lower with hands roughly shoulder-width apart.",
+    "finish": "Press upward with elbows closer to your sides."
   },
   "Calf Raise": {
     "file": "exercise-images/calf-raise.webp",
-    "source": "Standing_Calf_Raises",
-    "label": "Standing Calf Raises"
+    "label": "Calf Raise",
+    "start": "Stand on the edge with heels lowered under control.",
+    "finish": "Rise onto the balls of both feet."
   },
   "Seated Calf Raise": {
     "file": "exercise-images/seated-calf-raise.webp",
-    "source": "Seated_Calf_Raise",
-    "label": "Seated Calf Raise"
+    "label": "Seated Calf Raise",
+    "start": "Set the pad above the knees with heels lowered.",
+    "finish": "Raise your heels while your thighs stay under the pad."
   },
   "Standing Calf Raise": {
     "file": "exercise-images/standing-calf-raise.webp",
-    "source": "Standing_Calf_Raises",
-    "label": "Standing Calf Raises"
+    "label": "Standing Calf Raise",
+    "start": "Place your shoulders under the machine pads.",
+    "finish": "Lift your heels while keeping knees nearly straight."
   },
-  "Single-Leg Calf Raise": null,
+  "Single-Leg Calf Raise": {
+    "file": "exercise-images/single-leg-calf-raise.webp",
+    "label": "Single-Leg Calf Raise",
+    "start": "Balance on one foot with your free foot lifted.",
+    "finish": "Raise the working heel without rolling the ankle."
+  },
   "Cable Crunch": {
     "file": "exercise-images/cable-crunch.webp",
-    "source": "Cable_Crunch",
-    "label": "Cable Crunch"
+    "label": "Cable Crunch",
+    "start": "Kneel with the rope close to your head.",
+    "finish": "Curl your ribs toward your hips, keeping the rope in place."
   },
-  "Hanging Knee Raise": null,
+  "Hanging Knee Raise": {
+    "file": "exercise-images/hanging-knee-raise.webp",
+    "label": "Hanging Knee Raise",
+    "start": "Hang from the bar with legs down.",
+    "finish": "Curl upward and bring bent knees toward your chest."
+  },
   "Reverse Crunch": {
     "file": "exercise-images/reverse-crunch.webp",
-    "source": "Reverse_Crunch",
-    "label": "Reverse Crunch"
+    "label": "Reverse Crunch",
+    "start": "Lie down with hips and knees bent.",
+    "finish": "Curl your pelvis up and bring knees toward your chest."
   },
   "Ab Wheel Rollout": {
     "file": "exercise-images/ab-wheel-rollout.webp",
-    "source": "Ab_Roller",
-    "label": "Ab Roller"
+    "label": "Ab Wheel Rollout",
+    "start": "Kneel with the wheel below your shoulders.",
+    "finish": "Roll forward as far as you can keep your trunk braced."
   }
 }

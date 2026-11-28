@@ -1,5 +1,7 @@
-# Exercise demonstration sources
+# Exercise demonstrations
 
-The bundled WebP panels combine the two position photographs for each matching exercise from [Free Exercise DB at f00c92c](https://github.com/yuhonas/free-exercise-db/tree/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5). That project describes the dataset and its images as publicly available under its [Unlicense](https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md). The license text is included locally. Rep Harbor resized and combined the images. The catalog records source exercise IDs and labels, including the specific variation photographed.
+Rep Harbor's built-in demos are original vector-style illustrations rendered to WebP from hand-authored poses and equipment in `tools/draw-exercise-demos.py`. Every built-in exercise has a start and finish pose and matching text cues. No photos, stock images, or third-party exercise artwork are used in the demos.
 
-A null catalog entry uses the local placeholder. User uploads are stored independently in IndexedDB, with a reduced source and the cropped rendering. They are device-local and are excluded from the workout JSON backup, as are progress photos.
+To regenerate the panels and catalog, run `python tools/draw-exercise-demos.py` from the repository root. The authoring script uses Pillow and the DejaVu Sans font. The app loads the generated files directly and requires no Python runtime or image service.
+
+The generic image placeholder remains available for custom exercises without an upload and when a user hides a default. Existing image overrides remain in the same IndexedDB store and take precedence over the bundled illustrations.

@@ -391,3 +391,35 @@ test('worker activation preserves unrelated caches and refuses incomplete asset 
     unavailableAsset = undefined;
   }
 });
+
+test('every built-in exercise has a unique two-pose illustration and text cues offline', () => withPage(async (page, context) => {
+  await page.waitForFunction(() => navigator.serviceWorker.controller?.state === 'activated');
+  await context.setOffline(true);
+  const result = await page.evaluate(async () => {
+    const response = await fetch('exercise-images/catalog.json');
+    const catalog = await response.json();
+    const names = Object.values(BASE_MENU).flat();
+    const files = [];
+    for (const name of names) {
+      const asset = catalog[name];
+      if (asset?.label !== name || !asset.start || !asset.finish) throw new Error('Missing cues for ' + name);
+      const image = await fetch(asset.file);
+      if (!image.ok) throw new Error('Missing cached illustration for ' + name);
+      const bitmap = await createImageBitmap(await image.blob());
+      if (bitmap.width !== 1280 || bitmap.height !== 528) throw new Error('Unexpected panel dimensions for ' + name);
+      files.push(asset.file);
+      bitmap.close();
+    }
+    return { names, entries: Object.keys(catalog), files };
+  });
+  assert.deepEqual(result.entries.sort(), result.names.sort());
+  assert.equal(new Set(result.files).size, result.names.length);
+  await page.getByRole('button', { name: /Full Body/ }).first().click();
+  await page.getByRole('button', { name: 'View or manage image for Leg Press' }).click();
+  const cues = page.locator('#exerciseImageCues');
+  await cues.waitFor();
+  assert.deepEqual(await cues.locator('li').allTextContents(), [
+    'Set both feet flat on the plate.',
+    'Press without snapping your knees straight.',
+  ]);
+}, 'allow'));

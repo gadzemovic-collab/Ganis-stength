@@ -82,6 +82,12 @@
     }
   }
 
+  function showCues(asset) {
+    $('exerciseImageCues').hidden = !asset?.start || !asset?.finish;
+    $('exerciseImageStart').textContent = asset?.start || '';
+    $('exerciseImageFinish').textContent = asset?.finish || '';
+  }
+
   function setPreview(url) {
     const image = $('exerciseImagePreview');
     if (image.dataset.objectUrl) URL.revokeObjectURL(image.dataset.objectUrl);
@@ -149,6 +155,7 @@
     sourceImage = sourceBlob = previewBlob = null;
     const image = $('exerciseImagePreview');
     image.alt = 'Exercise demonstration for ' + name;
+    showCues(null);
     image.hidden = false;
     $('exerciseImageCanvas').hidden = true;
     $('exerciseImageEditor').hidden = true;
@@ -172,17 +179,19 @@
         status('Your saved image.');
       } else if (asset && !saved?.deleted) {
         setPreview(asset.file);
+        showCues(asset);
         status('Demonstration: ' + asset.label);
       } else {
         status('No demonstration image. You can upload one.');
       }
-        $('exerciseImageEdit').hidden = !saved?.source;
+      $('exerciseImageEdit').hidden = !saved?.source;
       current.saved = saved;
     } catch (error) {
       if (request === generation) {
         const asset = await getDefault(group, name);
         if (request !== generation) return;
         setPreview(asset?.file || placeholder);
+        showCues(asset);
         status('Image storage is unavailable. You can still view bundled demonstrations.');
       }
     }
@@ -195,6 +204,7 @@
     sourceImage = image;
     sourceBlob = blob;
     setTransform(transform);
+    showCues(null);
     $('exerciseImageEditor').hidden = false;
     await renderPreview();
   }
