@@ -17,12 +17,12 @@ function changeWeightRateUnit(){
  if(pounds)input.removeAttribute('max');else input.max='99.99';
 }
 function weightComposition(weight,bf){return bf===null||bf===undefined?null:{fat:weight*bf/100,nonFat:weight*(1-bf/100)};}
-function weightWeek(plan,date){const days=weightDay(date)-weightDay(plan.startDate);return Number.isFinite(days)&&days>=4?Math.round(days/7):null;}
+function weightWeek(plan,date){const days=weightDay(date)-weightDay(plan.startDate);return Number.isFinite(days)&&days>=0?Math.round(days/7):null;}
 function weightBF(value){return value===''?null:Number(value);}
 function validWeightBF(value){return value===null||(Number.isFinite(value)&&value>0&&value<100);}
 function weightSigned(value){return `${value>0?'+':''}${value.toFixed(1)} lb`;}
 function weightAheadLabel(plan,entry){
- const target=weightTarget(plan,entry.week),ahead=plan.direction==='gain'?entry.weight-target:target-entry.weight;
+ const target=weightTarget(plan,(weightDay(entry.date)-weightDay(plan.startDate))/7),ahead=plan.direction==='gain'?entry.weight-target:target-entry.weight;
  return ahead>=.05?` · ${ahead.toFixed(1)} lb ahead of initial plan`:'';
 }
 function weightPlanComposition(plan,week){if(plan.startBF===null||plan.goalBF===null)return null;return weightComposition(weightTarget(plan,week),plan.startBF+(plan.goalBF-plan.startBF)*Math.min(1,week/plan.weeks));}
@@ -39,7 +39,8 @@ function focusWeeklyField(id){const input=document.getElementById(id);input.focu
 function useTodayForWeighIn(){document.getElementById('weeklyWeightDate').value=weightToday();captureWeighInDraft();focusWeeklyField('weeklyWeight');}
 function weeklyEntryNext(event,id){if(event.key==='Enter'){event.preventDefault();focusWeeklyField(id);}}
 function weightChartWindow(plan,entries){
- const raw=document.getElementById('weightChartPeriod').value,span=Number(raw),focus=Math.max(entries.at(-1)?.week||0,Math.max(0,Math.round((weightDay(weightToday())-weightDay(plan.startDate))/7))),horizon=Math.max(plan.weeks,focus);
+ const latestWeek=entries.length?(weightDay(entries.at(-1).date)-weightDay(plan.startDate))/7:0;
+ const raw=document.getElementById('weightChartPeriod').value,span=Number(raw),focus=Math.max(latestWeek||0,Math.max(0,Math.round((weightDay(weightToday())-weightDay(plan.startDate))/7))),horizon=Math.max(plan.weeks,focus);
  if(raw==='all'||![4,12,26,52].includes(span))return {start:0,end:horizon,horizon,span:null};
  const end=Math.max(span,Math.min(Math.max(span,horizon),weightChartEnd??focus+1));return {start:end-span,end,horizon:Math.max(span,horizon),span};
 }
@@ -47,7 +48,7 @@ function changeWeightChartPeriod(){weightChartEnd=null;renderWeightCharts();}
 function moveWeightChart(direction){const tracking=db.weightTracking,range=weightChartWindow(tracking.plan,tracking.entries);if(!range.span)return;weightChartEnd=range.end+direction*range.span;renderWeightCharts();}
 function renderWeightCharts(){
  const tracking=db.weightTracking,plan=tracking.plan;if(!plan)return;
- const original=tracking.initialPlan||plan,entries=tracking.entries,range=weightChartWindow(plan,entries),count=Math.max(1,Math.ceil(Math.min(range.end-range.start,104)));
+ const original=tracking.initialPlan||plan,entries=tracking.entries.map(entry=>({...entry,week:(weightDay(entry.date)-weightDay(plan.startDate))/7})),range=weightChartWindow(plan,entries),count=Math.max(1,Math.ceil(Math.min(range.end-range.start,104)));
  const weeks=Array.from({length:count+1},(_,i)=>range.start+i*(range.end-range.start)/count);
  const actual=[{week:0,value:plan.startWeight},...entries.map(e=>({week:e.week,value:e.weight}))];
  const series=[{name:'Actual weight',color:'var(--blue)',points:actual},{name:'Initial plan',color:'#7b8495',dashed:true,points:weeks.map(week=>({week,value:weightTarget(original,week)}))}];
@@ -55,7 +56,7 @@ function renderWeightCharts(){
  renderWeightChart('bodyWeightChart',series,range);
  const samples=[{week:0,weight:plan.startWeight,bodyFat:plan.startBF},...entries].filter(e=>e.bodyFat!==null&&e.bodyFat!==undefined);
  const compositionSeries=[{name:'Estimated fat',color:'#c05a24',points:samples.map(e=>({week:e.week,value:weightComposition(e.weight,e.bodyFat).fat}))},{name:'Non-fat weight',color:'#147966',points:samples.map(e=>({week:e.week,value:weightComposition(e.weight,e.bodyFat).nonFat}))}];
- if(original.startBF!==null&&original.goalBF!==null)compositionSeries.push({name:'Initial planned fat',color:'#c05a24',dashed:true,points:weeks.map(week=>({week,value:weightPlanComposition(original,week).fat}))},{name:'Initial planned non-fat',color:'#147966',dashed:true,points:weeks.map(week=>({week,value:weightPlanComposition(original,week).nonFat}))});
+ if(original.startBF!=null&&original.goalBF!=null)compositionSeries.push({name:'Initial planned fat',color:'#c05a24',dashed:true,points:weeks.map(week=>({week,value:weightPlanComposition(original,week).fat}))},{name:'Initial planned non-fat',color:'#147966',dashed:true,points:weeks.map(week=>({week,value:weightPlanComposition(original,week).nonFat}))});
  const compositionView=document.getElementById('compositionChartView').value;
  renderWeightChart('compositionWeightChart',compositionSeries.filter(s=>compositionView==='fat'?s.name.toLowerCase().includes('fat')&&!s.name.toLowerCase().includes('non-fat'):compositionView==='nonFat'?s.name.toLowerCase().includes('non-fat'):true),range);
  document.getElementById('weightChartRangeLabel').textContent=`${weightDateLabel(weightDate(plan.startDate,range.start))} – ${weightDateLabel(weightDate(plan.startDate,range.end))}`;
@@ -67,31 +68,41 @@ function saveWeightPlan(event){
  const plan={startDate:document.getElementById('weightStartDate').value,startWeight:Number(document.getElementById('weightStart').value),direction:document.getElementById('weightDirection').value,rate:Number(document.getElementById('weightRate').value),rateUnit:document.getElementById('weightRateUnit').value,endDate:document.getElementById('weightEndDate').value,startBF:weightBF(document.getElementById('weightStartBF').value),goalBF:weightBF(document.getElementById('weightGoalBF').value)};
  plan.weeks=(weightDay(plan.endDate)-weightDay(plan.startDate))/7;
  if(!Number.isFinite(new Date((weightDay(plan.startDate)+plan.weeks*7)*86400000).getTime())||!Number.isFinite(weightDay(plan.startDate))||plan.startDate>weightToday()||!Number.isFinite(plan.startWeight)||plan.startWeight<=0||!['loss','gain'].includes(plan.direction)||!validWeightRate(plan)||!Number.isFinite(plan.weeks)||plan.weeks<=0||!Number.isFinite(weightTarget(plan,plan.weeks))||weightTarget(plan,plan.weeks)<=0||!validWeightBF(plan.startBF)||!validWeightBF(plan.goalBF)){toast('Choose an end date after the start date, a valid weight, weekly rate and optional body-fat percentages');return;}
- const tracking=db.weightTracking;
+ const tracking=structuredClone(db.weightTracking);
  if(tracking.entries.length&&tracking.plan&&(plan.startDate!==tracking.plan.startDate||plan.startWeight!==tracking.plan.startWeight)){toast('Keep the original start date and weight so weigh-ins stay aligned');return;}
  if(!tracking.plan){
  if(tracking.entries.some(entry=>entry.date<plan.startDate)){toast('Choose a start date on or before your first weigh-in');return;}
- tracking.entries=tracking.entries.map(entry=>({...entry,week:(weightDay(entry.date)-weightDay(plan.startDate))/7}));tracking.initialPlan={...plan};
+ tracking.entries=tracking.entries.map(entry=>({...entry,week:weightWeek(plan,entry.date)}));tracking.initialPlan={...plan};
  }else if(!tracking.entries.length){tracking.initialPlan={...plan};}else{tracking.initialPlan??={...tracking.plan};}
- tracking.plan=plan;syncWeightProjection(tracking);saveDB();renderWeightTracking();toast('Plan saved');
+ tracking.plan=plan;syncWeightProjection(tracking);const saved={...db,weightTracking:tracking};if(!saveDB(saved))return;db=saved;renderWeightTracking();toast('Plan saved');
 }
 function saveWeeklyWeight(event){
- event.preventDefault();const tracking=db.weightTracking,plan=tracking.plan;
- const date=document.getElementById('weeklyWeightDate').value,weight=Number(document.getElementById('weeklyWeight').value),bodyFat=weightBF(document.getElementById('weeklyBF').value),week=plan?Math.max(0,Math.round((weightDay(date)-weightDay(plan.startDate))/7)):null;
+ event.preventDefault();const tracking=structuredClone(db.weightTracking),plan=tracking.plan;
+ const date=document.getElementById('weeklyWeightDate').value,weight=Number(document.getElementById('weeklyWeight').value),bodyFat=weightBF(document.getElementById('weeklyBF').value),week=plan?weightWeek(plan,date):null;
  if(!Number.isFinite(weight)||weight<=0||!validWeightBF(bodyFat)||!Number.isFinite(weightDay(date))||date>weightToday()||(plan&&date<plan.startDate)){toast('Use a valid past or current date, a positive weight, and optional body-fat %');return;}
  const original=editingWeighInDate===null?-1:tracking.entries.findIndex(entry=>entry.date===editingWeighInDate);
  if(editingWeighInDate!==null&&original<0){toast('This weigh-in is no longer available. Cancel editing and try again.');return;}
- const collision=tracking.entries.findIndex((entry,index)=>index!==original&&(entry.date===date||(plan&&entry.week===week)));
+ const collision=tracking.entries.findIndex((entry,index)=>index!==original&&(entry.date===date));
  if(collision>=0&&!confirm(`Replace the weigh-in from ${weightDateLabel(tracking.entries[collision].date)}?`))return;
  const entry={date,weight,bodyFat,week};
  if(original>=0){tracking.entries[original]=entry;if(collision>=0)tracking.entries.splice(collision,1);}
  else if(collision>=0)tracking.entries[collision]=entry;
  else tracking.entries.push(entry);
- editingWeighInDate=null;tracking.entryDraft=null;
- tracking.entries.sort((a,b)=>a.date.localeCompare(b.date));syncWeightProjection(tracking);saveDB();renderWeightTracking();toast("Weigh-in saved");
+ tracking.entryDraft=null;
+ tracking.entries.sort((a,b)=>a.date.localeCompare(b.date));syncWeightProjection(tracking);
+ const saved={...db,weightTracking:tracking};if(!saveDB(saved))return;db=saved;editingWeighInDate=null;
+ renderWeightTracking();toast("Weigh-in saved");
 }
 function editWeeklyWeight(date){const entry=db.weightTracking.entries.find(e=>e.date===date);if(!entry)return;editingWeighInDate=date;document.getElementById('weighInSubmit').textContent='Update weigh-in';document.getElementById('cancelWeighInButton').hidden=false;document.getElementById('weeklyWeightDate').value=entry.date;document.getElementById('weeklyWeight').value=entry.weight;document.getElementById('weeklyBF').value=entry.bodyFat??'';captureWeighInDraft();document.getElementById('weeklyWeightForm').scrollIntoView({behavior:'smooth',block:'center'});}
-function deleteWeeklyWeight(date){if(!confirm(`Delete the weigh-in from ${weightDateLabel(date)}?`))return;db.weightTracking.entries=db.weightTracking.entries.filter(e=>e.date!==date);if(db.weightTracking.entryDraft?.editingDate===date){db.weightTracking.entryDraft=null;editingWeighInDate=null;}syncWeightProjection(db.weightTracking);saveDB();renderWeightTracking();}
+function deleteWeeklyWeight(date){
+ if(!confirm("Delete the weigh-in from "+weightDateLabel(date)+"?"))return;
+ const tracking={...db.weightTracking,entries:db.weightTracking.entries.filter(e=>e.date!==date)};
+ if(tracking.entryDraft?.editingDate===date)tracking.entryDraft=null;
+ syncWeightProjection(tracking);
+ const saved={...db,weightTracking:tracking};
+ if(!saveDB(saved))return;
+ db=saved;renderWeightTracking();
+}
 function renderWeightChart(id,series,range){
  series=series.map(s=>({...s,points:s.points.filter(p=>p.week>=range.start&&p.week<=range.end)}));
  const el=document.getElementById(id),all=series.flatMap(s=>s.points);
@@ -106,7 +117,7 @@ function renderWeightChart(id,series,range){
 }
 function renderWeighInLog(){
  const tracking=db.weightTracking,entries=tracking.entries;
- document.getElementById('weeklyWeightLog').innerHTML=entries.length?entries.slice().reverse().map(entry=>`<div class="weekly-entry"><div class="row between"><strong>${escapeHTML(weightDateLabel(entry.date))}</strong><span><button class="secondary small" type="button" data-weight-edit="${entry.date}">Edit</button> <button class="secondary small" type="button" data-weight-delete="${entry.date}">Delete</button></span></div><p>${entry.weight.toFixed(1)} lb${entry.bodyFat!==null&&entry.bodyFat!==undefined?` · ${entry.bodyFat}% body fat`:''}${tracking.plan?weightAheadLabel(tracking.initialPlan||tracking.plan,entry):''}</p></div>`).join(''):'<p class="muted">Log your first weight above. A plan is optional.</p>';
+ document.getElementById('weeklyWeightLog').innerHTML=entries.length?entries.slice().reverse().map(entry=>`<div class="weekly-entry"><div class="row between"><strong>${escapeHTML(weightDateLabel(entry.date))}</strong><span><button class="secondary small" type="button" data-weight-edit="${escapeHTML(entry.date)}">Edit</button> <button class="secondary small" type="button" data-weight-delete="${escapeHTML(entry.date)}">Delete</button></span></div><p>${entry.weight.toFixed(1)} lb${entry.bodyFat!==null&&entry.bodyFat!==undefined?` · ${escapeHTML(entry.bodyFat)}% body fat`:''}${tracking.plan?weightAheadLabel(tracking.initialPlan||tracking.plan,entry):''}</p></div>`).join(''):'<p class="muted">Log your first weight above. A plan is optional.</p>';
  document.querySelectorAll('[data-weight-edit]').forEach(button=>button.onclick=()=>editWeeklyWeight(button.dataset.weightEdit));document.querySelectorAll('[data-weight-delete]').forEach(button=>button.onclick=()=>deleteWeeklyWeight(button.dataset.weightDelete));
 }
 function captureWeighInDraft(){
@@ -143,12 +154,12 @@ function renderWeightTracking(){
  const compositionEntries=entries.filter(e=>validWeightBF(e.bodyFat)&&e.bodyFat!==null&&e.bodyFat!==undefined),baselineEntry=plan.startBF!==null&&plan.startBF!==undefined?{date:plan.startDate,weight:plan.startWeight,bodyFat:plan.startBF}:compositionEntries[0],lastComposition=compositionEntries.at(-1)||baselineEntry;
  const baseline=baselineEntry?weightComposition(baselineEntry.weight,baselineEntry.bodyFat):null,composition=lastComposition?weightComposition(lastComposition.weight,lastComposition.bodyFat):null,hasCompositionChange=!!(baseline&&composition&&baselineEntry.date!==lastComposition.date);
  document.getElementById('weightYearGoal').textContent=`End-date target: ${updatedWeightTarget(tracking,plan.weeks).toFixed(1)} lb · ${weightDateLabel(weightDate(plan.startDate,plan.weeks))}.`;
- document.getElementById('weightCurrent').textContent=latest.weight.toFixed(1);const gap=latest.weight-weightTarget(tracking.initialPlan,latest.week);const ahead=tracking.initialPlan.direction==='gain'?gap:-gap;document.getElementById('weightAheadStat').hidden=ahead<.05;document.getElementById('weightGap').textContent=ahead>=.05?ahead.toFixed(1):'';document.getElementById('weightPlanSummary').textContent=`${latest.week?'Week '+latest.week:'Starting measurement'} · ${weightDateLabel(latest.date)}.`;
+ document.getElementById('weightCurrent').textContent=latest.weight.toFixed(1);const gap=latest.weight-weightTarget(tracking.initialPlan,(weightDay(latest.date)-weightDay(plan.startDate))/7);const ahead=tracking.initialPlan.direction==='gain'?gap:-gap;document.getElementById('weightAheadStat').hidden=ahead<.05;document.getElementById('weightGap').textContent=ahead>=.05?ahead.toFixed(1):'';document.getElementById('weightPlanSummary').textContent=`${weightWeek(plan,latest.date)?'Week '+weightWeek(plan,latest.date):'Starting measurement'} · ${weightDateLabel(latest.date)}.`;
  document.getElementById('weightRevisionSummary').textContent=tracking.updatedPlan?`Updated plan automatically follows your latest weigh-in: ${weightDateLabel(latest.date)} · ${latest.weight.toFixed(1)} lb. Your initial plan stays visible.`:'The updated line appears automatically after your first weigh-in.';
  document.getElementById('weightChange').textContent=weightSigned(latest.weight-plan.startWeight);
  document.getElementById('fatChange').textContent=hasCompositionChange?weightSigned(composition.fat-baseline.fat):'—';document.getElementById('nonFatChange').textContent=hasCompositionChange?weightSigned(composition.nonFat-baseline.nonFat):'—';
  document.getElementById('compositionAsOf').textContent=hasCompositionChange?`Estimated change from ${weightDateLabel(baselineEntry.date)} to ${weightDateLabel(lastComposition.date)}.`:baseline?'Save another weigh-in with body-fat % to calculate changes.':'Add body-fat % to two weigh-ins, or enter a starting body-fat % and a later weigh-in.';
- const next=entries.length?latest.week+1:1;document.getElementById('weeklyDue').textContent=`Next check-in: ${weightDateLabel(weightDate(plan.startDate,next))} · Week ${next}.`;
+ const next=entries.length?weightWeek(plan,latest.date)+1:1;document.getElementById('weeklyDue').textContent=`Next check-in: ${weightDateLabel(weightDate(plan.startDate,next))} · Week ${next}.`;
  renderWeightCharts();
  renderWeightPlanPage();
 }
@@ -159,7 +170,7 @@ function renderWeightPlanPage(){
  const start=weightTablePage*26,end=Math.min(horizon,start+25);
  document.getElementById('weightPageLabel').textContent=`Weeks ${start}–${end} of ${horizon}. Targets continue as you keep tracking.`;
  document.getElementById('weightPagePrevious').disabled=weightTablePage===0;document.getElementById('weightPageNext').disabled=weightTablePage===pages-1;
- document.getElementById('weightPlanRows').innerHTML=Array.from({length:end-start+1},(_,i)=>{const week=start+i,value=weightTarget(db.weightTracking.initialPlan||plan,week),updated=db.weightTracking.updatedPlan&&week>=db.weightTracking.updatedPlan.week?updatedWeightTarget(db.weightTracking,week):null,e=entries.find(e=>e.week===week)||(week===0?{weight:plan.startWeight,bodyFat:plan.startBF}:null),c=e?weightComposition(e.weight,e.bodyFat):null;return `<tr><th scope="row">${week}</th><td>${escapeHTML(weightDateLabel(weightDate(plan.startDate,week)))}</td><td>${value.toFixed(1)}</td><td>${updated===null?'—':updated.toFixed(1)}</td><td>${e?e.weight.toFixed(1):'—'}</td><td>${e?weightAheadLabel(db.weightTracking.initialPlan||plan,{...e,week}).replace(' · ',''):''}</td><td>${c?c.fat.toFixed(1):'—'}</td><td>${c?c.nonFat.toFixed(1):'—'}</td></tr>`;}).join('');
+ document.getElementById('weightPlanRows').innerHTML=Array.from({length:end-start+1},(_,i)=>{const week=start+i,value=weightTarget(db.weightTracking.initialPlan||plan,week),updated=db.weightTracking.updatedPlan&&week>=db.weightTracking.updatedPlan.week?updatedWeightTarget(db.weightTracking,week):null,e=entries.findLast(e=>weightWeek(plan,e.date)===week)||(week===0?{weight:plan.startWeight,bodyFat:plan.startBF}:null),c=e?weightComposition(e.weight,e.bodyFat):null;return `<tr><th scope="row">${week}</th><td>${escapeHTML(weightDateLabel(weightDate(plan.startDate,week)))}</td><td>${value.toFixed(1)}</td><td>${updated===null?'—':updated.toFixed(1)}</td><td>${e?e.weight.toFixed(1):'—'}</td><td>${e?weightAheadLabel(db.weightTracking.initialPlan||plan,{...e,date:e.date||plan.startDate}).replace(' · ',''):''}</td><td>${c?c.fat.toFixed(1):'—'}</td><td>${c?c.nonFat.toFixed(1):'—'}</td></tr>`;}).join('');
 }
 function changeWeightPlanPage(direction){weightTablePage+=direction;renderWeightPlanPage();}
 
