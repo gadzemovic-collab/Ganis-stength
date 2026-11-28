@@ -1362,6 +1362,7 @@ class="chart"
  <img id="exerciseImagePreview" src="exercise-images/placeholder.svg" alt="">
  <canvas id="exerciseImageCanvas" width="640" height="480" role="img" aria-label="Cropped image preview" hidden></canvas>
  <p id="exerciseImageStatus" class="muted" role="status"></p>
+ <ol id="exerciseImageCues" hidden><li id="exerciseImageStart"></li><li id="exerciseImageFinish"></li></ol>
  <label for="exerciseImageFile">Upload or replace image</label>
  <input id="exerciseImageFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif">
  <div id="exerciseImageEditor" hidden>
@@ -1377,7 +1378,7 @@ class="chart"
  </div>
 </dialog>
 
-<script src="exercise-images.js?v=1"></script>
+<script src="exercise-images.js?v=2"></script>
 <script src="shark.js?v=3"></script>
 <script src="weight.js?v=14"></script>
 <script src="milestones.js?v=2"></script>

@@ -1,10 +1,10 @@
 const CACHE_PREFIX = 'rep-harbor-';
-const CACHE = CACHE_PREFIX + 'v78';
+const CACHE = CACHE_PREFIX + 'v79';
 const ASSETS = [
   './', './index.html', './shark.js?v=3', './shark-frames.json?v=1',
   './female-shark-sheet.webp?v=1', './female-shark.webp?v=1',
   './weight.js?v=14', './milestones.js?v=2', './progress-photos.js?v=1',
-  './exercise-images.js?v=1', './exercise-images/catalog.json', './exercise-images/placeholder.svg',
+  './exercise-images.js?v=2', './exercise-images/catalog.json', './exercise-images/placeholder.svg',
   './manifest.webmanifest', './rep-harbor-180.png?v=12',
   './rep-harbor-192.png?v=12', './rep-harbor-512.png?v=12',
 ];
